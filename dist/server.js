@@ -74,11 +74,34 @@ app.post('/docente', async (req, res) => {
         res.status(500).json({ sucesso: false, error: "Erro ao inserir docente." });
     }
 });
+app.post('/verificar-docente/cadastro', async (req, res) => {
+    try {
+        const { email, senha } = req.body;
+        console.log("🔍 Verificando docente:", email);
+        const docente = await (0, docente_1.verificarDocente)(email);
+        if (docente) {
+            console.log("❌ Docente já cadastrado:", docente.nome);
+            // 🟢 RETORNA OS DADOS
+            res.json({
+                sucesso: true,
+                nome: docente.nome,
+                email: docente.email
+            });
+        }
+        else {
+            console.log("✅ Docente ainda não cadastrado!");
+        }
+    }
+    catch (error) {
+        console.error("❌ Erro ao verificar docente:", error);
+        res.status(500).json({ sucesso: false, mensagem: "Erro no servidor" });
+    }
+});
 app.post('/verificar-docente', async (req, res) => {
     try {
         const { email, senha } = req.body;
         console.log("🔍 Verificando docente:", email);
-        const docente = await (0, docente_1.verificarDocente)(email, senha);
+        const docente = await (0, docente_1.verificarDocente)(email);
         if (docente) {
             console.log("✅ Docente encontrado:", docente.nome);
             // 🟢 RETORNA OS DADOS

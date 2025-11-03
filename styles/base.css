@@ -161,7 +161,7 @@ body {
 
 .monsterThree .mouth {
     background: var(--black);
-    height: 20px;
+    height: 10px;
     width: 20px;
     border-radius: 50%;
     position: absolute;

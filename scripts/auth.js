@@ -165,10 +165,10 @@ if (botaoLogin) {
             })
             .then(data => {
                 console.log("📥 Dados recebidos:", data);
-                
+
                 if (data.sucesso && data.nome && data.email) {
                     console.log("✅ Login bem-sucedido! Nome:", data.nome, "Email:", data.email);
-                    
+
                     errorMessage.style.display = "none";
                     erroAtivo = false;
 
@@ -177,7 +177,7 @@ if (botaoLogin) {
                         nome: data.nome,
                         email: data.email
                     }));
-                    
+
                     // Confirma que salvou
                     const salvou = localStorage.getItem("usuarioLogado");
                     console.log("💾 Salvou no localStorage:", salvou);
@@ -258,27 +258,46 @@ if (botaoCadastro) {
             telefone: telefoneDigitado,
             senha: senhaDigitada
         }));
-
-        fetch("http://localhost:3000/enviar-codigo", {
+        fetch("http://localhost:3000/verificar-docente/cadastro", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                nome: nomeDigitado,
-                email: emailDigitado
-            })
+            body: JSON.stringify({ email: emailDigitado })
         })
-            .then(res => res.json())
+            .then(res => {
+                console.log("📥 Status da verificação de cadastro:", res.status, res.ok);
+                return res.json();
+            })
             .then(data => {
-                console.log(data.message);
-                alert("Cadastro realizado e e-mail enviado com sucesso!");
-                // redireciona após o sucesso
-                window.location.href = "../pages/pageVerification.html";
+                console.log("📥 Dados da verificação de cadastro:", data)
+                if (data.sucesso) {
+                    alert("Email já cadastrado. Tente fazer login.");
+                    throw new Error("Email já cadastrado");
+                } else {
+                    console.log("✅ Email disponível para cadastro:", emailDigitado);
+                    fetch("http://localhost:3000/enviar-codigo", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            nome: nomeDigitado,
+                            email: emailDigitado
+                        })
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            console.log(data.message);
+                            alert("Cadastro realizado e e-mail enviado com sucesso!");
+                            // redireciona após o sucesso
+                            window.location.href = "../pages/pageVerification.html";
+                        })
+                        .catch(err => {
+                            console.error("Erro ao enviar e-mail:", err);
+                            alert("Cadastro feito, mas ocorreu erro ao enviar o e-mail.");
+                        });
+                }
             })
             .catch(err => {
-                console.error("Erro ao enviar e-mail:", err);
-                alert("Cadastro feito, mas ocorreu erro ao enviar o e-mail.");
+                console.error("❌ Erro no cadastro:", err);
             });
-
     });
 }
 
@@ -416,4 +435,22 @@ if (botaoVerify) {
                 alert("Ocorreu um erro. Verifique o console para mais detalhes.");
             });
     });
-}   
+}
+
+// auth.js
+// --- Mostrar o e-mail do cadastro na verificação ---
+document.addEventListener("DOMContentLoaded", () => {
+    const emailView = document.getElementById("mailView");
+    if (!emailView) return;
+
+    // Tenta pegar o e-mail salvo temporariamente no cadastro
+    const cadastroTemp = JSON.parse(localStorage.getItem("cadastroTemp"));
+
+    if (cadastroTemp && cadastroTemp.email) {
+        emailView.textContent = `Código enviado para: ${cadastroTemp.email}`;
+        console.log("🟢 Email exibido na verificação:", cadastroTemp.email);
+    } else {
+        emailView.textContent = "Código enviado para: (email não encontrado)";
+        console.warn("⚠️ Nenhum email encontrado em cadastroTemp");
+    }
+});

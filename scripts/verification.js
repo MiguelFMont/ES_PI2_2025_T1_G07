@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const codeInputs = document.querySelectorAll(".code-input");
+  const codeInputs = Array.from(document.querySelectorAll(".code-input"));
 
   codeInputs.forEach((input, index) => {
     input.addEventListener("keydown", (e) => {
@@ -7,7 +7,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Permitir teclas de controle
       if (["Backspace", "Tab", "ArrowLeft", "ArrowRight"].includes(key)) {
-        // Se apertar Backspace e o campo estiver vazio, volta pro anterior
         if (key === "Backspace" && !input.value && index > 0) {
           codeInputs[index - 1].focus();
         }
@@ -21,34 +20,70 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     input.addEventListener("input", () => {
-      // Mantém só números e 1 dígito
       input.value = input.value.replace(/[^0-9]/g, "").slice(0, 1);
-
-      // Se tiver um número e houver próximo input, foca nele
       if (input.value && index < codeInputs.length - 1) {
         codeInputs[index + 1].focus();
       }
     });
+  });
 
-    input.addEventListener("paste", (e) => {
-      e.preventDefault();
-      const paste = (e.clipboardData || window.clipboardData)
-        .getData("text")
-        .replace(/[^0-9]/g, "")
-        .slice(0, codeInputs.length);
+  // Função helper que distribui um texto numérico pelos inputs
+  function distributeCode(rawText) {
+    const paste = (rawText || "").replace(/[^0-9]/g, "");
+    if (!paste) return false;
 
-      // Distribui o texto colado pelos inputs
-      paste.split("").forEach((char, i) => {
-        if (codeInputs[index + i]) {
-          codeInputs[index + i].value = char;
-        }
+    const active = document.activeElement;
+    const startIndex = codeInputs.indexOf(active) >= 0 ? codeInputs.indexOf(active) : 0;
+
+    // Se o código tem o mesmo tamanho dos inputs, preenche tudo começando do 0
+    if (paste.length === codeInputs.length) {
+      codeInputs.forEach((el, i) => (el.value = paste[i] || ""));
+      codeInputs[codeInputs.length - 1].focus();
+      return true;
+    }
+
+    // Senão, preenche a partir do input focado (ou do 0)
+    paste
+      .slice(0, codeInputs.length - startIndex)
+      .split("")
+      .forEach((char, i) => {
+        if (codeInputs[startIndex + i]) codeInputs[startIndex + i].value = char;
       });
 
-      // Foca no último input preenchido
-      const lastFilled = index + paste.length - 1;
-      if (codeInputs[lastFilled]) {
-        codeInputs[lastFilled].focus();
-      }
-    });
+    const lastFilled = Math.min(startIndex + paste.length - 1, codeInputs.length - 1);
+    if (codeInputs[lastFilled]) codeInputs[lastFilled].focus();
+    return true;
+  }
+
+  // --- ESCUTA PASTE GLOBAL (botão direito / menu) ---
+  document.addEventListener("paste", (e) => {
+    const pasteText = (e.clipboardData || window.clipboardData).getData("text");
+    if (!pasteText) return;
+    // prevenimos para garantir comportamento consistente
+    e.preventDefault();
+    distributeCode(pasteText);
+  });
+
+  // --- ESCUTA CTRL/CMD + V (fallback/garantia para Ctrl+V) ---
+  document.addEventListener("keydown", (e) => {
+    const isPasteShortcut =
+      (e.ctrlKey || e.metaKey) && (e.key === "v" || e.key === "V");
+
+    if (!isPasteShortcut) return;
+
+    // tenta usar a clipboard API (assincrona)
+    if (navigator.clipboard && navigator.clipboard.readText) {
+      e.preventDefault(); // prevenir comportamento nativo para controlar preenchimento
+      navigator.clipboard
+        .readText()
+        .then((text) => {
+          if (!text) return;
+          distributeCode(text);
+        })
+        .catch(() => {
+          // Se falhar (permissão negada), deixamos que o evento paste padrão aconteça
+        });
+    }
+    // se não tiver navigator.clipboard, deixamos o evento paste normal ocorrer
   });
 });

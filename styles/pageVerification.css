@@ -54,6 +54,14 @@ body {
     /* box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2); */
     position: relative;
 }
+
+#mailView {
+    text-align: center;
+    color: var(--grey);
+    font-size: 1rem;
+    margin-bottom: 15px;
+}
+
 .title {
     display: flex;
     justify-content: center;
@@ -83,7 +91,7 @@ h1 {
     text-align: center;
     color: #333;
     font-size: 21.67px;
-    margin-bottom: 15px;
+    margin-bottom: 5px;
 }
 
 

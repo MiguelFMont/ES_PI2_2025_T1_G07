@@ -39,8 +39,35 @@ export async function addDocente(
         await close(conn);
     }
 }
+export async function verificarCadastroDocente(email: string): Promise<{ nome: string, email: string } | null> {
+    const conn = await open();
+    try{
+        const result = await conn.execute(
+            `SELECT NOME, EMAIL FROM DOCENTE  
+            WHERE EMAIL = :email
+            FETCH FIRST 1 ROWS ONLY`,
+            //     ^^^^  ^^^^^ BUSCA ESSES DADOS NO BANCO
+            { email },
+            { outFormat: OracleDB.OUT_FORMAT_OBJECT }
+        );
+        
+        if (result.rows && result.rows.length > 0) {
+            const docente = result.rows[0] as { NOME: string, EMAIL: string };
+            return {
+                nome: docente.NOME,
+                email: docente.EMAIL
+            };
+        }
+        
+        return null;
+    } finally {
+        if (conn) {
+            await close(conn);
+        }
+    }
+}
 
-export async function verificarDocente(email: string, senha: string): Promise<{ nome: string, email: string } | null> {
+export async function verificarLoginDocente(email: string, senha: string): Promise<{ nome: string, email: string } | null> {
     const conn = await open();
     try{
         const result = await conn.execute(
@@ -54,7 +81,6 @@ export async function verificarDocente(email: string, senha: string): Promise<{ 
         
         if (result.rows && result.rows.length > 0) {
             const docente = result.rows[0] as { NOME: string, EMAIL: string };
-
             return {
                 nome: docente.NOME,
                 email: docente.EMAIL
