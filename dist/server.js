@@ -10,6 +10,12 @@ const path_1 = __importDefault(require("path"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 console.log("API KEY:", process.env.RESEND_API_KEY);
+// import {
+//     getAllEstudantes,
+//     getEstudanteById,
+//     addEstudante,
+// } from "./db/estudantes";
+const docente_1 = require("./db/docente");
 const email_1 = require("./services/email");
 const app = (0, express_1.default)();
 const port = 3000;
@@ -57,19 +63,47 @@ app.use((0, cors_1.default)());
 //         res.status(500).json({ error: "Erro ao inserir estudante." })
 //     }
 // })
+app.post('/docente', async (req, res) => {
+    try {
+        const { nome, email, telefone, senha } = req.body;
+        const id = await (0, docente_1.addDocente)(nome, email, telefone, senha);
+        res.status(201).json({ sucesso: true, message: "docente adicionado com sucesso", id });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ sucesso: false, error: "Erro ao inserir docente." });
+    }
+});
+app.post('/verificar-docente', async (req, res) => {
+    try {
+        const { email, senha } = req.body;
+        const verificacao = await (0, docente_1.verificarDocente)(email, senha);
+        res.status(201).json({ sucesso: true, massage: "Verificação realizada com sucesso." });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ sucesso: false, massage: "Falha ao verificar docente." });
+    }
+});
 app.post('/verificar-codigo', async (req, res) => {
-    const { codigo } = req.body;
-    const codigoCerto = codigoAtivo;
-    console.log(`Verificando o código: ${codigoCerto}`, req.body);
-    if (!codigoCerto) {
-        return res.status(400).json({ sucesso: false, mensagem: "Código não encontrado ou expirado!" });
+    try {
+        const { codigo } = req.body;
+        const codigoCerto = codigoAtivo;
+        console.log(`Verificando o código. Código esperado: ${codigoCerto}, Código recebido: ${codigo}`);
+        if (!codigoCerto) {
+            return res.status(400).json({ sucesso: false, mensagem: "Código não encontrado ou expirado!" });
+        }
+        if (codigoCerto === codigo) {
+            codigoAtivo = '';
+            return res.json({ sucesso: true, mensagem: "Código verificado com sucesso!" });
+        }
+        else {
+            return res.status(400).json({ sucesso: false, mensagem: "Código incorreto." });
+        }
     }
-    if (codigoCerto === codigo) {
-        codigoAtivo = '';
-        return res.json({ sucesso: true, mensagem: "Código verificado com sucesso!" });
-    }
-    else {
-        return res.status(400).json({ sucesso: false, mensagem: "Código incorreto." });
+    catch (error) {
+        console.error("Erro ao verificar código:", error);
+        return res.status(500).json({ sucesso: false, mensagem: "Erro interno do servidor." });
     }
 });
 app.post('/enviar-codigo', async (req, res) => {

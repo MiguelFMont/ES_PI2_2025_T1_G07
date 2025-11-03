@@ -127,25 +127,51 @@ if (botaoLogin) {
         const emailDigitado = inputEmail.value.trim();
         const senhaDigitada = inputSenha.value.trim();
 
-        const usuario = usuarios.find(u => u.email === emailDigitado && u.senha === senhaDigitada);
+        // const usuario = usuarios.find(u => u.email === emailDigitado && u.senha === senhaDigitada);
 
-        if (usuario) {
-            errorMessage.style.display = "none";
-            erroAtivo = false;
+        // if (usuario) {
+        //     errorMessage.style.display = "none";
+        //     erroAtivo = false;
 
-            // 🟢 Salva nome e email do usuário logado
-            localStorage.setItem("usuarioLogado", JSON.stringify({
-                nome: usuario.nome,
-                email: usuario.email
-            }));
+        //     // 🟢 Salva nome e email do usuário logado
+        //     localStorage.setItem("usuarioLogado", JSON.stringify({
+        //         nome: usuario.nome,
+        //         email: usuario.email
+        //     }));
 
-            window.location.href = "pages/mainPage.html";
-        } else {
-            marcarErroCampo(inputEmail, originalLabels.email);
-            marcarErroCampo(inputSenha, originalLabels.password);
-            errorMessage.style.display = "block";
-            erroAtivo = true;
-        }
+        //     window.location.href = "pages/mainPage.html";
+        // } else {
+        //     marcarErroCampo(inputEmail, originalLabels.email);
+        //     marcarErroCampo(inputSenha, originalLabels.password);
+        //     errorMessage.style.display = "block";
+        //     erroAtivo = true;
+        // }
+
+        fetch("http://localhost:3000/verificar-docente", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: emailDigitado, senha: senhaDigitada })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.sucesso) {
+                    errorMessage.style.display = "none";
+                    erroAtivo = false;
+
+                    // 🟢 SALVE OS DADOS DO USUÁRIO
+                    localStorage.setItem("usuarioLogado", JSON.stringify({
+                        nome: data.nome, // supondo que o backend retorne o nome
+                        email: emailDigitado
+                    }));
+                    
+                    window.location.href = "../pages/mainPage.html";
+                } else {
+                    marcarErroCampo(inputEmail, originalLabels.email);
+                    marcarErroCampo(inputSenha, originalLabels.password);
+                    errorMessage.style.display = "block";
+                    erroAtivo = true;
+                }
+            });
     });
 }
 
@@ -157,15 +183,15 @@ if (botaoCadastro) {
         const campos = [inputNome, inputEmail, inputTelefone, inputSenha];
         let algumErro = false;
 
-        // limpa erros anteriores
-        campos.forEach(limparErroCampo);
-
-        if (validarCamposVazios(campos)) return;
-
         const nomeDigitado = inputNome.value.trim();
         const emailDigitado = inputEmail.value.trim();
         const telefoneDigitado = inputTelefone.value.trim();
         const senhaDigitada = inputSenha.value.trim();
+
+        // limpa erros anteriores
+        campos.forEach(limparErroCampo);
+
+        if (validarCamposVazios(campos)) return;
 
         // validações individuais
         const nomeValido = nomeDigitado.split(" ").filter(p => p.length > 0).length >= 2;
@@ -202,6 +228,13 @@ if (botaoCadastro) {
         // errorMessage.style.display = "none";
         // alert("Cadastro realizado com sucesso! Você será redirecionado para o login.");
         // window.location.href = "../index.html";
+
+        localStorage.setItem("cadastroTemp", JSON.stringify({
+            nome: nomeDigitado,
+            email: emailDigitado,
+            telefone: telefoneDigitado,
+            senha: senhaDigitada
+        }));
 
         fetch("http://localhost:3000/enviar-codigo", {
             method: "POST",
@@ -281,29 +314,83 @@ inputsCodigo.forEach((input, index) => {
 if (botaoVerify) {
     botaoVerify.addEventListener("click", (e) => {
         if (e) e.preventDefault();
+
+        const cadastroTemp = JSON.parse(localStorage.getItem("cadastroTemp"));
+
+        if (!cadastroTemp) {
+            alert("Dados de cadastro não encontrados. Por favor, refaça o cadastro.");
+            window.location.href = "../index.html";
+            return;
+        }
+
+        const { nome, email, telefone, senha } = cadastroTemp;
+
+        console.log("Dados recuperados:", { nome, email, telefone }); // Para debug
+
         let codigoCompleto = '';
 
         for (let i = 0; i < inputsCodigo.length; i++) {
             codigoCompleto += inputsCodigo[i] ? inputsCodigo[i].value.trim() : '';
         }
 
+        console.log("1. Verificando código:", codigoCompleto);
+
         fetch("http://localhost:3000/verificar-codigo", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ codigo: codigoCompleto })
         })
-            .then(res => res.json())
+            .then(res => {
+                console.log("2. Resposta da verificação:", res.status, res.ok);
+                return res.json();
+            })
             .then(data => {
+                console.log("3. Dados da verificação:", data);
                 if (data.sucesso) {
-                    alert("Código verificado com sucesso! Você será redirecionado para a página inicial.");
-                    window.location.href = "../index.html";
+                    console.log("4. Código válido! Cadastrando docente...");
+
+                    // Cadastrar o docente com os dados recuperados
+                    return fetch("http://localhost:3000/docente", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            nome: nome,
+                            email: email,
+                            telefone: telefone,
+                            senha: senha
+                        })
+                    });
                 } else {
                     alert("Código inválido. Tente novamente.");
+                    throw new Error("Código inválido");
+                }
+            })
+            .then(res => {
+                if (!res) return;
+                console.log("5. Resposta do cadastro:", res.status, res.ok);
+                return res.json();
+            })
+            .then(data => {
+                if (!data) return;
+                console.log("6. Dados do cadastro:", data);
+                if (data.sucesso) {
+                    // 🟢 SALVE OS DADOS DO USUÁRIO LOGADO
+                    localStorage.setItem("usuarioLogado", JSON.stringify({
+                        nome: cadastroTemp.nome,
+                        email: cadastroTemp.email
+                    }));
+                    // 🟢 LIMPE OS DADOS TEMPORÁRIOS APÓS O SUCESSO
+                    localStorage.removeItem("cadastroTemp");
+                    alert("Docente cadastrado com sucesso! Você será redirecionado para a página inicial.");
+                    window.location.href = "../pages/mainPage.html";
+                } else {
+                    alert("Erro ao cadastrar o docente.");
                 }
             })
             .catch(err => {
-                console.error("Erro ao verificar código:", err);
-                alert("Ocorreu um erro ao verificar o código. Tente novamente mais tarde.");
+                console.error("❌ ERRO CAPTURADO:", err);
+                console.error("❌ Detalhes do erro:", err.message, err.stack);
+                alert("Ocorreu um erro. Verifique o console para mais detalhes.");
             });
     });
-}
+}   

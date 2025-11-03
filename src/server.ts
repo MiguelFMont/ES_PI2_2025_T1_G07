@@ -8,11 +8,16 @@ import dotenv from "dotenv";
 dotenv.config();
 
 console.log("API KEY:", process.env.RESEND_API_KEY);
+// import {
+//     getAllEstudantes,
+//     getEstudanteById,
+//     addEstudante,
+// } from "./db/estudantes";
+
 import {
-    getAllEstudantes,
-    getEstudanteById,
-    addEstudante,
-} from "./db/estudantes";
+    addDocente,
+    verificarDocente
+} from "./db/docente";
 
 import {
     gerarCodigoVericacao,
@@ -73,24 +78,51 @@ app.use(cors());
 //     }
 // })
 
+app.post('/docente', async (req: Request, res: Response) => {
+    try {
+        const { nome, email, telefone, senha } = req.body;
+        const id = await addDocente(nome, email, telefone, senha);
+        res.status(201).json({ sucesso: true, message: "docente adicionado com sucesso", id });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ sucesso: false, error: "Erro ao inserir docente." })
+    }
+
+});
+
+app.post('/verificar-docente', async (req: Request, res: Response) => {
+    try{
+        const { email, senha } = req.body;
+        const verificacao = await verificarDocente(email, senha);
+        res.status(201).json({ sucesso: true, massage: "Verificação realizada com sucesso."});
+    } catch(error){
+        console.error(error);
+        res.status(500).json({ sucesso: false, massage: "Falha ao verificar docente." })
+    }
+});
+
 app.post('/verificar-codigo', async (req: Request, res: Response) => {
-    const { codigo }= req.body;
-
-    const codigoCerto: string = codigoAtivo;
-
-    console.log(`Verificando o código: ${codigoCerto}`, req.body );
-
-    if(!codigoCerto) {
-        return res.status(400).json({ sucesso: false, mensagem: "Código não encontrado ou expirado!"})
+    try {
+        
+        const { codigo } = req.body;
+        const codigoCerto: string = codigoAtivo;
+        
+        console.log(`Verificando o código. Código esperado: ${codigoCerto}, Código recebido: ${codigo}`);
+        
+        if (!codigoCerto) {
+            return res.status(400).json({ sucesso: false, mensagem: "Código não encontrado ou expirado!" });
+        }
+        
+        if (codigoCerto === codigo) {
+            codigoAtivo = '';
+            return res.json({ sucesso: true, mensagem: "Código verificado com sucesso!" });
+        } else {
+            return res.status(400).json({ sucesso: false, mensagem: "Código incorreto." });
+        }
+    } catch (error) {
+        console.error("Erro ao verificar código:", error);
+        return res.status(500).json({ sucesso: false, mensagem: "Erro interno do servidor." });
     }
-
-    if(codigoCerto === codigo) {
-        codigoAtivo = '';
-        return res.json({ sucesso: true, mensagem: "Código verificado com sucesso!"});
-    } else {
-        return res.status(400).json({ sucesso: false, mensagem: "Código incorreto."})
-    }
-
 });
 
 app.post('/enviar-codigo', async (req: Request, res: Response) => {
@@ -118,7 +150,7 @@ app.listen(port, '0.0.0.0', () => console.log("🚀 Servidor rodando em http://l
 
 // definir a rota default;
 app.get("/", (req: Request, res: Response) => {
-    res.sendFile(path.join(__dirname+'../index.html'));
+    res.sendFile(path.join(__dirname + '../index.html'));
 });
 
 // rota de ping/pong (teste de requisicao)

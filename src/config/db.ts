@@ -1,5 +1,4 @@
-import { connect } from "http2";
-import { Connection } from "mysql2/typings/mysql/lib/Connection";
+
 import OracleDB, { oracleClientVersion } from "oracledb";
 
 // caminho da wallet de conexao com o oracle.
