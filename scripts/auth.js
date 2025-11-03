@@ -78,7 +78,7 @@ if (!errorMessage) {
 // estado de erro
 let erroAtivo = false;
 
-// --- Helpers ---
+// --- Helpers --- //////////////////////////////////////////////////////////////////////////////////////////////
 function marcarErroCampo(input, msg) {
     if (!input || !input.parentElement) return;
     const parent = input.parentElement;
@@ -269,8 +269,8 @@ if (botaoCadastro) {
             })
             .then(data => {
                 console.log("📥 Dados da verificação de cadastro:", data)
-                if (data.sucesso) {
-                    alert("Email já cadastrado. Tente fazer login.");
+                if (!data.sucesso) {
+                    alert("Email já cadastrado. Tente fazer login."); ///////////////////////////////////////////////////////////////////////////////////
                     throw new Error("Email já cadastrado");
                 } else {
                     console.log("✅ Email disponível para cadastro:", emailDigitado);

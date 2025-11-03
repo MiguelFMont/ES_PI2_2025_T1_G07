@@ -4,7 +4,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.addDocente = addDocente;
-exports.verificarDocente = verificarDocente;
+exports.verificarCadastroDocente = verificarCadastroDocente;
+exports.verificarLoginDocente = verificarLoginDocente;
 const db_1 = require("../config/db");
 const oracledb_1 = __importDefault(require("oracledb"));
 async function addDocente(nome, email, telefone_celular, senha) {
@@ -25,7 +26,7 @@ async function addDocente(nome, email, telefone_celular, senha) {
         await (0, db_1.close)(conn);
     }
 }
-async function verificarDocente(email) {
+async function verificarCadastroDocente(email) {
     const conn = await (0, db_1.open)();
     try {
         const result = await conn.execute(`SELECT NOME, EMAIL FROM DOCENTE  
@@ -33,6 +34,29 @@ async function verificarDocente(email) {
             FETCH FIRST 1 ROWS ONLY`, 
         //     ^^^^  ^^^^^ BUSCA ESSES DADOS NO BANCO
         { email }, { outFormat: oracledb_1.default.OUT_FORMAT_OBJECT });
+        if (result.rows && result.rows.length > 0) {
+            const docente = result.rows[0];
+            return {
+                nome: docente.NOME,
+                email: docente.EMAIL
+            };
+        }
+        return null;
+    }
+    finally {
+        if (conn) {
+            await (0, db_1.close)(conn);
+        }
+    }
+}
+async function verificarLoginDocente(email, senha) {
+    const conn = await (0, db_1.open)();
+    try {
+        const result = await conn.execute(`SELECT NOME, EMAIL FROM DOCENTE  
+            WHERE EMAIL = :email AND SENHA = :senha
+            FETCH FIRST 1 ROWS ONLY`, 
+        //     ^^^^  ^^^^^ BUSCA ESSES DADOS NO BANCO
+        { email, senha }, { outFormat: oracledb_1.default.OUT_FORMAT_OBJECT });
         if (result.rows && result.rows.length > 0) {
             const docente = result.rows[0];
             return {

@@ -76,20 +76,21 @@ app.post('/docente', async (req, res) => {
 });
 app.post('/verificar-docente/cadastro', async (req, res) => {
     try {
-        const { email, senha } = req.body;
+        const { email } = req.body;
         console.log("🔍 Verificando docente:", email);
-        const docente = await (0, docente_1.verificarDocente)(email);
+        const docente = await (0, docente_1.verificarCadastroDocente)(email);
         if (docente) {
             console.log("❌ Docente já cadastrado:", docente.nome);
             // 🟢 RETORNA OS DADOS
             res.json({
-                sucesso: true,
+                sucesso: false,
                 nome: docente.nome,
                 email: docente.email
             });
         }
         else {
             console.log("✅ Docente ainda não cadastrado!");
+            res.status(401).json({ sucesso: true, mensagem: "Credenciais inválidas" });
         }
     }
     catch (error) {
@@ -101,7 +102,7 @@ app.post('/verificar-docente', async (req, res) => {
     try {
         const { email, senha } = req.body;
         console.log("🔍 Verificando docente:", email);
-        const docente = await (0, docente_1.verificarDocente)(email);
+        const docente = await (0, docente_1.verificarLoginDocente)(email, senha);
         if (docente) {
             console.log("✅ Docente encontrado:", docente.nome);
             // 🟢 RETORNA OS DADOS

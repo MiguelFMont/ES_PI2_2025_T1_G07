@@ -1,0 +1,70 @@
+/* ================================================
+    RESET GERAL E VARIÁVEIS DE CORES
+   ================================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Paleta de cores principal usada no projeto */
+:root {
+    --black: #000000;
+    --white: #ffffff;
+    --grey: #808080;
+
+    --shadow: rgba(0, 0, 0, 0.2);
+
+    --color1: #ebe8e8;
+    /* Fundo principal (claro) */
+    --color2: #e8e8e8;
+    /* Fundo secundário */
+    --color3: #e30075;
+    /* Cor escura para textos */
+    --color4: #ff4a4a;
+    /* Vermelho (erros ou alertas) */
+    --color5: #ffb319;
+    /* Amarelo (hover de botões) */
+    --color6: #615c5c;
+    /* cinza (hover alternativo de botões) */
+
+    --lightgrey: #d3d3d3;
+    /* Bordas e separadores suaves */
+}
+
+body {
+    background: var(--shadow);
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.load {
+    background: none;
+    height: 200px;
+    width: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loadCircle {
+    height: 80px;
+    width: 80px;
+    border-radius: 50%;
+    background: none;
+    box-shadow: 2px 0 0 var(--color5);
+    animation: load 1s linear infinite;
+}
+
+@keyframes load {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}

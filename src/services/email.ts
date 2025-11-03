@@ -10,7 +10,7 @@ export function gerarCodigoVericacao(): string {
 export async function enviarCodigoVerificacao(email: string, nome: string, codigo: string): Promise<void> {
   try {
     const data = await resend.emails.send({
-      from: "NotaDez <onboarding@resend.dev>",
+      from: "NotaDez <@notadez.cfd>",
       to: email,
       subject: "Seu código de verificação - NotaDez",
       html: `<p>Olá, <strong>${nome}</strong>!</p>
