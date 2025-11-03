@@ -40,26 +40,31 @@ export async function addDocente(
     }
 }
 
-export async function verificarDocente(email: string, senha: string): Promise<boolean> {
+export async function verificarDocente(email: string, senha: string): Promise<{ nome: string, email: string } | null> {
     const conn = await open();
     try{
         const result = await conn.execute(
-            `SELECT 1 FROM DOCENTE
-            WHERE email = :email AND senha = :senha
+            `SELECT NOME, EMAIL FROM DOCENTE  
+            WHERE EMAIL = :email AND SENHA = :senha
             FETCH FIRST 1 ROWS ONLY`,
+            //     ^^^^  ^^^^^ BUSCA ESSES DADOS NO BANCO
             { email, senha },
             { outFormat: OracleDB.OUT_FORMAT_OBJECT }
         );
-        const existe: boolean = !!(result.rows && result.rows.length > 0);
-        return existe;
+        
+        if (result.rows && result.rows.length > 0) {
+            const docente = result.rows[0] as { NOME: string, EMAIL: string };
 
-    } catch (err) {
-        console.error("Erro ao verificar login", err);
-        throw err;
-
+            return {
+                nome: docente.NOME,
+                email: docente.EMAIL
+            };
+        }
+        
+        return null;
     } finally {
         if (conn) {
-            await conn.close();
+            await close(conn);
         }
     }
 }

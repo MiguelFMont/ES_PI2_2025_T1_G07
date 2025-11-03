@@ -28,19 +28,23 @@ async function addDocente(nome, email, telefone_celular, senha) {
 async function verificarDocente(email, senha) {
     const conn = await (0, db_1.open)();
     try {
-        const result = await conn.execute(`SELECT 1 FROM DOCENTE
-            WHERE email = :email AND senha = :senha
-            FETCH FIRST 1 ROWS ONLY`, { email, senha }, { outFormat: oracledb_1.default.OUT_FORMAT_OBJECT });
-        const existe = !!(result.rows && result.rows.length > 0);
-        return existe;
-    }
-    catch (err) {
-        console.error("Erro ao verificar login", err);
-        throw err;
+        const result = await conn.execute(`SELECT NOME, EMAIL FROM DOCENTE  
+            WHERE EMAIL = :email AND SENHA = :senha
+            FETCH FIRST 1 ROWS ONLY`, 
+        //     ^^^^  ^^^^^ BUSCA ESSES DADOS NO BANCO
+        { email, senha }, { outFormat: oracledb_1.default.OUT_FORMAT_OBJECT });
+        if (result.rows && result.rows.length > 0) {
+            const docente = result.rows[0];
+            return {
+                nome: docente.NOME,
+                email: docente.EMAIL
+            };
+        }
+        return null;
     }
     finally {
         if (conn) {
-            await conn.close();
+            await (0, db_1.close)(conn);
         }
     }
 }

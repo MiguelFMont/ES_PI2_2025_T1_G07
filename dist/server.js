@@ -77,12 +77,25 @@ app.post('/docente', async (req, res) => {
 app.post('/verificar-docente', async (req, res) => {
     try {
         const { email, senha } = req.body;
-        const verificacao = await (0, docente_1.verificarDocente)(email, senha);
-        res.status(201).json({ sucesso: true, massage: "Verificação realizada com sucesso." });
+        console.log("🔍 Verificando docente:", email);
+        const docente = await (0, docente_1.verificarDocente)(email, senha);
+        if (docente) {
+            console.log("✅ Docente encontrado:", docente.nome);
+            // 🟢 RETORNA OS DADOS
+            res.json({
+                sucesso: true,
+                nome: docente.nome,
+                email: docente.email
+            });
+        }
+        else {
+            console.log("❌ Credenciais inválidas");
+            res.status(401).json({ sucesso: false, mensagem: "Credenciais inválidas" });
+        }
     }
     catch (error) {
-        console.error(error);
-        res.status(500).json({ sucesso: false, massage: "Falha ao verificar docente." });
+        console.error("❌ Erro ao verificar docente:", error);
+        res.status(500).json({ sucesso: false, mensagem: "Erro no servidor" });
     }
 });
 app.post('/verificar-codigo', async (req, res) => {

@@ -19,7 +19,7 @@ const dbConfig = {
 // função para abrir conexões com o oracle
 export async function open(){
     try{
-        const connection = OracleDB.getConnection(dbConfig);
+        const connection = await OracleDB.getConnection(dbConfig);
         console.log("conexão OCI - aberta");
         return connection;
     }catch(err){

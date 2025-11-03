@@ -147,30 +147,53 @@ if (botaoLogin) {
         //     erroAtivo = true;
         // }
 
+
+        console.log("📤 Enviando login para:", emailDigitado);
+
         fetch("http://localhost:3000/verificar-docente", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: emailDigitado, senha: senhaDigitada })
         })
-            .then(res => res.json())
+            .then(res => {
+                console.log("📥 Status da resposta:", res.status, res.ok);
+                // 🟢 IMPORTANTE: Verifica se a resposta foi bem-sucedida
+                if (!res.ok) {
+                    throw new Error("Credenciais inválidas");
+                }
+                return res.json();
+            })
             .then(data => {
-                if (data.sucesso) {
+                console.log("📥 Dados recebidos:", data);
+                
+                if (data.sucesso && data.nome && data.email) {
+                    console.log("✅ Login bem-sucedido! Nome:", data.nome, "Email:", data.email);
+                    
                     errorMessage.style.display = "none";
                     erroAtivo = false;
 
-                    // 🟢 SALVE OS DADOS DO USUÁRIO
+                    // Salva no localStorage
                     localStorage.setItem("usuarioLogado", JSON.stringify({
-                        nome: data.nome, // supondo que o backend retorne o nome
-                        email: emailDigitado
+                        nome: data.nome,
+                        email: data.email
                     }));
                     
-                    window.location.href = "../pages/mainPage.html";
+                    // Confirma que salvou
+                    const salvou = localStorage.getItem("usuarioLogado");
+                    console.log("💾 Salvou no localStorage:", salvou);
+
+                    window.location.href = "pages/mainPage.html";
                 } else {
-                    marcarErroCampo(inputEmail, originalLabels.email);
-                    marcarErroCampo(inputSenha, originalLabels.password);
-                    errorMessage.style.display = "block";
-                    erroAtivo = true;
+                    console.log("❌ Login falhou - dados incompletos");
+                    throw new Error("Dados de resposta inválidos");
                 }
+            })
+            .catch(err => {
+                console.error("❌ Erro no login:", err);
+                marcarErroCampo(inputEmail, originalLabels.email);
+                marcarErroCampo(inputSenha, originalLabels.password);
+                errorMessage.style.display = "block";
+                erroAtivo = true;
             });
     });
 }
