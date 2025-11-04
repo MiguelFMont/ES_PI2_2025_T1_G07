@@ -184,7 +184,7 @@ h1 {
 }
 
 .resend-code a:hover,
- .resend-code a:focus {
+.resend-code a:focus {
     text-decoration: none;
     color: var(--color5);
     outline: none;

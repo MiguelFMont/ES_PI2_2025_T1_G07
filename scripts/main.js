@@ -14,22 +14,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (partesNome.length > 1) {
                 const restantes = partesNome.slice(1);
-
-                // filtra só nomes com 4 ou mais letras
                 const nomesValidos = restantes.filter(n => n.length >= 4);
 
                 if (nomesValidos.length > 0) {
-                    // pega o menor entre os válidos (pelo tamanho)
                     segundoMenor = nomesValidos.reduce((menor, atual) =>
                         atual.length < menor.length ? atual : menor
                     );
                 } else {
-                    // se nenhum tiver 4+ letras, usa o último nome
                     segundoMenor = partesNome[partesNome.length - 1];
                 }
             }
 
-            // função para deixar a primeira letra maiúscula
             const formatarNome = (nome) =>
                 nome.charAt(0).toUpperCase() + nome.slice(1).toLowerCase();
 
@@ -38,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 : formatarNome(primeiro);
 
             nomeEl.textContent = nomeFormatado;
-            nomeEl.style.whiteSpace = "nowrap"; // impede quebra de linha
+            nomeEl.style.whiteSpace = "nowrap";
         }
 
         if (emailEl) emailEl.textContent = usuario.email;
@@ -86,11 +81,57 @@ document.addEventListener("DOMContentLoaded", () => {
                 const res = await fetch(paginas[nome]);
                 const html = await res.text();
                 divAtual.innerHTML = html;
+
+                // 🔹 ativa o comportamento genérico em qualquer página carregada
+                ativarCreateIdt();
+
             } catch (error) {
                 console.error("Erro ao carregar página:", error);
                 divAtual.innerHTML = "<p>Erro ao carregar página.</p>";
             }
         }
+    }
+
+    // --- FUNÇÃO GENÉRICA PARA CONTROLE DE CREATEIDT ---
+    function ativarCreateIdt() {
+        const allNewBtns = document.querySelectorAll(".newIdt");
+
+        allNewBtns.forEach(btn => {
+            const container = btn.closest(".idtBody");
+            if (!container) return;
+
+            const createIdt = container.querySelector(".createIdt");
+            const closeBtn = container.querySelector("#xClosedCreate");
+            const cancelBtn = container.querySelector("#cancelBtnIdt");
+            const cardIdt = container.querySelector(".cardIdt")
+
+            if (!createIdt) return;
+
+            // começa escondido
+            createIdt.classList.remove("show");
+
+            // abrir
+            btn.addEventListener("click", () => {
+                createIdt.classList.add("show");
+                cardIdt.style.border = "none"
+            });
+
+            // fechar com animação (botão X)
+            if (closeBtn) {
+                closeBtn.addEventListener("click", () => {
+                    createIdt.classList.remove("show");
+                    cardIdt.style.border = "1px solid var(--greyBorder)"
+                });
+            }
+
+            // fechar com animação (botão Cancelar)
+            if (cancelBtn) {
+                cancelBtn.addEventListener("click", () => {
+                    createIdt.classList.remove("show");
+                    cardIdt.style.border = "1px solid var(--greyBorder)"
+                });
+            }
+        });
     }
 
     // --- EVENTOS DOS LINKS ---

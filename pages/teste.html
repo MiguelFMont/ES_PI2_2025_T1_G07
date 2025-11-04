@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Datalist Dinâmico</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 18px;
+    }
+    input {
+      padding: 8px;
+      width: 280px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <label for="cidade">Digite uma cidade:</label>
+  <input list="listaCidades" id="cidade" name="cidade" placeholder="Ex: São Paulo">
+  <datalist id="listaCidades"></datalist>
+
+  <script>
+    const inputCidade = document.getElementById("cidade");
+    const lista = document.getElementById("listaCidades");
+
+    const cidades = [
+      "São Paulo",
+      "Rio de Janeiro",
+      "Belo Horizonte",
+      "Curitiba",
+      "Porto Alegre",
+      "Fortaleza",
+      "Salvador",
+      "Recife",
+      "Florianópolis",
+      "Manaus"
+    ];
+
+    inputCidade.addEventListener("input", () => {
+      const valor = inputCidade.value.toLowerCase();
+      lista.innerHTML = "";
+
+      const filtradas = cidades.filter(c => c.toLowerCase().startsWith(valor));
+
+      filtradas.forEach(c => {
+        const option = document.createElement("option");
+        option.value = c;
+        lista.appendChild(option);
+      });
+    });
+  </script>
+
+</body>
+</html>
