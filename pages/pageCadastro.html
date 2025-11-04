@@ -5,10 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" class="logo32" type="image/png" href="../assets/Logo32x32.png"/>
     <link rel="stylesheet" href="../styles/base.css">
-    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/load.css"> <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
     <title>NotaDez</title>
 </head>
 <body>
+    <div class="load" style="display: none;">
+        <div class="loadCircle"></div>
+    </div>
     <div class="container">
         <div class="title">
             <img class="logo" src="../assets/logoComIcone.png" alt="">
@@ -39,7 +42,8 @@
         </div>
         <a href="../index.html" class="backButton">Voltar</a>
     </div>
-    <div class="background" id="cadastro">
+
+    <div class="background" id="cadastro" style="z-index: 1;">
         <div class="containerMonster">
             <div class="monsterOne">
                 <div class="eyeContainer">
@@ -76,7 +80,5 @@
 
     <script src="../scripts/auth.js"></script>
     <script src="../scripts/monster.js"></script>
-    <script src="../scripts/loader.js"></script>
-
 </body>
 </html>

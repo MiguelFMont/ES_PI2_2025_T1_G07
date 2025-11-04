@@ -1,5 +1,3 @@
-
-
 // auth.js — Login e Cadastro unificados com localStorage
 
 // --- Chave localStorage ---
@@ -17,41 +15,13 @@ const inputNome = document.querySelector("#name");
 const inputTelefone = document.querySelector("#telefone");
 
 // const telefoneInput = document.getElementById('telefone');
-
-// telefoneInput.addEventListener('input', (e) => {
-//     let valor = e.target.value.replace(/\D/g, ''); // só números
-
-//     // Se o campo estiver vazio, não mostra nada
-//     if (valor.length === 0) {
-//         e.target.value = '';
-//         return;
-//     }
-
-//     // Remove tudo que não for número
-//     valor = valor.replace(/\D/g, '');
-
-//     // Aplica a máscara (99) 99999-9999 ou (99) 9999-9999
-//     if (valor.length > 10) {
-//         // Celular com 11 dígitos
-//         valor = valor.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-//     } else if (valor.length > 6) {
-//         // Telefone fixo com 10 dígitos
-//         valor = valor.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
-//     } else if (valor.length > 2) {
-//         // Só DDD e começo do número
-//         valor = valor.replace(/(\d{2})(\d{0,5})/, '($1) $2');
-//     } else {
-//         // Apenas começando a digitar o DDD
-//         valor = valor.replace(/(\d*)/, '($1');
-//     }
-
-//     e.target.value = valor;
-// });
+// ... (código da máscara de telefone comentado) ...
 
 // --- Botões ---
 const botaoLogin = document.querySelector(".buttonLogin");
 const botaoCadastro = document.querySelector(".buttonSignUp");
 const botaoVerify = document.querySelector(".verify-btn");
+const loader = document.querySelector(".load"); // ⬅️ SELETOR DO LOADER
 
 // --- Labels originais ---
 const originalLabels = {
@@ -127,27 +97,6 @@ if (botaoLogin) {
         const emailDigitado = inputEmail.value.trim();
         const senhaDigitada = inputSenha.value.trim();
 
-        // const usuario = usuarios.find(u => u.email === emailDigitado && u.senha === senhaDigitada);
-
-        // if (usuario) {
-        //     errorMessage.style.display = "none";
-        //     erroAtivo = false;
-
-        //     // 🟢 Salva nome e email do usuário logado
-        //     localStorage.setItem("usuarioLogado", JSON.stringify({
-        //         nome: usuario.nome,
-        //         email: usuario.email
-        //     }));
-
-        //     window.location.href = "pages/mainPage.html";
-        // } else {
-        //     marcarErroCampo(inputEmail, originalLabels.email);
-        //     marcarErroCampo(inputSenha, originalLabels.password);
-        //     errorMessage.style.display = "block";
-        //     erroAtivo = true;
-        // }
-
-
         console.log("📤 Enviando login para:", emailDigitado);
 
         fetch("http://localhost:3000/verificar-docente", {
@@ -157,7 +106,6 @@ if (botaoLogin) {
         })
             .then(res => {
                 console.log("📥 Status da resposta:", res.status, res.ok);
-                // 🟢 IMPORTANTE: Verifica se a resposta foi bem-sucedida
                 if (!res.ok) {
                     throw new Error("Credenciais inválidas");
                 }
@@ -172,13 +120,11 @@ if (botaoLogin) {
                     errorMessage.style.display = "none";
                     erroAtivo = false;
 
-                    // Salva no localStorage
                     localStorage.setItem("usuarioLogado", JSON.stringify({
                         nome: data.nome,
                         email: data.email
                     }));
 
-                    // Confirma que salvou
                     const salvou = localStorage.getItem("usuarioLogado");
                     console.log("💾 Salvou no localStorage:", salvou);
 
@@ -239,18 +185,11 @@ if (botaoCadastro) {
         if (algumErro) {
             errorMessage.style.display = "block";
             erroAtivo = true;
-            return;
+            return; // 🛑 Para aqui se houver erro
         }
 
-        // // cadastro válido
-        // usuarios.push({ nome: nomeDigitado, email: emailDigitado, telefone: telefoneDigitado, senha: senhaDigitada });
-
-
-        // salvarUsuarios();
-
-        // errorMessage.style.display = "none";
-        // alert("Cadastro realizado com sucesso! Você será redirecionado para o login.");
-        // window.location.href = "../index.html";
+        // 🟢 MOSTRA O LOADER (só chega aqui se não houver erro)
+        if (loader) loader.style.display = "flex";
 
         localStorage.setItem("cadastroTemp", JSON.stringify({
             nome: nomeDigitado,
@@ -270,7 +209,8 @@ if (botaoCadastro) {
             .then(data => {
                 console.log("📥 Dados da verificação de cadastro:", data)
                 if (!data.sucesso) {
-                    alert("Email já cadastrado. Tente fazer login."); ///////////////////////////////////////////////////////////////////////////////////
+                    if (loader) loader.style.display = "none"; // ⬅️ Esconde o loader
+                    alert("Email já cadastrado. Tente fazer login."); 
                     throw new Error("Email já cadastrado");
                 } else {
                     console.log("✅ Email disponível para cadastro:", emailDigitado);
@@ -286,16 +226,18 @@ if (botaoCadastro) {
                         .then(data => {
                             console.log(data.message);
                             alert("Cadastro realizado e e-mail enviado com sucesso!");
-                            // redireciona após o sucesso
+                            // Não precisa esconder o loader, a página vai redirecionar
                             window.location.href = "../pages/pageVerification.html";
                         })
                         .catch(err => {
+                            if (loader) loader.style.display = "none"; // ⬅️ Esconde o loader
                             console.error("Erro ao enviar e-mail:", err);
                             alert("Cadastro feito, mas ocorreu erro ao enviar o e-mail.");
                         });
                 }
             })
             .catch(err => {
+                if (loader) loader.style.display = "none"; // ⬅️ Esconde o loader
                 console.error("❌ Erro no cadastro:", err);
             });
     });
@@ -313,7 +255,6 @@ if (botaoCadastro) {
         }
 
         if (erroAtivo) {
-            // limpa somente o campo que o usuário clicou
             if (input.parentElement) input.parentElement.classList.remove("error");
             if (input) input.value = "";
             if (label) label.style.color = "";
@@ -341,6 +282,7 @@ const inputsCodigo = [
 ];
 
 inputsCodigo.forEach((input, index) => {
+    if (!input) return; // Garante que o input existe (evita erros)
     input.addEventListener("input", () => {
         if (input.value.length > 0 && index < inputsCodigo.length - 1) {
             inputsCodigo[index + 1].focus();
@@ -367,7 +309,7 @@ if (botaoVerify) {
 
         const { nome, email, telefone, senha } = cadastroTemp;
 
-        console.log("Dados recuperados:", { nome, email, telefone }); // Para debug
+        console.log("Dados recuperados:", { nome, email, telefone }); 
 
         let codigoCompleto = '';
 
@@ -391,7 +333,6 @@ if (botaoVerify) {
                 if (data.sucesso) {
                     console.log("4. Código válido! Cadastrando docente...");
 
-                    // Cadastrar o docente com os dados recuperados
                     return fetch("http://localhost:3000/docente", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -416,12 +357,10 @@ if (botaoVerify) {
                 if (!data) return;
                 console.log("6. Dados do cadastro:", data);
                 if (data.sucesso) {
-                    // 🟢 SALVE OS DADOS DO USUÁRIO LOGADO
                     localStorage.setItem("usuarioLogado", JSON.stringify({
                         nome: cadastroTemp.nome,
                         email: cadastroTemp.email
                     }));
-                    // 🟢 LIMPE OS DADOS TEMPORÁRIOS APÓS O SUCESSO
                     localStorage.removeItem("cadastroTemp");
                     alert("Docente cadastrado com sucesso! Você será redirecionado para a página inicial.");
                     window.location.href = "../pages/mainPage.html";
@@ -443,7 +382,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const emailView = document.getElementById("mailView");
     if (!emailView) return;
 
-    // Tenta pegar o e-mail salvo temporariamente no cadastro
     const cadastroTemp = JSON.parse(localStorage.getItem("cadastroTemp"));
 
     if (cadastroTemp && cadastroTemp.email) {
@@ -456,7 +394,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Olhos de mostrar/ocultar senha do pageRecovery.html
-
 function eyePassword(inputId, icon) {
     const input = document.getElementById(inputId);
     if (input.type === 'password') {
