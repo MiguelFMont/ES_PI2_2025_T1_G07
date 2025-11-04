@@ -454,3 +454,16 @@ document.addEventListener("DOMContentLoaded", () => {
         console.warn("⚠️ Nenhum email encontrado em cadastroTemp");
     }
 });
+
+// Olhos de mostrar/ocultar senha do pageRecovery.html
+
+function eyePassword(inputId, icon) {
+    const input = document.getElementById(inputId);
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('ph-eye-slash', 'ph-eye');
+    } else if (input.type === 'text') {
+        input.type = 'password';
+        icon.classList.replace('ph-eye', 'ph-eye-slash');
+    }
+}
