@@ -15,11 +15,7 @@ console.log(walletPath);
 oracledb_1.default.initOracleClient({ configDir: walletPath });
 // formato de saída dos dados, vai ser objetos JavaScript estruturados.
 oracledb_1.default.outFormat = oracledb_1.default.OUT_FORMAT_OBJECT;
-const dbConfig = {
-    user: "WEBAPP",
-    password: "superSecretMyPassword123",
-    connectString: "notadez_high"
-};
+const dbConfig = `${process.env.DB_CONFIG}`;
 // função para abrir conexões com o oracle
 async function open() {
     try {

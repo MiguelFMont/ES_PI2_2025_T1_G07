@@ -14,9 +14,9 @@ OracleDB.initOracleClient({configDir: walletPath});
 OracleDB.outFormat = OracleDB.OUT_FORMAT_OBJECT;
 
 const dbConfig = {
-    user: "WEBAPP",
-    password: "superSecretMyPassword123",
-    connectString: "notadez_high"
+    user: `${process.env.DB_USER}`,
+    password: `${process.env.DB_PASSWORD}`,
+    connectString: `${process.env.DB_CONNECTSTRING}`
 };
 
 // função para abrir conexões com o oracle
