@@ -698,7 +698,9 @@ body {
 }
 
 .cardsCreateIdt {
-    display: grid;
+    display: none;
+    opacity: 0;
+    pointer-events: none;
     grid-template-columns: repeat(2, 1fr);
     gap: 16px;
     height: min-content;
