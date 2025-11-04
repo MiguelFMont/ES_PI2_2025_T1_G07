@@ -6,8 +6,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.open = open;
 exports.close = close;
 const oracledb_1 = __importDefault(require("oracledb"));
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
 // caminho da wallet de conexao com o oracle.
-const walletPath = "C:\\wallets-oracle-databases\\notadez-wallets\\Wallet_notaDez";
+const walletPath = `${process.env.WALLET_PATH}`;
+console.log(walletPath);
 // inicializando o cliente oracle, usando a wallet.
 oracledb_1.default.initOracleClient({ configDir: walletPath });
 // formato de saída dos dados, vai ser objetos JavaScript estruturados.

@@ -1,8 +1,11 @@
 
 import OracleDB, { oracleClientVersion } from "oracledb";
-
+import dotenv from 'dotenv';
+dotenv.config();
 // caminho da wallet de conexao com o oracle.
-const walletPath = "C:\\wallets-oracle-databases\\notadez-wallets\\Wallet_notaDez";
+const walletPath = `${process.env.WALLET_PATH}`
+
+console.log(walletPath);
 
 // inicializando o cliente oracle, usando a wallet.
 OracleDB.initOracleClient({configDir: walletPath});

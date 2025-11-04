@@ -11,7 +11,7 @@ function gerarCodigoVericacao() {
 async function enviarCodigoVerificacao(email, nome, codigo) {
     try {
         const data = await resend.emails.send({
-            from: "NotaDez <@notadez.cfd>",
+            from: "NotaDez <codigo@notadez.cfd>",
             to: email,
             subject: "Seu código de verificação - NotaDez",
             html: `<p>Olá, <strong>${nome}</strong>!</p>
