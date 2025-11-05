@@ -260,8 +260,8 @@ app.post('/modificar-senha', async (req: Request, res: Response) => {
     try{
         const { email ,novaSenha } = req.body;
         await modificarSenhaDocente(email, novaSenha);
-
-        res.json({
+        console.log("Senha modificada para o email:", email);
+        res.status(200).json({
             sucesso: true,
             mensagem: "Senha modificada com sucesso!"
         });

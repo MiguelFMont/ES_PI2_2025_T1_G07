@@ -442,6 +442,7 @@ if (botaoSolicitarLink) {
                     if (loader) loader.style.display = "none";
                     console.log("🟢 Link de alteração enviado para:", emailDigitado);
                     alert("E-mail de recuperação enviado com sucesso!");
+                    inputEmail.value = "";
                 } else {
                     alert("Erro ao enviar e-mail de recuperação. Tente novamente.");
                     if (loader) loader.style.display = "none";

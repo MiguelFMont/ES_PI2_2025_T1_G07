@@ -15,6 +15,7 @@ console.log("API KEY:", process.env.RESEND_API_KEY);
 //     getEstudanteById,
 //     addEstudante,
 // } from "./db/estudantes";
+const instituicao_1 = require("./db/instituicao");
 const docente_1 = require("./db/docente");
 const email_1 = require("./services/email");
 const app = (0, express_1.default)();
@@ -46,6 +47,51 @@ app.get('/redefinir-senha', (req, res) => {
 });
 app.get('/verificacao', (req, res) => {
     res.sendFile(path_1.default.join(__dirname, '../pages/pageVerification.html'));
+});
+app.post('/instituicao', async (req, res) => {
+    try {
+        const { nome } = req.body;
+        if (!nome) {
+            return res.status(400).json({ error: "Campo Nome é obrigatório!" });
+        }
+        const id = await (0, instituicao_1.addInstituicao)(nome);
+        res.status(201).json({ message: "Instituição adicionado com sucesso", id });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Erro ao inserir a instituição." });
+    }
+});
+app.post('/instituicao/:id', async (req, res) => {
+    try {
+        const id = Number(req.params.id);
+        const instituicao = await (0, instituicao_1.getInstituicaoById)(id);
+        if (instituicao) {
+            res.json(instituicao);
+        }
+        else {
+            res.status(404).json({ message: "Instituição não encontrada com o ID fornecido" });
+        }
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Erro ao buscar a instituição pelo ID fornecido." });
+    }
+});
+app.post('/instituicao/all', async (req, res) => {
+    try {
+        const instituicao = await (0, instituicao_1.getAllInstituicao)();
+        if (instituicao) {
+            res.json(instituicao);
+        }
+        else {
+            res.status(404).json({ message: "Não há instituições cadastradas." });
+        }
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Error ao buscar as instituições. " });
+    }
 });
 app.post('/docente', async (req, res) => {
     try {

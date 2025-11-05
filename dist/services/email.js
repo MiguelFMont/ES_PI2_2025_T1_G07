@@ -32,7 +32,7 @@ async function enviarLinkAlterarSenha(email) {
             to: email,
             subject: "Link para alteração de senha - NotaDez",
             html: `<p>Olá!</p>
-             <p>Clique <a href="http://localhost:3000/index.html">aqui</a> para alterar sua senha!</p>`
+             <p>Clique <a href="http://localhost:3000/redefinir-senha">aqui</a> para alterar sua senha!</p>`
         });
     }
     catch (error) {
