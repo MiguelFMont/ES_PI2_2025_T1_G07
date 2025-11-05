@@ -1,4 +1,3 @@
-
 import OracleDB, { oracleClientVersion } from "oracledb";
 import dotenv from 'dotenv';
 dotenv.config();
