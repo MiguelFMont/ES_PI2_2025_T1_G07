@@ -228,7 +228,8 @@ if (botaoCadastro) {
                         .then(res => res.json())
                         .then(data => {
                             console.log(data.message);
-                            alert("Cadastro realizado e e-mail enviado com sucesso!");
+                            //const bntOpenVeriCode = document.querySelector("#openPageVerification")
+                            alert('código enviad')
                             // Não precisa esconder o loader, a página vai redirecionar
                             window.location.href = "../pages/pageVerification.html";
                         })
@@ -426,6 +427,7 @@ if (botaoSolicitarLink) {
             return;
         }
         // Enviar solicitação de link de alteração de senha
+        if (loader) loader.style.display = "flex";
         fetch("http://localhost:3000/link-alterar-senha", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -442,6 +444,7 @@ if (botaoSolicitarLink) {
                     alert("E-mail de recuperação enviado com sucesso!");
                 } else {
                     alert("Erro ao enviar e-mail de recuperação. Tente novamente.");
+                    if (loader) loader.style.display = "none";
                     console.warn("⚠️ Falha ao enviar link de alteração para:", emailDigitado);
                 }
             })
@@ -495,6 +498,7 @@ if (botaoModificar) {
                         if (data.sucesso) {
                             alert("Senha modificada com sucesso! Você será redirecionado para o login.");
                             console.log("🟢 Senha modificada com sucesso");
+                            localStorage.removeItem("emailParaRecuperacao");
                             window.location.href = "../index.html";
                         } else {
                             alert("Erro ao modificar a senha. Tente novamente.");

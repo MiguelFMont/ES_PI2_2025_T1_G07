@@ -194,6 +194,7 @@ app.post('/enviar-codigo', async (req: Request, res: Response) => {
 app.post('/link-alterar-senha', async (req: Request, res: Response) => {
     try{
         const { email  } = req.body;
+        console.log("Verificando email:", email);
         const encontrado = await verificarCadastroDocente(email);
         if (encontrado === null) {
             console.log("Docente não encontrado para o email:", email);

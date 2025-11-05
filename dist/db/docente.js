@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.addDocente = addDocente;
 exports.verificarCadastroDocente = verificarCadastroDocente;
 exports.verificarLoginDocente = verificarLoginDocente;
+exports.modificarSenhaDocente = modificarSenhaDocente;
 const db_1 = require("../config/db");
 const oracledb_1 = __importDefault(require("oracledb"));
 async function addDocente(nome, email, telefone_celular, senha) {
@@ -70,5 +71,17 @@ async function verificarLoginDocente(email, senha) {
         if (conn) {
             await (0, db_1.close)(conn);
         }
+    }
+}
+async function modificarSenhaDocente(email, novaSenha) {
+    const conn = await (0, db_1.open)();
+    try {
+        const result = await conn.execute(`UPDATE DOCENTE 
+             SET SENHA = :novaSenha 
+             WHERE EMAIL = :email`, { novaSenha, email }, { autoCommit: true });
+        return result.rowsAffected !== undefined && result.rowsAffected > 0;
+    }
+    finally {
+        await (0, db_1.close)(conn);
     }
 }
