@@ -58,6 +58,11 @@ body {
     box-shadow: 10px 10px 10px 10px  var(--shadow);
 }
 
+.container {
+    position: relative; 
+    z-index: 10;
+}
+
 .containerMonster {
     height: 400px;
     width: 400px;
