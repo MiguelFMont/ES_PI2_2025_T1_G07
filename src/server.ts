@@ -15,6 +15,12 @@ console.log("API KEY:", process.env.RESEND_API_KEY);
 // } from "./db/estudantes";
 
 import {
+    addInstituicao,
+    getInstituicaoById,
+    getAllInstituicao
+} from "./db/instituicao";
+
+import {
     addDocente,
     verificarLoginDocente,
     verificarCadastroDocente
@@ -56,7 +62,7 @@ app.use(cors());
 //         if (estudante) {
 //             res.json(estudante);
 //         } else {
-//             res.status(404).json({ massage: "Estudante não encontrado com o ID fornecido" })
+//             res.status(404).json({ message: "Estudante não encontrado com o ID fornecido" })
 //         }
 //     } catch (error) {
 //         console.error(error);
@@ -78,6 +84,50 @@ app.use(cors());
 //         res.status(500).json({ error: "Erro ao inserir estudante." })
 //     }
 // })
+
+app.post('/instituicao', async (req: Request, res: Response) => {
+    try {
+        const { nome } = req.body;
+        if (!nome) {
+            return res.status(400).json({error: "Campo Nome é obrigatório!"});
+        }
+
+        const id = await addInstituicao(nome);
+        res.status(201).json({ message: "Instituição adicionado com sucesso", id });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Erro ao inserir a instituição." })
+    }
+});
+
+app.post('/instituicao/:id', async (req: Request, res: Response) => {
+    try {
+        const id = Number(req.params.id);
+        const instituicao = await getInstituicaoById(id);
+        if (instituicao) {
+            res.json(instituicao);
+        } else {
+            res.status(404).json({ message: "Instituição não encontrada com o ID fornecido" });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Erro ao buscar a instituição pelo ID fornecido." });
+    }
+});
+
+app.post('/instituicao/all', async (req: Request, res: Response) => {
+    try {
+        const instituicao = await getAllInstituicao();
+        if (instituicao) {
+            res.json(instituicao);
+        } else {
+            res.status(404).json({ message: "Não há instituições cadastradas." });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Error ao buscar as instituições. "});
+    }
+})
 
 app.post('/docente', async (req: Request, res: Response) => {
     try {
