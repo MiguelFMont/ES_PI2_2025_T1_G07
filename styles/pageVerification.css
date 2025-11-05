@@ -181,6 +181,10 @@ h1 {
     text-decoration: none;
     font-size: 14px;
     font-weight: 700;
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    align-items: center;
 }
 
 .resend-code a:hover,
@@ -189,4 +193,9 @@ h1 {
     color: var(--color5);
     outline: none;
     transition: color 0.2s ease;
+}
+
+
+.timeReeviar {
+    display: none;
 }

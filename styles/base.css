@@ -58,6 +58,11 @@ body {
     box-shadow: 10px 10px 10px 10px  var(--shadow);
 }
 
+.container {
+    position: relative; 
+    z-index: 10;
+}
+
 .containerMonster {
     height: 400px;
     width: 400px;
@@ -421,18 +426,27 @@ input {
     ESQUECI MINHA SENHA
    ================================================ */
 .forgotPassword {
-    margin-top: 15px;
+    margin-top: 25px;
     font-size: 0.8rem;
-    color: var(--color4);
-    display: none; /* Altere para flex se quiser mostrar */
+    color: rgba(0, 0, 0, 0.844);
+    display: flex; /* Altere para flex se quiser mostrar */
     justify-content: flex-start;
     width: 100%;
 }
 
 .forgotPassword a {
-    color: var(--color4);
+    text-decoration: none;
+    color: var(--black);
     font-weight: bold;
     margin-left: 5px;
+}
+
+.forgotPassword a:hover, .forgotPassword a:focus {
+    text-decoration: none;
+    cursor: pointer;
+    outline: none;
+    color: var(--color5);
+    transition: all 0.2s ease;
 }
 
 /* ================================================
@@ -506,8 +520,10 @@ input {
 
 
 .signUpLink:hover, .backButton:hover, .backButton:focus, .signUpLink:focus {
-    text-decoration: underline;
+    text-decoration: none;
+    color: var(--color5);
     cursor: pointer;
     outline: none; /* remove a borda de foco padrão quando aperta tab (Miguel)*/
+    transition: all 0.2s ease;
 }
 

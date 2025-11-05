@@ -159,6 +159,45 @@ app.post('/enviar-codigo', async (req, res) => {
         res.status(500).json({ erro: 'Erro ao enviar o código' });
     }
 });
+app.post('/link-alterar-senha', async (req, res) => {
+    try {
+        const { email } = req.body;
+        const encontrado = await (0, docente_1.verificarCadastroDocente)(email);
+        if (encontrado === null) {
+            console.log("Docente não encontrado para o email:", email);
+            res.status(404).json({
+                sucesso: false,
+                mensagem: 'Docente não encontrado.'
+            });
+        }
+        else {
+            await (0, email_1.enviarLinkAlterarSenha)(email);
+            console.log("Link para alterar senha enviado para:", email);
+            res.json({
+                sucesso: true,
+                mensagem: 'Link enviado!'
+            });
+        }
+    }
+    catch (error) {
+        console.error("Erro ao enviar link para alterar senha:", error);
+        res.status(500).json({ sucesso: false, error: 'Erro ao enviar o link.' });
+    }
+});
+app.post('/modificar-senha', async (req, res) => {
+    try {
+        const { email, novaSenha } = req.body;
+        await (0, docente_1.modificarSenhaDocente)(email, novaSenha);
+        res.json({
+            sucesso: true,
+            mensagem: "Senha modificada com sucesso!"
+        });
+    }
+    catch (error) {
+        console.error("Erro ao modificar a senha:", error);
+        res.status(500).json({ sucesso: false, error: "Erro ao modificar a senha." });
+    }
+});
 app.listen(port, '0.0.0.0', () => console.log("🚀 Servidor rodando em http://localhost:3000"));
 // definir a rota default;
 app.get("/", (req, res) => {

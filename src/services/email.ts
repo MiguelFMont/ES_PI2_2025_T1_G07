@@ -23,3 +23,18 @@ export async function enviarCodigoVerificacao(email: string, nome: string, codig
     throw new Error(`Erro ao enviar email: ${error.message}`);
   }
 }
+
+export async function enviarLinkAlterarSenha(email: string): Promise<void>{
+  try{
+    const data = await resend.emails.send({
+      from: "NotaDez <alterarsenha@notadez.cfd>",
+      to: email,
+      subject: "Link para alteração de senha - NotaDez",
+      html: `<p>Olá!</p>
+             <p>Clique <a href="https://notadez.netlify.app/pages/pagerecoverypassword">aqui</a> para alterar sua senha!</p>`
+    });
+  } catch (error:any) {
+    console.error("❌ Erro ao enviar email:", error);
+    throw new Error(`Erro ao enviar email: ${error.message}`);
+  }
+}
