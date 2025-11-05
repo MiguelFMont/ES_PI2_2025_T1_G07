@@ -31,8 +31,8 @@ async function enviarLinkAlterarSenha(email) {
             from: "NotaDez <alterarsenha@notadez.cfd>",
             to: email,
             subject: "Link para alteração de senha - NotaDez",
-            html: `
-             <p>Clique <a href="../pages/pageRecoveryPassword.html">aqui</a> para alterar sua senha!</p>      `
+            html: `<p>Olá!</p>
+             <p>Clique <a href="http://localhost:3000/index.html">aqui</a> para alterar sua senha!</p>`
         });
     }
     catch (error) {

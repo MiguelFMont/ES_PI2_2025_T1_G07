@@ -22,7 +22,6 @@ const botaoLogin = document.querySelector(".buttonLogin"); // index.html
 const botaoCadastro = document.querySelector(".buttonSignUp"); // pageCadastro.html
 const botaoVerify = document.querySelector(".verify-btn"); // pageVerification.html
 const botaoModificar = document.querySelector(".modify-btn"); // pageRecoveryPassword.html
-const esqueciSenha = document.querySelector(".forgot-password"); // index.html
 const botaoSolicitarLink = document.querySelector(".solicitar-btn"); // pageEmailToModifyPassword.html
 const loader = document.querySelector(".load"); // ⬅️ SELETOR DO LOADER
 
@@ -213,7 +212,7 @@ if (botaoCadastro) {
                 console.log("📥 Dados da verificação de cadastro:", data)
                 if (!data.sucesso) {
                     if (loader) loader.style.display = "none"; // ⬅️ Esconde o loader
-                    alert("Email já cadastrado. Tente fazer login."); 
+                    alert("Email já cadastrado. Tente fazer login.");
                     throw new Error("Email já cadastrado");
                 } else {
                     console.log("✅ Email disponível para cadastro:", emailDigitado);
@@ -313,7 +312,7 @@ if (botaoVerify) {
 
         const { nome, email, telefone, senha } = cadastroTemp;
 
-        console.log("Dados recuperados:", { nome, email, telefone }); 
+        console.log("Dados recuperados:", { nome, email, telefone });
 
         let codigoCompleto = '';
 
@@ -440,6 +439,7 @@ if (botaoSolicitarLink) {
             .then(data => {
                 console.log("📥 Dados recebidos:", data);
                 if (data.sucesso) {
+                    if (loader) loader.style.display = "none";
                     console.log("🟢 Link de alteração enviado para:", emailDigitado);
                     alert("E-mail de recuperação enviado com sucesso!");
                 } else {
@@ -482,6 +482,7 @@ if (botaoModificar) {
             erroAtivo = true;
             return;
         }
+        if (loader) loader.style.display = "flex";
         // 🟢 Enviar nova senha para o servidor
         console.log("📤 Enviando nova senha para o servidor")
         fetch("http://localhost:3000/modificar-senha", {
@@ -490,37 +491,32 @@ if (botaoModificar) {
             body: JSON.stringify({ email: emailRecuperacao, novaSenha: novaSenha })
         })
             .then(res => {
-                console.log("📥 Resposta do servidor:", res.status, res.ok
-                );
-                return res.json(
-                    (data) => {
-                        console.log("📥 Dados recebidos:", data);
-                        if (data.sucesso) {
-                            alert("Senha modificada com sucesso! Você será redirecionado para o login.");
-                            console.log("🟢 Senha modificada com sucesso");
-                            localStorage.removeItem("emailParaRecuperacao");
-                            window.location.href = "../index.html";
-                        } else {
-                            alert("Erro ao modificar a senha. Tente novamente.");
-                            console.warn("⚠️ Falha ao modificar a senha");
-                        }
-                    }
-                );
+                console.log("📥 Resposta do servidor:", res.status, res.ok);
+                return res.json();
             })
-            .catch(err => {
-                console.error("❌ ERRO CAPTURADO:", err);
-                console.error("❌ Detalhes do erro:", err.message, err.stack);
-                alert("Ocorreu um erro. Verifique o console para mais detalhes.");
-            });
-    });
+            .then(data => {
+                console.log("📥 Dados recebidos:", data);
+                if (data.sucesso) {
+
+                    if (loader) loader.style.display = "none";
+                    alert("Senha modificada com sucesso! Você será redirecionado para o login.");
+                    console.log("🟢 Senha modificada com sucesso");
+                    localStorage.removeItem("emailParaRecuperacao");
+                    window.location.href = "../index.html";
+                } else {
+
+                    if (loader) loader.style.display = "none";
+                    alert("Erro ao modificar a senha. Tente novamente.");
+                    console.warn("⚠️ Falha ao modificar a senha");
+                }
+            }
+            );
+    })
+        .catch(err => {
+            console.error("❌ ERRO CAPTURADO:", err);
+            console.error("❌ Detalhes do erro:", err.message, err.stack);
+            alert("Ocorreu um erro. Verifique o console para mais detalhes.");
+        });
 }
 
-
-
-if (esqueciSenha) {
-    esqueciSenha.addEventListener("click", (e) => {
-        if (e) e.preventDefault();
-        window.location.href = "pages/pageEmailToModifyPassword.html";
-    });
-}
 

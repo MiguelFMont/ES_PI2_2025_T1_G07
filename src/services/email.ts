@@ -31,7 +31,7 @@ export async function enviarLinkAlterarSenha(email: string): Promise<void>{
       to: email,
       subject: "Link para alteração de senha - NotaDez",
       html: `<p>Olá!</p>
-             <p>Clique <a href="https://notadez.netlify.app/pages/pagerecoverypassword">aqui</a> para alterar sua senha!</p>`
+             <p>Clique <a href="http://localhost:3000/index.html">aqui</a> para alterar sua senha!</p>`
     });
   } catch (error:any) {
     console.error("❌ Erro ao enviar email:", error);

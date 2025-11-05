@@ -32,54 +32,42 @@ const app = express();
 const port: number = 3000;
 let codigoAtivo: string;
 
+
+app.use(express.static(path.resolve(__dirname, "..")));
+app.use("/pages", express.static(path.resolve(__dirname, "../pages")));
+
 app.use(bodyParser.json());
 app.use(cors());
+app.use('/scripts', express.static(path.join(__dirname, '../scripts')));
+app.use('/src', express.static(path.join(__dirname, './src')));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-//definindo as rotas
+// definir a rota default;
 
-// app.get("/estudantes", async (req: Request, res: Response) => {
-//     try {
-//         const estudantes = await getAllEstudantes();
-//         res.json(estudantes);
-//     } catch (err) {
-//         console.log(err);
-//         res.status(500).json({
-//             "error": "Erro ao buscar estudantes"
-//         });
-//     }
-// });
+app.get("/", (req, res) => {
+  res.sendFile(path.resolve(__dirname, "../index.html"));
+});
 
-// //rota para obter um estudante pelo ID.
+app.get('/inicio', (req, res) => {
+    res.sendFile(path.join(__dirname, '../pages/mainPage.html'));
+});
 
-// app.get("/estudantes/:id", async (req: Request, res: Response) => {
-//     try {
-//         const id = Number(req.params.id);
-//         const estudante = await getEstudanteById(id);
-//         if (estudante) {
-//             res.json(estudante);
-//         } else {
-//             res.status(404).json({ massage: "Estudante não encontrado com o ID fornecido" })
-//         }
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ error: "Erro ao buscar estudante pelo ID fornecido." })
-//     }
-// });
+app.get('/cadastro', (req, res) => {
+    res.sendFile(path.join(__dirname, '../pages/pageCadastro.html'));
+});
 
-// // Rota para inserir um estudante.
-// app.post("/estudante", async (req: Request, res: Response) => {
-//     try {
-//         const { ra, nome, email } = req.body;
-//         if (!ra || !nome || !email) {
-//             return res.status(400).json({ error: "Campos RA, Nome e Email são obrigatórios" });
-//         }
-//         const id = await addEstudante(ra, nome, email);
-//         res.status(201).json({ message: "Estudante adicionado com sucesso", id });
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ error: "Erro ao inserir estudante." })
-//     }
-// })
+app.get('/recuperar-senha', (req, res) => {
+    res.sendFile(path.join(__dirname, '../pages/pageEmailToModifyPassword.html'));
+});
+
+app.get('/redefinir-senha', (req, res) => {
+    res.sendFile(path.join(__dirname, '../pages/pageRecoveryPassword.html'));
+});
+
+app.get('/verificacao', (req, res) => {
+    res.sendFile(path.join(__dirname, '../pages/pageVerification.html'));
+});
 
 app.post('/docente', async (req: Request, res: Response) => {
     try {
@@ -192,6 +180,7 @@ app.post('/enviar-codigo', async (req: Request, res: Response) => {
 });
 
 app.post('/link-alterar-senha', async (req: Request, res: Response) => {
+    console.log("📩 Solicitação de link para alterar senha recebida.");
     try{
         const { email  } = req.body;
         console.log("Verificando email:", email);
@@ -205,9 +194,9 @@ app.post('/link-alterar-senha', async (req: Request, res: Response) => {
         } else {
             await enviarLinkAlterarSenha(email);
             console.log("Link para alterar senha enviado para:", email);
-            res.json({
+            res.status(200).json({
                 sucesso: true,
-                mensagem: 'Link enviado!'
+                mensagem: "Link enviado!"
             });
         }
     } catch (error) {
@@ -217,6 +206,7 @@ app.post('/link-alterar-senha', async (req: Request, res: Response) => {
 });
 
 app.post('/modificar-senha', async (req: Request, res: Response) => {
+    console.log("📩 Solicitação para modificar a senha recebida.");
     try{
         const { email ,novaSenha } = req.body;
         await modificarSenhaDocente(email, novaSenha);
@@ -233,11 +223,6 @@ app.post('/modificar-senha', async (req: Request, res: Response) => {
 });
 
 app.listen(port, '0.0.0.0', () => console.log("🚀 Servidor rodando em http://localhost:3000"));
-
-// definir a rota default;
-app.get("/", (req: Request, res: Response) => {
-    res.sendFile(path.join(__dirname + '../index.html'));
-});
 
 // rota de ping/pong (teste de requisicao)
 app.post("/printRequest", (req: Request, res: Response) => {
