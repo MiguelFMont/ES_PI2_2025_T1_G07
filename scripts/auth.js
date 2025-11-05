@@ -49,9 +49,12 @@ const inputTelefone = document.querySelector("#telefone");
 // });
 
 // --- Botões ---
-const botaoLogin = document.querySelector(".buttonLogin");
-const botaoCadastro = document.querySelector(".buttonSignUp");
-const botaoVerify = document.querySelector(".verify-btn");
+const botaoLogin = document.querySelector(".buttonLogin"); // index.html
+const botaoCadastro = document.querySelector(".buttonSignUp"); // pageCadastro.html
+const botaoVerify = document.querySelector(".verify-btn"); // pageVerification.html
+const botaoModificar = document.querySelector(".modify-btn"); // pageRecoveryPassword.html
+const esqueciSenha = document.querySelector(".forgot-password"); // index.html
+const botaoSolicitarLink = document.querySelector(".solicitar-btn"); // pageEmailToModifyPassword.html
 
 // --- Labels originais ---
 const originalLabels = {
@@ -455,8 +458,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-// Olhos de mostrar/ocultar senha do pageRecovery.html
 
+// ======================================
+//            PAGE RECOVERY
+// ======================================
+
+// Olhos de mostrar/ocultar senha do pageRecovery.html
 function eyePassword(inputId, icon) {
     const input = document.getElementById(inputId);
     if (input.type === 'password') {
@@ -467,3 +474,112 @@ function eyePassword(inputId, icon) {
         icon.classList.replace('ph-eye', 'ph-eye-slash');
     }
 }
+// ======================================
+//        PAGE EMAIL TO MODIFY
+// ======================================
+
+if (botaoSolicitarLink) {
+    botaoSolicitarLink.addEventListener("click", (e) => {
+        if (e) e.preventDefault();
+        const emailDigitado = inputEmail.value.trim();
+        localStorage.setItem("emailParaRecuperacao", emailDigitado);
+        if (emailDigitado === "") {
+            alert("Por favor, insira seu e-mail para solicitar o link de alteração de senha.");
+            console.warn("⚠️ E-mail não fornecido.");
+            return;
+        }
+        // Enviar solicitação de link de alteração de senha
+        fetch("http://localhost:3000/link-alterar-senha", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: emailDigitado })
+        })
+            .then(res => {
+                console.log("📥 Resposta do servidor:", res.status, res.ok);
+                return res.json();
+            })
+            .then(data => {
+                console.log("📥 Dados recebidos:", data);
+                if (data.sucesso) {
+                    console.log("🟢 Link de alteração enviado para:", emailDigitado);
+                    alert("E-mail de recuperação enviado com sucesso!");
+                } else {
+                    alert("Erro ao enviar e-mail de recuperação. Tente novamente.");
+                    console.warn("⚠️ Falha ao enviar link de alteração para:", emailDigitado);
+                }
+            })
+            .catch(err => {
+                console.error("❌ ERRO CAPTURADO:", err);
+                console.error("❌ Detalhes do erro:", err.message, err.stack);
+                alert("Ocorreu um erro. Verifique o console para mais detalhes.");
+            });
+    });
+}
+
+
+if (botaoModificar) {
+    botaoModificar.addEventListener("click", (e) => {
+        if (e) e.preventDefault();
+        const inputNewPassword = document.getElementById("newPassword");
+        const inputConfirmPassword = document.getElementById("confirmPassword");
+        let algumErro = false;
+
+        // limpa erros anteriores
+        [inputNewPassword, inputConfirmPassword].forEach(limparErroCampo);
+        if (validarCamposVazios([inputNewPassword, inputConfirmPassword])) return;
+
+        const novaSenha = inputNewPassword.value.trim();
+        const confirmarSenha = inputConfirmPassword.value.trim();
+        const emailRecuperacao = localStorage.getItem("emailParaRecuperacao");
+        // validações individuais
+        const senhaValida = novaSenha.length >= 8;
+        if (!senhaValida) { marcarErroCampo(inputNewPassword, "Senha deve ter 8+ caracteres"); algumErro = true; }
+        if (novaSenha !== confirmarSenha) {
+            marcarErroCampo(inputConfirmPassword, "Senhas não coincidem"); algumErro = true;
+        }
+        if (algumErro) {
+            errorMessage.style.display = "block";
+            erroAtivo = true;
+            return;
+        }
+        // 🟢 Enviar nova senha para o servidor
+        console.log("📤 Enviando nova senha para o servidor")
+        fetch("http://localhost:3000/modificar-senha", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: emailRecuperacao, novaSenha: novaSenha })
+        })
+            .then(res => {
+                console.log("📥 Resposta do servidor:", res.status, res.ok
+                );
+                return res.json(
+                    (data) => {
+                        console.log("📥 Dados recebidos:", data);
+                        if (data.sucesso) {
+                            alert("Senha modificada com sucesso! Você será redirecionado para o login.");
+                            console.log("🟢 Senha modificada com sucesso");
+                            window.location.href = "../index.html";
+                        } else {
+                            alert("Erro ao modificar a senha. Tente novamente.");
+                            console.warn("⚠️ Falha ao modificar a senha");
+                        }
+                    }
+                );
+            })
+            .catch(err => {
+                console.error("❌ ERRO CAPTURADO:", err);
+                console.error("❌ Detalhes do erro:", err.message, err.stack);
+                alert("Ocorreu um erro. Verifique o console para mais detalhes.");
+            });
+    });
+}
+
+
+
+if (esqueciSenha) {
+    esqueciSenha.addEventListener("click", (e) => {
+        if (e) e.preventDefault();
+        window.location.href = "pages/pageEmailToModifyPassword.html";
+    });
+}
+

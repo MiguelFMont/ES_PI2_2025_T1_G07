@@ -94,3 +94,19 @@ export async function verificarLoginDocente(email: string, senha: string): Promi
         }
     }
 }
+
+export async function modificarSenhaDocente(email: string, novaSenha: string): Promise<boolean> {
+    const conn = await open();
+    try {
+        const result = await conn.execute(
+            `UPDATE DOCENTE 
+             SET SENHA = :novaSenha 
+             WHERE EMAIL = :email`,
+            { novaSenha, email },
+            { autoCommit: true }
+        );
+        return result.rowsAffected !== undefined && result.rowsAffected > 0;
+    } finally {
+        await close(conn);
+    }
+}
