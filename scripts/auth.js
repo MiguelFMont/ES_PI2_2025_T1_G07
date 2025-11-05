@@ -189,9 +189,26 @@ if (botaoCadastro) {
             erroAtivo = true;
             return; // 🛑 Para aqui se houver erro
         }
-
-        // 🟢 MOSTRA O LOADER (só chega aqui se não houver erro)
+        
+        // 🟢 MOSTRA O LOADER E O ALERTA (só chega aqui se não houver erro)
+        
+        // 1. Mostra o loader
         if (loader) loader.style.display = "flex";
+
+        // 2. Seleciona e mostra o alerta customizado
+        const customAlert = document.querySelector(".alert");
+
+        setTimeout(() => {
+            if (customAlert) {
+                customAlert.style.display = "flex";
+            }
+        }, 1000);
+
+        // 3. Inicia o timer de 5 segundos
+        setTimeout(() => {
+            // Este redirecionamento acontece após 5s
+            window.location.href = "../pages/pageVerification.html";
+        }, 4000); // 5000 milissegundos = 5 segundos
 
         localStorage.setItem("cadastroTemp", JSON.stringify({
             nome: nomeDigitado,
@@ -212,6 +229,8 @@ if (botaoCadastro) {
                 console.log("📥 Dados da verificação de cadastro:", data)
                 if (!data.sucesso) {
                     if (loader) loader.style.display = "none"; // ⬅️ Esconde o loader
+                    // Oculta o alerta de sucesso se der erro
+                    if (customAlert) customAlert.style.display = "none";
                     alert("Email já cadastrado. Tente fazer login.");
                     throw new Error("Email já cadastrado");
                 } else {
@@ -227,13 +246,11 @@ if (botaoCadastro) {
                         .then(res => res.json())
                         .then(data => {
                             console.log(data.message);
-                            //const bntOpenVeriCode = document.querySelector("#openPageVerification")
-                            alert('código enviad')
-                            // Não precisa esconder o loader, a página vai redirecionar
-                            window.location.href = "../pages/pageVerification.html";
                         })
                         .catch(err => {
                             if (loader) loader.style.display = "none"; // ⬅️ Esconde o loader
+                            // Oculta o alerta de sucesso se der erro
+                            if (customAlert) customAlert.style.display = "none";
                             console.error("Erro ao enviar e-mail:", err);
                             alert("Cadastro feito, mas ocorreu erro ao enviar o e-mail.");
                         });
@@ -241,6 +258,8 @@ if (botaoCadastro) {
             })
             .catch(err => {
                 if (loader) loader.style.display = "none"; // ⬅️ Esconde o loader
+                // Oculta o alerta de sucesso se der erro
+                if (customAlert) customAlert.style.display = "none";
                 console.error("❌ Erro no cadastro:", err);
             });
     });
@@ -519,5 +538,3 @@ if (botaoModificar) {
             alert("Ocorreu um erro. Verifique o console para mais detalhes.");
         });
 }
-
-

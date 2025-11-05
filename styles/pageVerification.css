@@ -140,7 +140,7 @@ h1 {
 }
 
 .change-email a:hover,
- .change-email a:focus {
+.change-email a:focus {
     text-decoration: none;
     color: var(--color5);
     outline: none;

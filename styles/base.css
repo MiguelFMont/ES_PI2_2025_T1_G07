@@ -21,6 +21,7 @@
     --color4: #ff4a4a;   /* Vermelho (erros ou alertas) */
     --color5: #ffb319;   /* Amarelo (hover de botões) */
     --color6: #615c5c;   /* cinza (hover alternativo de botões) */
+    --color7: #25e475;
 
     --lightgrey: #d3d3d3; /* Bordas e separadores suaves */
 }
@@ -529,3 +530,48 @@ input {
     transition: all 0.2s ease;
 }
 
+.alert {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+    position: absolute;
+    z-index: 10000000;
+    width: 350px;
+    height: 90px;
+    top: 15px;
+    right: 0;
+    background: var(--color7);
+    box-shadow: -4px 8px 10px var(--shadow);
+    display: none;
+    justify-content: center;
+    padding: 15px;
+    gap: 10px;
+    align-items: center;
+    color: var(--white);
+    animation: mensageAlert 0.2s ease-out forwards;
+}
+
+#bntAlertClosed {
+    background: none;
+    border: none;
+}
+
+#bntAlertClosed i {
+    display: flex;
+    height: 30px;
+    width: 30px;
+    border-radius: 50px;
+    justify-content: center;
+    align-items: center;
+    background: var(--white);
+    color: var(--color7);
+    font-weight: bold;
+}
+
+@keyframes mensageAlert {
+    0% {
+        transform: translateX(100%);
+    }
+    100% {
+        transform: translateX(0);
+    }
+}
