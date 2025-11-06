@@ -100,7 +100,6 @@ if (botaoLogin) {
         const senhaDigitada = inputSenha.value.trim();
 
         console.log("📤 Enviando login para:", emailDigitado);
-
         fetch("http://notadez.cfd/verificar-docente", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -354,7 +353,6 @@ if (botaoVerify) {
                 console.log("3. Dados da verificação:", data);
                 if (data.sucesso) {
                     console.log("4. Código válido! Cadastrando docente...");
-
                     return fetch("http://notadez.cfd/docente", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },

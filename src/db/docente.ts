@@ -39,6 +39,7 @@ export async function addDocente(
         await close(conn);
     }
 }
+
 export async function verificarCadastroDocente(email: string): Promise<{ nome: string, email: string } | null> {
     const conn = await open();
     try{
