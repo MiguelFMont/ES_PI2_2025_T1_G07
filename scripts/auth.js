@@ -254,8 +254,6 @@ if (botaoCadastro) {
                     throw new Error("Falha ao enviar o código");
                 } else {
                     // colocar o alerta aqui e esconder o loader
-                    if (loader) loader.style.display = "none";
-                    if (customAlert) customAlert.style.display = "flex";
                     console.log("✅ Código enviado para:", emailDigitado);
                 }
             })
@@ -415,7 +413,6 @@ if (botaoVerify) {
     });
 }
 
-// auth.js
 // --- Mostrar o e-mail do cadastro na verificação ---
 document.addEventListener("DOMContentLoaded", () => {
     const emailView = document.getElementById("mailView");

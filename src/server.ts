@@ -250,11 +250,12 @@ app.post('/enviar-codigo', async (req: Request, res: Response) => {
         codigoAtivo = codigo;
 
         res.json({
+            sucesso: true,
             mensagem: 'Código enviado',
             codigo
         });
     } catch (error) {
-        res.status(500).json({ erro: 'Erro ao enviar o código' });
+        res.status(500).json({ sucesso: false, erro: 'Erro ao enviar o código' });
     }
 });
 
