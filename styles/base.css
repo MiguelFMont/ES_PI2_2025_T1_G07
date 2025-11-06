@@ -427,7 +427,7 @@ input {
     ESQUECI MINHA SENHA
    ================================================ */
 .forgotPassword {
-    margin-top: 25px;
+    margin-bottom: -30px;
     margin-left: 10px;
     font-size: 0.8rem;
     color: rgba(0, 0, 0, 0.844);
