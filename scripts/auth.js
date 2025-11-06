@@ -158,12 +158,11 @@ if (botaoCadastro) {
         const telefoneDigitado = inputTelefone.value.trim();
         const senhaDigitada = inputSenha.value.trim();
 
-        // limpa erros anteriores
         campos.forEach(limparErroCampo);
 
         if (validarCamposVazios(campos)) return;
 
-        // validações individuais
+        // ... (validações individuais) ...
         const nomeValido = nomeDigitado.split(" ").filter(p => p.length > 0).length >= 2;
         if (!nomeValido) { marcarErroCampo(inputNome, "Digite nome e sobrenome"); algumErro = true; }
 
@@ -177,7 +176,7 @@ if (botaoCadastro) {
         const senhaValida = senhaDigitada.length >= 8;
         if (!senhaValida) { marcarErroCampo(inputSenha, "Senha deve ter 8+ caracteres"); algumErro = true; }
 
-        // email já cadastrado
+        // (Esta verificação local é boa, mas a do servidor é a principal)
         if (usuarios.some(u => u.email === emailDigitado)) {
             marcarErroCampo(inputEmail, "Email já cadastrado");
             algumErro = true;
@@ -186,29 +185,33 @@ if (botaoCadastro) {
         if (algumErro) {
             errorMessage.style.display = "block";
             erroAtivo = true;
-            return; // 🛑 Para aqui se houver erro
+            return; 
         }
         
-        // 🟢 MOSTRA O LOADER E O ALERTA (só chega aqui se não houver erro)
+        // 🟢 MOSTRA O LOADER E AGENDA OS EVENTOS
         
         // 1. Mostra o loader
         if (loader) loader.style.display = "flex";
 
-        // 2. Seleciona e mostra o alerta customizado
+        // 2. Seleciona o alerta
         const customAlert = document.querySelector(".alert");
 
-        setTimeout(() => {
+        // 3. Salva os IDs dos timers para podermos cancelá-los
+        let alertTimer = null;
+        let redirectTimer = null;
+
+        alertTimer = setTimeout(() => {
             if (customAlert) {
                 customAlert.style.display = "flex";
             }
         }, 1000);
 
-        // 3. Inicia o timer de 5 segundos
-        setTimeout(() => {
-            // Este redirecionamento acontece após 5s
+        redirectTimer = setTimeout(() => {
             window.location.href = "../pages/pageVerification.html";
-        }, 4000); // 5000 milissegundos = 5 segundos
+        }, 4000); 
 
+
+        // Salva os dados temporários
         localStorage.setItem("cadastroTemp", JSON.stringify({
             nome: nomeDigitado,
             email: emailDigitado,
@@ -227,12 +230,11 @@ if (botaoCadastro) {
             .then(data => {
                 console.log("📥 Dados da verificação de cadastro:", data)
                 if (!data.sucesso) {
-                    if (loader) loader.style.display = "none"; // ⬅️ Esconde o loader
-                    // Oculta o alerta de sucesso se der erro
-                    if (customAlert) customAlert.style.display = "none";
+                    // Se falhar (ex: email duplicado), joga um erro para o .catch
                     alert("Email já cadastrado. Tente fazer login.");
                     throw new Error("Email já cadastrado");
                 } else {
+                    // Se tiver sucesso, faz o segundo fetch
                     console.log("✅ Email disponível para cadastro:", emailDigitado);
                     return fetch("/enviar-codigo", {
                         method: "POST",
@@ -241,25 +243,34 @@ if (botaoCadastro) {
                             nome: nomeDigitado,
                             email: emailDigitado
                         })
-                    })
-                        .then(res => res.json())
-                        .then(data => {
-                            console.log(data.message);
-                        })
-                        .catch(err => {
-                            if (loader) loader.style.display = "none"; // ⬅️ Esconde o loader
-                            // Oculta o alerta de sucesso se der erro
-                            if (customAlert) customAlert.style.display = "none";
-                            console.error("Erro ao enviar e-mail:", err);
-                            alert("Cadastro feito, mas ocorreu erro ao enviar o e-mail.");
-                        });
+                    });
                 }
             })
+            .then(res => res.json())
+            .then(data => {
+                // SUCESSO FINAL - Segundo fetch OK
+                console.log(data.message);
+                // Não fazemos nada aqui, apenas deixamos os timers rodarem
+                // O loader continuará visível até o redirecionamento.
+            })
             .catch(err => {
-                if (loader) loader.style.display = "none"; // ⬅️ Esconde o loader
-                // Oculta o alerta de sucesso se der erro
+                // ❌ TRATAMENTO DE ERRO CENTRALIZADO ❌
+                
+                // 1. PARA OS TIMERS AGENDADOS!
+                clearTimeout(alertTimer);
+                clearTimeout(redirectTimer);
+
+                // 2. Esconde o loader e o alerta
+                if (loader) loader.style.display = "none"; 
                 if (customAlert) customAlert.style.display = "none";
+
+                // 3. Loga o erro
                 console.error("❌ Erro no cadastro:", err);
+
+                // 4. Mostra alerta de erro (só se não for o de "email cadastrado")
+                if (err.message !== "Email já cadastrado") {
+                    alert("Cadastro feito, mas ocorreu erro ao enviar o e-mail.");
+                }
             });
     });
 }
