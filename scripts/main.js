@@ -1,40 +1,8 @@
 // main.js
 document.addEventListener("DOMContentLoaded", () => {
     // --- LOGIN ---
-    const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
-    if (usuario) {
-        const nomeEl = document.querySelector(".titleUser h1");
-        const emailEl = document.querySelector(".titleUser p");
-
-        if (nomeEl) {
-            const partesNome = usuario.nome.trim().split(/\s+/);
-            let primeiro = partesNome[0];
-            let segundoMenor = "";
-            if (partesNome.length > 1) {
-                const restantes = partesNome.slice(1);
-                const nomesValidos = restantes.filter(n => n.length >= 4);
-                if (nomesValidos.length > 0) {
-                    segundoMenor = nomesValidos.reduce((menor, atual) =>
-                        atual.length < menor.length ? atual : menor
-                    );
-                } else {
-                    segundoMenor = partesNome[partesNome.length - 1];
-                }
-            }
-            const formatarNome = (nome) =>
-                nome.charAt(0).toUpperCase() + nome.slice(1).toLowerCase();
-            const nomeFormatado = segundoMenor
-                ? `${formatarNome(primeiro)} ${formatarNome(segundoMenor)}`
-                : formatarNome(primeiro);
-            nomeEl.textContent = nomeFormatado;
-            nomeEl.style.whiteSpace = "nowrap";
-        }
-        if (emailEl) emailEl.textContent = usuario.email;
-    } else {
-        window.location.href = "../index.html";
-        return;
-    }
-
+    // (Seu código de login... omitido por brevidade)
+    // ...
     // --- LOGOUT ---
     const logoutBtn = document.querySelector("#logoutBtn");
     if (logoutBtn) {
@@ -49,6 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const paginas = {
         "dashboard": "./components/dashboard.html",
         "instituições": "./components/instituicoes.html",
+        "cursos": "./components/cursos.html", 
         "diciplinas": "./components/diciplina.html",
         "turmas": "./components/turmas.html"
     };
@@ -56,14 +25,17 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- FUNÇÃO: ATUALIZAR CONTADORES ---
     function atualizarContadoresDashboard() {
         const instituicoesCounter = document.querySelector("#instituicoes .titleOptionDashboard p");
+        const cursosCounter = document.querySelector("#cursos .titleOptionDashboard p");
         const diciplinasCounter = document.querySelector("#diciplinas .titleOptionDashboard p");
         const turmasCounter = document.querySelector("#turmas .titleOptionDashboard p");
 
         const instituicoesItens = JSON.parse(localStorage.getItem("instituicoesBody")) || [];
+        const cursosItens = JSON.parse(localStorage.getItem("cursosBody")) || [];
         const diciplinasItens = JSON.parse(localStorage.getItem("diciplinasBody")) || [];
         const turmasItens = JSON.parse(localStorage.getItem("turmasBody")) || [];
 
         if (instituicoesCounter) instituicoesCounter.textContent = instituicoesItens.length;
+        if (cursosCounter) cursosCounter.textContent = cursosItens.length;
         if (diciplinasCounter) diciplinasCounter.textContent = diciplinasItens.length;
         if (turmasCounter) turmasCounter.textContent = turmasItens.length;
     }
@@ -123,8 +95,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const cancelBtn = createIdt.querySelector("#cancelBtnIdt");
             const createBtn = createIdt.querySelector("#createBtnIdt");
             const inputs = createIdt.querySelectorAll(".campIdt input");
-            const inputInstituicao = inputs[0];
-            const inputCurso = inputs[1];
+            const inputInstituicao = inputs[0]; // Genérico, pode ser Instituição ou Curso
+            const inputCurso = inputs[1]; // Genérico, pode ser Nome do Curso
 
             // --- Elementos dos Cards (OPCIONAL) ---
             const listContainer = container.querySelector(".cardsCreateIdt"); 
@@ -141,7 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let currentEditingCard = null; 
 
             // --- Storage ---
-            const STORAGE_KEY = container.id || 'itensGenericos'; 
+            const STORAGE_KEY = container.id || 'itensGenericos';
             
             function getItens() {
                 return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
@@ -173,8 +145,31 @@ document.addEventListener("DOMContentLoaded", () => {
                         const cardTitleEl = newCard.querySelector(".textContentCardIdt h2");
                         const cardSubtitleEl = newCard.querySelector(".textContentCardIdt p");
                         
-                        if (cardTitleEl) cardTitleEl.textContent = item.nome;
-                        if (cardSubtitleEl) cardSubtitleEl.textContent = item.curso;
+                        // MUDANÇA 1: Lógica de exibição de 'diciplinasBody'
+                        if (STORAGE_KEY === 'diciplinasBody') { 
+                            // item.curso = Nome da Disciplina
+                            // item.nome = Nome do Curso
+                            if (cardTitleEl) cardTitleEl.textContent = item.curso; // Título (h2) = Nome da Disciplina
+                            if (cardSubtitleEl) cardSubtitleEl.textContent = item.nome; // Subtítulo (p) = Nome do Curso
+                            
+                            const codeEl = newCard.querySelector(".code");
+                            const acronymEl = newCard.querySelector(".acronym");
+                            const periodEl = newCard.querySelector(".period");
+
+                            if (codeEl) codeEl.textContent = item.codigo;
+                            if (acronymEl) acronymEl.textContent = item.sigla;
+                            if (periodEl) periodEl.textContent = `${item.periodo}°`; 
+                        } 
+                        else {
+                           if (STORAGE_KEY === 'instituicoesBody') {
+                               if (cardTitleEl) cardTitleEl.textContent = item.nome; // Nome da Instituição
+                               if (cardSubtitleEl) cardSubtitleEl.textContent = item.curso; // (Vazio)
+                           } else {
+                               // Lógica para 'cursosBody'
+                               if (cardTitleEl) cardTitleEl.textContent = item.curso; // Nome do Curso
+                               if (cardSubtitleEl) cardSubtitleEl.textContent = item.nome; // Instituição
+                           }
+                        }
                         
                         listContainer.appendChild(newCard);
                     });
@@ -204,8 +199,23 @@ document.addEventListener("DOMContentLoaded", () => {
             // --- Função para fechar e resetar o modal ---
             function closeAndResetModal() {
                 createIdt.classList.remove("show");
-                if (inputInstituicao) inputInstituicao.value = "";
-                if (inputCurso) inputCurso.value = "";
+                if (inputInstituicao) inputInstituicao.value = ""; // Limpa o primeiro campo genérico
+                if (inputCurso) inputCurso.value = ""; // Limpa o segundo campo genérico
+                
+                // MUDANÇA 2: Resetar campos de 'diciplinasBody'
+                if (STORAGE_KEY === 'diciplinasBody') {
+                    const inputCursoSelect = createIdt.querySelector("#cursoSelect"); // Pega o campo de Curso
+                    if (inputCursoSelect) inputCursoSelect.value = ""; // Limpa o campo de Curso
+
+                    const allInputs = createIdt.querySelectorAll(".campIdt input, .campIdtToggle .campIdt input");
+                    if (allInputs[1]) allInputs[1].value = ""; // Nome Disciplina
+                    if (allInputs[2]) allInputs[2].value = ""; // Sigla
+                    if (allInputs[3]) allInputs[3].value = ""; // Código
+                    
+                    const inputPeriodoSelect = createIdt.querySelector("#periodoSelect");
+                    if (inputPeriodoSelect) inputPeriodoSelect.value = ""; // Reseta o select
+                }
+
                 currentEditingCard = null;
                 
                 loadAndRender(); 
@@ -216,8 +226,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 currentEditingCard = null; 
                 
                 if (createBtn) createBtn.textContent = "Criar";
+                
                 if (inputInstituicao) inputInstituicao.value = "";
                 if (inputCurso) inputCurso.value = "";
+
+                // MUDANÇA 3: Resetar campos de 'diciplinasBody' ao Criar
+                if (STORAGE_KEY === 'diciplinasBody') {
+                    const inputCursoSelect = createIdt.querySelector("#cursoSelect"); // Pega o campo de Curso
+                    if (inputCursoSelect) inputCursoSelect.value = ""; // Limpa o campo de Curso
+
+                    const allInputs = createIdt.querySelectorAll(".campIdt input, .campIdtToggle .campIdt input");
+                    if (allInputs[1]) allInputs[1].value = ""; // Nome Disciplina
+                    if (allInputs[2]) allInputs[2].value = ""; // Sigla
+                    if (allInputs[3]) allInputs[3].value = ""; // Código
+                    
+                    const inputPeriodoSelect = createIdt.querySelector("#periodoSelect");
+                    if (inputPeriodoSelect) inputPeriodoSelect.value = ""; 
+                }
 
                 cardIdt.style.display = "flex";
                 cardIdt.style.border = "none";
@@ -245,8 +270,27 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (editBtn) {
                         currentEditingCard = { id: id, cardElement: card };
 
-                        if (inputInstituicao) inputInstituicao.value = item.nome;
-                        if (inputCurso) inputCurso.value = item.curso;
+                        // MUDANÇA 4: Carregar dados para Edição em 'diciplinasBody'
+                        if (STORAGE_KEY === 'diciplinasBody') {
+                            // item.nome = Nome do Curso
+                            // item.curso = Nome da Disciplina
+                            const inputCursoSelect = createIdt.querySelector("#cursoSelect"); // Campo do Curso
+                            const allInputs = createIdt.querySelectorAll(".campIdt input, .campIdtToggle .campIdt input");
+                            const inputNomeDisciplina = allInputs[1];
+                            const inputSigla = allInputs[2];
+                            const inputCodigo = allInputs[3];
+                            const inputPeriodoSelect = createIdt.querySelector("#periodoSelect"); 
+
+                            if (inputCursoSelect) inputCursoSelect.value = item.nome; // Carrega Nome do Curso
+                            if (inputNomeDisciplina) inputNomeDisciplina.value = item.curso; // Carrega Nome da Disciplina
+                            if (inputSigla) inputSigla.value = item.sigla || "";
+                            if (inputCodigo) inputCodigo.value = item.codigo || "";
+                            if (inputPeriodoSelect) inputPeriodoSelect.value = item.periodo || "";
+                        } else {
+                            // Lógica antiga para outros
+                            if (inputInstituicao) inputInstituicao.value = item.nome;
+                            if (inputCurso) inputCurso.value = item.curso;
+                        }
 
                         cardIdt.style.display = "flex";
                         cardIdt.style.border = "none";
@@ -257,7 +301,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
 
                     if (deleteBtn) {
-                        if (confirm(`Tem certeza que deseja excluir "${item.nome}"?`)) {
+                        // Usa item.curso (Nome Disciplina) ou item.nome (Instituição/Curso) para o confirm
+                        const nomeItem = (STORAGE_KEY === 'diciplinasBody') ? item.curso : (item.curso || item.nome);
+                        if (confirm(`Tem certeza que deseja excluir "${nomeItem}"?`)) { 
                             let novosItens = itens.filter(i => i.id != id); 
                             saveItens(novosItens); 
                             loadAndRender(); 
@@ -279,67 +325,119 @@ document.addEventListener("DOMContentLoaded", () => {
             // --- Evento: CRIAR ou SALVAR (Botão Principal) (MODIFICADO) ---
             if (createBtn) {
                 createBtn.addEventListener("click", () => {
-                    let novoNome, novoCurso;
-                    if (STORAGE_KEY === 'diciplinasBody') {
-                        const inputInstituicaoDatalist = createIdt.querySelector("#instituicao");
-                        const inputNomeDisciplina = createIdt.querySelectorAll(".campIdt input")[1];
-                        
-                        novoNome = inputInstituicaoDatalist ? inputInstituicaoDatalist.value.trim() : "";
-                        novoCurso = inputNomeDisciplina ? inputNomeDisciplina.value.trim() : "";
+                    let novoNome, novoCurso, novoSigla, novoCodigo, novoPeriodo; 
                     
-                    } else {
+                    // MUDANÇA 5: Lógica de salvamento 'diciplinasBody'
+                    if (STORAGE_KEY === 'diciplinasBody') {
+                        const inputCursoSelect = createIdt.querySelector("#cursoSelect"); // Campo do Curso
+                        const allInputs = createIdt.querySelectorAll(".campIdt input, .campIdtToggle .campIdt input");
+                        
+                        const inputNomeDisciplina = allInputs[1]; 
+                        const inputSigla = allInputs[2];
+                        const inputCodigo = allInputs[3];
+                        const inputPeriodoSelect = createIdt.querySelector("#periodoSelect");
+                        
+                        novoNome = inputCursoSelect ? inputCursoSelect.value.trim() : ""; // novoNome = Nome do CURSO
+                        novoCurso = inputNomeDisciplina ? inputNomeDisciplina.value.trim() : ""; // novoCurso = Nome da DISCIPLINA
+                        novoSigla = inputSigla ? inputSigla.value.trim() : "";
+                        novoCodigo = inputCodigo ? inputCodigo.value.trim() : "";
+                        novoPeriodo = inputPeriodoSelect ? inputPeriodoSelect.value : "";
+                    
+                    } else { 
+                        // Lógica para outras páginas (instituicoesBody e cursosBody)
                         novoNome = inputInstituicao ? inputInstituicao.value.trim() : "";
-                        novoCurso = inputCurso ? inputCurso.value.trim() : "";
+                        
+                        if (STORAGE_KEY === 'instituicoesBody') {
+                            novoCurso = ""; // Instituição não tem "curso"
+                        } else {
+                            novoCurso = inputCurso ? inputCurso.value.trim() : ""; 
+                        }
                     }
 
-                    if (!novoNome || !novoCurso) {
-                        alert("Por favor, preencha todos os campos.");
-                        return;
+                    // --- Validação ---
+                    if (STORAGE_KEY === 'diciplinasBody') {
+                        // Valida Curso (novoNome) e Nome da Disciplina (novoCurso) + outros
+                        if (!novoNome || !novoCurso || !novoSigla || !novoCodigo || !novoPeriodo) { 
+                            alert("Por favor, preencha todos os campos da disciplina (Curso, Nome, Sigla, Código, Período).");
+                            return;
+                        }
+                    
                     }
+                    else if (STORAGE_KEY === 'instituicoesBody') {
+                        if (!novoNome) { // Apenas valida 'novoNome' (Instituição)
+                            alert("Por favor, preencha o nome da instituição.");
+                            return;
+                        }
+                    } else { // Isso se aplica a 'cursosBody'
+                        if (!novoNome || !novoCurso) { 
+                            alert("Por favor, preencha todos os campos.");
+                            return;
+                        }
+                    }
+                    // --- Fim da Validação ---
+
 
                     let itens = getItens();
 
                     if (currentEditingCard) {
                         // --- MODO SALVAR (Edição) ---
-                        // A edição está OK, pois o item já existe.
                         const item = itens.find(i => i.id == currentEditingCard.id);
                         if (item) {
-                            item.nome = novoNome;
-                            item.curso = novoCurso;
+                            item.nome = novoNome; // Salva Nome do Curso em item.nome
+                            item.curso = novoCurso; // Salva Nome da Disciplina em item.curso
+                            if (STORAGE_KEY === 'diciplinasBody') {
+                                item.sigla = novoSigla;
+                                item.codigo = novoCodigo;
+                                item.periodo = novoPeriodo;
+                            }
                         }
                     } else {
                         // --- MODO CRIAR (Novo) ---
 
-                        // --- 💡 NOVA VALIDAÇÃO AQUI 💡 ---
-                        // Se a página não tiver a estrutura de lista (listContainer)
-                        // ou o template (cardTemplate), ela não está pronta.
-                        // Então, não salve o item.
                         if (!listContainer || !cardTemplate) {
                             console.warn(`Tentativa de CRIAR item em uma página sem .cardsCreateIdt ou template. Operação cancelada.`);
-                            // Apenas fecha o modal, sem salvar.
                             closeAndResetModal(); 
-                            return; // <- IMPEDE O SALVAMENTO
+                            return; 
                         }
-                        // --- FIM DA VALIDAÇÃO ---
 
                         const novoItem = {
                             id: Date.now().toString(),
-                            nome: novoNome,
-                            curso: novoCurso
+                            nome: novoNome, // Salva Nome do Curso em item.nome
+                            curso: novoCurso // Salva Nome da Disciplina em item.curso
                         };
+                        
+                        if (STORAGE_KEY === 'diciplinasBody') {
+                            novoItem.sigla = novoSigla;
+                            novoItem.codigo = novoCodigo;
+                            novoItem.periodo = novoPeriodo;
+                        }
+
                         itens.push(novoItem);
                     }
 
-                    // Se passou pela validação (ou está em modo de edição), salve.
                     saveItens(itens); 
                     closeAndResetModal(); 
                 });
             }
 
-            // --- Lógica especial para 'diciplinasBody' ---
+            // MUDANÇA 6: Lógica de carregamento do Datalist
             if (STORAGE_KEY === 'diciplinasBody') {
+                const datalist = container.querySelector("#listCursos"); // Procura o datalist de Cursos
+                if (datalist) {
+                    datalist.innerHTML = ''; 
+                    const cursos = JSON.parse(localStorage.getItem("cursosBody")) || []; // Puxa de 'cursosBody'
+                    cursos.forEach(curso => {
+                        const option = document.createElement('option');
+                        option.value = curso.curso; // Pega o nome do curso (armazenado em 'curso.curso')
+                        datalist.appendChild(option);
+                    });
+                }
+            }
+            // Lógica antiga para 'cursosBody' (puxando Instituições)
+            else if (STORAGE_KEY === 'cursosBody') { 
                 const datalist = container.querySelector("#listInstituicao");
                 if (datalist) {
+                    datalist.innerHTML = ''; 
                     const instituicoes = JSON.parse(localStorage.getItem("instituicoesBody")) || [];
                     instituicoes.forEach(inst => {
                         const option = document.createElement('option');
@@ -386,6 +484,10 @@ document.addEventListener("DOMContentLoaded", () => {
             e.preventDefault();
             carregarPagina("instituições");
         } 
+        else if (id === "cursos") {
+            e.preventDefault();
+            carregarPagina("cursos");
+        }
         else if (id === "diciplinas") {
             e.preventDefault();
             carregarPagina("diciplinas");

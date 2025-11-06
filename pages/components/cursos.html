@@ -6,36 +6,42 @@
     <title>Document</title>
 </head>
 
-<div class="idtBody" id="instituicoesBody">
+<div class="idtBody" id="cursosBody">
     <div class="headerIdt">
         <div class="titleIdt">
             <div class="iconAndTitle">
-                <i class="ph ph-buildings" id="iconBuildings"></i>
-                <h1>Instituições</h1>
+                <i class="ph ph-books"></i>
+                <h1>Cursos</h1>
             </div>
-            <p>Gerencie as instituições onde você leciona</p>
+            <p>Gerencie os cursos que você leciona</p>
         </div>
         <button class="newIdt">
             <i class="ph ph-plus"></i>
-            Nova instituição
+            Novo curso
         </button>
     </div>
     <div class="cardIdt">
         <div class="iconIdt">
-            <i class="ph ph-buildings"></i>
+            <i class="ph ph-books"></i>
         </div>
-        <h3>Nenhuma instituição cadastrada</h3>
-        <p>Clique no botão "Nova Instituição" para começar</p>
+        <h3>Nenhum curso cadastrado</h3>
+        <p>Clique no botão "Novo curso" para começar</p>
         <div class="createIdt">
             <div class="titleCreateIdt">
-                <h2>Nova Instituição</h2>
+                <h2>Novo curso</h2>
                 <button>
                     <i class="ph ph-x" id="xClosedCreate"></i>
                 </button>
             </div>
             <div class="campIdt">
-                <p>Nome da Instituição</p>
-                <input type="text" placeholder="Ex: PUC-Campinas">
+                <p>Instituição</p>
+                <input list="listInstituicao" type="text" placeholder="Selecione a instituição" id="instituicao">
+                <datalist id="listInstituicao"></datalist>
+                <label for="text"></label>
+            </div>
+            <div class="campIdt">
+                <p>Nome do curso</p>
+                <input type="text" placeholder="Ex: Engenharia de Software">
                 <label for="text"></label>
             </div>
             <div class="buttonsCheck">
@@ -46,9 +52,10 @@
     </div>
     <div class="cardsCreateIdt">
         <div class="contentCardIdt">
-            <i class="ph ph-buildings"></i>
+            <i class="ph ph-books" id="cursosIcon"></i>
             <div class="textContentCardIdt">
                 <h2></h2>
+                <p></p>
             </div>
             <div class="editAndDelet">
                 <button class="addCurso">
@@ -64,4 +71,5 @@
         </div>
     </div>
 </div>
+
 </html>
