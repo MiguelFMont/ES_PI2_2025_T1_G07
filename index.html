@@ -1,84 +1,88 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-    <head>
-        <title>Login</title>
-        <link href="styles/base.css" rel="stylesheet" type="text/css"/>
-        <meta charset="UTF-8"/>
-        <link rel="icon" class="logo32" type="image/png" href="./assets/Logo32x32.png"/>
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
-    </head>
-    <body>
-        <div class="background" id="login">
-            <div class="containerMonster">
-                <div class="monsterOne">
-                    <div class="eyeContainer">
-                        <div class="eye">
-                            <div class="pupil"></div>
-                        </div>
+
+<head>
+    <title>Login</title>
+    <link href="styles/base.css" rel="stylesheet" type="text/css" />
+    <meta charset="UTF-8" />
+    <link rel="icon" class="logo32" type="image/png" href="./assets/Logo32x32.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="background" id="login">
+        <div class="containerMonster">
+            <div class="monsterOne">
+                <div class="eyeContainer">
+                    <div class="eye">
+                        <div class="pupil"></div>
                     </div>
-                    <div class="mouth"></div>
                 </div>
-                <div class="monsterTwo">
-                    <div class="eyeContainer">
-                        <div class="eye">
-                            <div class="pupil"></div>
-                        </div>
-                        <div class="eye">
-                            <div class="pupil"></div>
-                        </div>
+                <div class="mouth"></div>
+            </div>
+            <div class="monsterTwo">
+                <div class="eyeContainer">
+                    <div class="eye">
+                        <div class="pupil"></div>
                     </div>
-                    <div class="mouth"></div>
-                </div>
-                <div class="monsterThree">
-                    <div class="eyeContainer">
-                        <div class="eye">
-                            <div class="pupil"></div>
-                        </div>
-                        <div class="eye">
-                            <div class="pupil"></div>
-                        </div>
+                    <div class="eye">
+                        <div class="pupil"></div>
                     </div>
-                    <div class="mouth"></div>
                 </div>
+                <div class="mouth"></div>
+            </div>
+            <div class="monsterThree">
+                <div class="eyeContainer">
+                    <div class="eye">
+                        <div class="pupil"></div>
+                    </div>
+                    <div class="eye">
+                        <div class="pupil"></div>
+                    </div>
+                </div>
+                <div class="mouth"></div>
             </div>
         </div>
-        <div class="container">
-            <div class="title">
-                <img class="logo" src="./assets/logoComIcone.png" alt="">
+    </div>
+    <div class="container">
+        <div class="title">
+            <img class="logo" src="./assets/logoComIcone.png" alt="">
+        </div>
+        <div class="subtitle">
+            <h2>Login</h2>
+        </div>
+        <div class="login">
+            <div class="mail">
+                <input type="text" placeholder=" " id="email">
+                <label for="email">Endereço de e-mail</label>
             </div>
-            <div class="subtitle">
-                <h2>Login</h2>
+            <div class="password">
+                <input type="password" placeholder=" " id="password">
+                <label for="password">Senha</label>
             </div>
-            <div class="login">
-                <div class="mail">
-                    <input type="text" placeholder=" " id="email">
-                    <label for="email" >Endereço de e-mail</label>
-                </div>
-                <div class="password">
-                    <input type="password" placeholder=" " id="password">
-                    <label for="password">Senha</label>
-                    <div class="forgotPassword">
-                        <p>Esqueceu sua senha?</p>
-                        <a href="../pages/pageEmailToModifyPassword.html">clique aqui</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="buttonsCheck">
-                <button class="buttonLogin">Entrar</button>
-            </div>
-
-            <div class="signUpContainer">
-                <p>Não tem conta ainda?</p>
-                <a class="signUpLink" href="./pages/pageCadastro.html">Cadastre-se</a>
+            <div class="forgotPassword">
+                <p>Esqueceu sua senha?</p>
+                <a href="../pages/pageEmailToModifyPassword.html">clique aqui</a>
             </div>
         </div>
 
-        <script src="scripts/monster.js"></script>
-        <!-- códigos de movimentação dos monstros -->
+        <div class="buttonsCheck">
+            <button class="buttonLogin">Entrar</button>
+        </div>
 
-        <script src="scripts/auth.js"></script> 
-        <!--TESTE DE LOGIN-->
-    </body>
+        <div class="signUpContainer">
+            <p>Não tem conta ainda?</p>
+            <a class="signUpLink" href="./pages/pageCadastro.html">Cadastre-se</a>
+        </div>
+    </div>
+
+    <script src="scripts/monster.js"></script>
+    <!-- códigos de movimentação dos monstros -->
+
+    <script src="scripts/auth.js"></script>
+    <!--TESTE DE LOGIN-->
+</body>
