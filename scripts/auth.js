@@ -101,7 +101,7 @@ if (botaoLogin) {
 
         console.log("📤 Enviando login para:", emailDigitado);
 
-        fetch("http://localhost:3000/verificar-docente", {
+        fetch("http://notadez.cfd:3000/verificar-docente", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: emailDigitado, senha: senhaDigitada })
@@ -216,7 +216,7 @@ if (botaoCadastro) {
             telefone: telefoneDigitado,
             senha: senhaDigitada
         }));
-        fetch("http://localhost:3000/verificar-docente/cadastro", {
+        fetch("http://notadez.cfd:3000/verificar-docente/cadastro", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: emailDigitado })
@@ -235,7 +235,7 @@ if (botaoCadastro) {
                     throw new Error("Email já cadastrado");
                 } else {
                     console.log("✅ Email disponível para cadastro:", emailDigitado);
-                    fetch("http://localhost:3000/enviar-codigo", {
+                    fetch("http://notadez.cfd:3000/enviar-codigo", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
@@ -341,7 +341,7 @@ if (botaoVerify) {
 
         console.log("1. Verificando código:", codigoCompleto);
 
-        fetch("http://localhost:3000/verificar-codigo", {
+        fetch("http://notadez.cfd:3000/verificar-codigo", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ codigo: codigoCompleto })
@@ -355,7 +355,7 @@ if (botaoVerify) {
                 if (data.sucesso) {
                     console.log("4. Código válido! Cadastrando docente...");
 
-                    return fetch("http://localhost:3000/docente", {
+                    return fetch("http://notadez.cfd:3000/docente", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
@@ -446,7 +446,7 @@ if (botaoSolicitarLink) {
         }
         // Enviar solicitação de link de alteração de senha
         if (loader) loader.style.display = "flex";
-        fetch("http://localhost:3000/link-alterar-senha", {
+        fetch("http://notadez.cfd:3000/link-alterar-senha", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: emailDigitado })
@@ -505,7 +505,7 @@ if (botaoModificar) {
         if (loader) loader.style.display = "flex";
         // 🟢 Enviar nova senha para o servidor
         console.log("📤 Enviando nova senha para o servidor")
-        fetch("http://localhost:3000/modificar-senha", {
+        fetch("http://notadez.cfd:3000/modificar-senha", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: emailRecuperacao, novaSenha: novaSenha })

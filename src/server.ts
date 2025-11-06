@@ -17,7 +17,8 @@ console.log("API KEY:", process.env.RESEND_API_KEY);
 import {
     addInstituicao,
     getInstituicaoById,
-    getAllInstituicao
+    getAllInstituicao,
+    verificarCadastroInstituicao
 } from "./db/instituicao";
 
 import {
@@ -50,7 +51,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // definir a rota default;
-
 app.get("/", (req, res) => {
   res.sendFile(path.resolve(__dirname, "../index.html"));
 });
@@ -75,18 +75,46 @@ app.get('/verificacao', (req, res) => {
     res.sendFile(path.join(__dirname, '../pages/pageVerification.html'));
 });
 
-app.post('/instituicao', async (req: Request, res: Response) => {
+/* INSTITUIÇÃO */
+app.post('/instituicao/verificar', async (req: Request, res: Response) => {
+    try {
+        const { nome } = req.body;
+        console.log("🔍 Verificando instituição:", nome);
+
+        const instituicao = await verificarCadastroInstituicao(nome);
+        if (instituicao) {
+            console.log("❌ Instituição já cadastrada:", instituicao.nome);
+
+            res.json({
+                sucesso: false,
+                mensagem: "A Instituição já está cadastrada.3",
+                nome: instituicao.nome
+            });
+        } else {
+            console.log("✅ Instituição ainda não cadastrada!")
+            res.status(401).json({ sucesso: true, mensagem: "Credenciais válidas!" });
+        }
+    } catch (error) {
+        console.error("❌ Erro ao verificar a instituição:", error);
+        res.status(500).json({ sucesso: false, mensagem: "Erro no servidor" });
+    }
+})
+
+app.post('/instituicao/cadastro', async (req: Request, res: Response) => {
     try {
         const { nome } = req.body;
         if (!nome) {
+            console.log("❌ Um ou mais campos estão faltando!:");
             return res.status(400).json({error: "Campo Nome é obrigatório!"});
         }
 
         const id = await addInstituicao(nome);
-        res.status(201).json({ message: "Instituição adicionado com sucesso", id });
+        console.log("✅ Instituição registrada com sucesso!")
+        res.status(201).json({ message: "Instituição registrada com sucesso", id});
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: "Erro ao inserir a instituição." })
+        console.log("❌ Erro ao registrar a instituição.");
+        res.status(500).json({ error: "Erro ao registrar a instituição." })
     }
 });
 
@@ -119,6 +147,7 @@ app.post('/instituicao/all', async (req: Request, res: Response) => {
     }
 })
 
+/* DOCENTE */
 app.post('/docente', async (req: Request, res: Response) => {
     try {
         const { nome, email, telefone, senha } = req.body;
