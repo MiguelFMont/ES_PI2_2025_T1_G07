@@ -234,7 +234,7 @@ if (botaoCadastro) {
                     throw new Error("Email já cadastrado");
                 } else {
                     console.log("✅ Email disponível para cadastro:", emailDigitado);
-                    fetch("/enviar-codigo", {
+                    return fetch("/enviar-codigo", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
