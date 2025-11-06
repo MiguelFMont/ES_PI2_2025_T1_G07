@@ -89,6 +89,148 @@ function validarCamposVazios(campos) {
     return erro;
 }
 
+function validarSenha(senha) {
+  // Verifica se tem pelo menos 8 caracteres
+  if (senha.length < 8) {
+    return {
+      valida: false,
+      mensagem: "A senha deve ter no mínimo 8 caracteres"
+    };
+  }
+
+  // Verifica se tem pelo menos uma letra maiúscula
+  if (!/[A-Z]/.test(senha)) {
+    return {
+      valida: false,
+      mensagem: "A senha deve conter pelo menos uma letra maiúscula"
+    };
+  }
+
+  // Verifica se tem pelo menos uma letra minúscula
+  if (!/[a-z]/.test(senha)) {
+    return {
+      valida: false,
+      mensagem: "A senha deve conter pelo menos uma letra minúscula"
+    };
+  }
+
+  // Verifica se tem pelo menos um símbolo
+  if (!/[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/;'`~]/.test(senha)) {
+    return {
+      valida: false,
+      mensagem: "A senha deve conter pelo menos um símbolo (!@#$%^&* etc.)"
+    };
+  }
+
+  // Se passou por todas as validações
+  return {
+    valida: true,
+    mensagem: "Senha válida!"
+  };
+}
+
+// ========================================
+// 1. FORMATAR NOME (primeira letra maiúscula)
+// ========================================
+function formatarNome(input) {
+    let valor = input.value;
+    let cursorPos = input.selectionStart; // Salva posição do cursor
+    
+    // Capitaliza a primeira letra de cada palavra enquanto digita
+    valor = valor.toLowerCase().replace(/(?:^|\s)\S/g, function(letra) {
+        return letra.toUpperCase();
+    });
+    
+    input.value = valor;
+    input.setSelectionRange(cursorPos, cursorPos); // Restaura cursor
+}
+
+// ========================================
+// 2. FORMATAR TELEFONE
+// ========================================
+function formatarTelefone(input) {
+    let valor = input.value.replace(/\D/g, ''); // Remove tudo que não é número
+    let cursorPos = input.selectionStart; // Salva posição do cursor
+    let valorAnterior = input.value.replace(/\D/g, '').length;
+
+     // Se não tem números, deixa vazio
+    if (valor.length === 0) {
+        input.value = '';
+        return;
+    }
+    
+    // Limita a 11 dígitos (DDD + 9 dígitos)
+    valor = valor.substring(0, 11);
+    
+    // Aplica a máscara conforme o tamanho
+    if (valor.length <= 2) {
+        valor = valor.replace(/(\d{0,2})/, '($1');
+    } else if (valor.length <= 6) {
+        valor = valor.replace(/(\d{2})(\d{0,4})/, '($1) $2');
+    } else if (valor.length <= 10) {
+        // Formato antigo: (11) 1234-5678
+        valor = valor.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+    } else {
+        // Formato novo com 9 dígitos: (11) 91234-5678
+        valor = valor.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+    }
+    
+    input.value = valor;
+    
+    // Ajusta cursor para não pular ao adicionar caracteres especiais
+    let valorNovo = valor.replace(/\D/g, '').length;
+    if (valorNovo > valorAnterior) {
+        input.setSelectionRange(cursorPos + 1, cursorPos + 1);
+    }
+}
+
+if (inputNome) {
+    inputNome.addEventListener('input', () => formatarNome(inputNome));
+}
+if (inputTelefone) {
+    inputTelefone.addEventListener('input', () => formatarTelefone(inputTelefone));
+}
+
+// Olhos de mostrar/ocultar senha do pageRecovery.html
+function eyePassword(inputId, icon) {
+    const input = document.getElementById(inputId);
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('ph-eye-slash', 'ph-eye');
+    } else if (input.type === 'text') {
+        input.type = 'password';
+        icon.classList.replace('ph-eye', 'ph-eye-slash');
+    }
+}
+
+// --- Foco e digitação ---
+[inputEmail, inputSenha, inputNome, inputTelefone].forEach((input) => {
+    if (!input) return;
+
+
+    input.addEventListener("focus", () => {
+
+        const label = input.parentElement ? input.parentElement.querySelector("label") : null;
+        if (label && label.textContent.includes("Campo não preenchido")) {
+            label.textContent = originalLabels[input.id] || originalLabels[input.name] || label.textContent;
+            label.style.color = "";
+        }
+
+        if (erroAtivo) {
+            if (input.parentElement) input.parentElement.classList.remove("error");
+            // if (input) input.value = "";
+            if (label) label.style.color = "";
+        }
+    });
+
+    input.addEventListener("input", () => {
+        if (input.value.trim() !== "" && input.parentElement) {
+            input.parentElement.classList.remove("error");
+            const label = input.parentElement.querySelector("label");
+            if (label) label.style.color = "";
+        }
+    });
+});
 // --- LOGIN ---
 if (botaoLogin) {
     botaoLogin.addEventListener("click", (e) => {
@@ -158,7 +300,7 @@ if (botaoCadastro) {
         const telefoneDigitado = inputTelefone.value.trim();
         const senhaDigitada = inputSenha.value.trim();
 
-        campos.forEach(limparErroCampo);
+        // campos.forEach(limparErroCampo);
 
         if (validarCamposVazios(campos)) return;
 
@@ -173,8 +315,8 @@ if (botaoCadastro) {
         const telefoneValido = telefoneLimpo.length >= 8;
         if (!telefoneValido) { marcarErroCampo(inputTelefone, "Telefone inválido"); algumErro = true; }
 
-        const senhaValida = senhaDigitada.length >= 8;
-        if (!senhaValida) { marcarErroCampo(inputSenha, "Senha deve ter 8+ caracteres"); algumErro = true; }
+        const senhaCheck = validarSenha(senhaDigitada);
+        if (!senhaCheck.valida) { marcarErroCampo(inputSenha, senhaCheck.mensagem); algumErro = true; }
 
         // (Esta verificação local é boa, mas a do servidor é a principal)
         if (usuarios.some(u => u.email === emailDigitado)) {
@@ -279,32 +421,6 @@ if (botaoCadastro) {
     });
 }
 
-// --- Foco e digitação ---
-[inputEmail, inputSenha, inputNome, inputTelefone].forEach((input) => {
-    if (!input) return;
-
-    input.addEventListener("focus", () => {
-        const label = input.parentElement ? input.parentElement.querySelector("label") : null;
-        if (label && label.textContent.includes("Campo não preenchido")) {
-            label.textContent = originalLabels[input.id] || originalLabels[input.name] || label.textContent;
-            label.style.color = "";
-        }
-
-        if (erroAtivo) {
-            if (input.parentElement) input.parentElement.classList.remove("error");
-            if (input) input.value = "";
-            if (label) label.style.color = "";
-        }
-    });
-
-    input.addEventListener("input", () => {
-        if (input.value.trim() !== "" && input.parentElement) {
-            input.parentElement.classList.remove("error");
-            const label = input.parentElement.querySelector("label");
-            if (label) label.style.color = "";
-        }
-    });
-});
 
 // pageVerification.html - Manter o email preenchido
 
@@ -430,21 +546,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ======================================
-//            PAGE RECOVERY
-// ======================================
-
-// Olhos de mostrar/ocultar senha do pageRecovery.html
-function eyePassword(inputId, icon) {
-    const input = document.getElementById(inputId);
-    if (input.type === 'password') {
-        input.type = 'text';
-        icon.classList.replace('ph-eye-slash', 'ph-eye');
-    } else if (input.type === 'text') {
-        input.type = 'password';
-        icon.classList.replace('ph-eye', 'ph-eye-slash');
-    }
-}
-// ======================================
 //        PAGE EMAIL TO MODIFY
 // ======================================
 
@@ -465,7 +566,7 @@ if (botaoSolicitarLink) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: emailDigitado })
         })
-            .then(res => {
+        .then(res => {
                 console.log("📥 Resposta do servidor:", res.status, res.ok);
                 return res.json();
             })
@@ -487,10 +588,15 @@ if (botaoSolicitarLink) {
                 console.error("❌ Detalhes do erro:", err.message, err.stack);
                 alert("Ocorreu um erro. Verifique o console para mais detalhes.");
             });
-    });
-}
-
-
+        });
+    }
+    
+    
+    // ======================================
+    //            PAGE RECOVERY
+    // ======================================
+    
+    
 if (botaoModificar) {
     botaoModificar.addEventListener("click", (e) => {
         if (e) e.preventDefault();

@@ -302,7 +302,7 @@ app.post('/modificar-senha', async (req: Request, res: Response) => {
 
 });
 
-app.listen(port, '0.0.0.0', () => console.log("🚀 Servidor rodando em http://notadez.cfd"));
+app.listen(port, '0.0.0.0', () => console.log("🚀 Servidor rodando em https://notadez.cfd e http://localhost:3000"));
 
 // rota de ping/pong (teste de requisicao)
 app.post("/printRequest", (req: Request, res: Response) => {

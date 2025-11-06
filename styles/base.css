@@ -367,6 +367,13 @@ body {
     position: relative;
 }
 
+.password i {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
 input {
     caret-color: var(--color5);
 }
@@ -581,4 +588,16 @@ input {
     100% {
         transform: translateX(0);
     }
+}
+
+
+/* Ícone de olho para mostrar/esconder senha */
+.eyes-password {
+    
+    cursor: pointer;
+    color: var(--grey);
+}
+
+.eyes-password:hover {
+    color: var(--color5);
 }
