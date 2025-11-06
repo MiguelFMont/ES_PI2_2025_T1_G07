@@ -248,10 +248,16 @@ if (botaoCadastro) {
             })
             .then(res => res.json())
             .then(data => {
-                // SUCESSO FINAL - Segundo fetch OK
-                console.log(data.message);
-                // Não fazemos nada aqui, apenas deixamos os timers rodarem
-                // O loader continuará visível até o redirecionamento.
+                console.log("📥 Dados do envio de código:", data)
+                if (!data.sucesso) {
+                    // Se falhar, joga um erro para o .catch
+                    throw new Error("Falha ao enviar o código");
+                } else {
+                    // colocar o alerta aqui e esconder o loader
+                    if (loader) loader.style.display = "none";
+                    if (customAlert) customAlert.style.display = "flex";
+                    console.log("✅ Código enviado para:", emailDigitado);
+                }
             })
             .catch(err => {
                 // ❌ TRATAMENTO DE ERRO CENTRALIZADO ❌
@@ -392,10 +398,12 @@ if (botaoVerify) {
                         nome: cadastroTemp.nome,
                         email: cadastroTemp.email
                     }));
+                    console.log("✅ Docente cadastrado e logado:", cadastroTemp.email);
                     localStorage.removeItem("cadastroTemp");
                     alert("Docente cadastrado com sucesso! Você será redirecionado para a página inicial.");
                     window.location.href = "../pages/mainPage.html";
                 } else {
+                    console.log("❌ Erro ao cadastrar docente:", data.message);
                     alert("Erro ao cadastrar o docente.");
                 }
             })
