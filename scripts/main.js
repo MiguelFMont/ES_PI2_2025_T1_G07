@@ -1,39 +1,39 @@
 // main.js
 document.addEventListener("DOMContentLoaded", () => {
     // --- LOGIN ---
-    const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
-    if (usuario) {
-        const nomeEl = document.querySelector(".titleUser h1");
-        const emailEl = document.querySelector(".titleUser p");
+    // const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+    // if (usuario) {
+    //     const nomeEl = document.querySelector(".titleUser h1");
+    //     const emailEl = document.querySelector(".titleUser p");
 
-        if (nomeEl) {
-            const partesNome = usuario.nome.trim().split(/\s+/);
-            let primeiro = partesNome[0];
-            let segundoMenor = "";
-            if (partesNome.length > 1) {
-                const restantes = partesNome.slice(1);
-                const nomesValidos = restantes.filter(n => n.length >= 4);
-                if (nomesValidos.length > 0) {
-                    segundoMenor = nomesValidos.reduce((menor, atual) =>
-                        atual.length < menor.length ? atual : menor
-                    );
-                } else {
-                    segundoMenor = partesNome[partesNome.length - 1];
-                }
-            }
-            const formatarNome = (nome) =>
-                nome.charAt(0).toUpperCase() + nome.slice(1).toLowerCase();
-            const nomeFormatado = segundoMenor
-                ? `${formatarNome(primeiro)} ${formatarNome(segundoMenor)}`
-                : formatarNome(primeiro);
-            nomeEl.textContent = nomeFormatado;
-            nomeEl.style.whiteSpace = "nowrap";
-        }
-        if (emailEl) emailEl.textContent = usuario.email;
-    } else {
-        window.location.href = "/";
-        return;
-    }
+    //     if (nomeEl) {
+    //         const partesNome = usuario.nome.trim().split(/\s+/);
+    //         let primeiro = partesNome[0];
+    //         let segundoMenor = "";
+    //         if (partesNome.length > 1) {
+    //             const restantes = partesNome.slice(1);
+    //             const nomesValidos = restantes.filter(n => n.length >= 4);
+    //             if (nomesValidos.length > 0) {
+    //                 segundoMenor = nomesValidos.reduce((menor, atual) =>
+    //                     atual.length < menor.length ? atual : menor
+    //                 );
+    //             } else {
+    //                 segundoMenor = partesNome[partesNome.length - 1];
+    //             }
+    //         }
+    //         const formatarNome = (nome) =>
+    //             nome.charAt(0).toUpperCase() + nome.slice(1).toLowerCase();
+    //         const nomeFormatado = segundoMenor
+    //             ? `${formatarNome(primeiro)} ${formatarNome(segundoMenor)}`
+    //             : formatarNome(primeiro);
+    //         nomeEl.textContent = nomeFormatado;
+    //         nomeEl.style.whiteSpace = "nowrap";
+    //     }
+    //     if (emailEl) emailEl.textContent = usuario.email;
+    // } else {
+    //     window.location.href = "/";
+    //     return;
+    // }
     // --- LOGOUT ---
     const logoutBtn = document.querySelector("#logoutBtn");
     if (logoutBtn) {
@@ -203,6 +203,37 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                         
                         listContainer.appendChild(newCard);
+
+                        // ======================================================
+                        //  INÍCIO DA NOVA SOLUÇÃO: Alternar cores dos links
+                        // ======================================================
+                        
+                        // 1. Definir as paletas de cores (background e texto)
+                        const bgColors = [
+                            '--color4Shadow', 
+                            '--color3Shadow', 
+                            '--color9Shadow', 
+                            '--color8Shadow'
+                        ];
+                        const textColors = [
+                            '--color4', 
+                            '--color3', 
+                            '--color9', 
+                            '--color8'
+                        ];
+
+                        // 2. Encontrar todos os links *dentro do card que acabou de ser criado*
+                        const linksDetalhes = newCard.querySelectorAll(".viewDetailsIC .linkDatailsIdt");
+
+                        // 3. Iterar sobre os links e aplicar as cores
+                        linksDetalhes.forEach((link, index) => {
+                            const colorIndex = index % bgColors.length; // 0, 1, 2, 3, 0, 1, ...
+                            link.style.background = `var(${bgColors[colorIndex]})`;
+                            link.style.color = `var(${textColors[colorIndex]})`;
+                        });
+                        // ======================================================
+                        //  FIM DA NOVA SOLUÇÃO
+                        // ======================================================
                     });
 
                     if (itens.length > 0) {
@@ -343,6 +374,19 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     }
                 });
+
+                // ======================================================
+                //  SOLUÇÃO SCROLL HORIZONTAL (DA PERGUNTA ANTERIOR)
+                // ======================================================
+                listContainer.addEventListener('wheel', (e) => {
+                    const viewDetails = e.target.closest('.viewDetailsIC');
+                    if (!viewDetails) return;
+                    e.preventDefault();
+                    viewDetails.scrollLeft += e.deltaY;
+                }, { passive: false }); 
+                // ======================================================
+                //  FIM DA SOLUÇÃO SCROLL
+                // ======================================================
             }
 
             // --- Evento: Fechar (Botão X) ---

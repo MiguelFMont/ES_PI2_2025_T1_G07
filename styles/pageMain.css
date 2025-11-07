@@ -23,8 +23,8 @@
     --color4Shadow: rgb(255, 74, 74, 0.2);
     --color5shadow: rgba(255, 178, 25, 0.2);
     --color6Shadow: rgba(97, 92, 92, 0.5);
-    --color7Shadow: rgb(183, 6, 228, 0.2);
     --color8Shadow: rgba(37, 228, 117, 0.2);
+    --color9Shadow: rgb(183, 6, 228, 0.2);
 
     --color1: #ebe8e8;   /* Fundo principal (claro) */
     --color2: #e8e8e8;   /* Fundo secundário */
@@ -33,8 +33,8 @@
     --color5: #ffb319;   /* Amarelo (hover de botões) */
     --color5Hover: #e39e13; /* Amarelo escuro (hover de botões) */
     --color6: #615c5c;   /* cinza (hover alternativo de botões) */
-    --color7: #b706e4;
-    --color8: #25e475;
+    --color9: #b706e4;
+    --color8: #25e475;   /* Verde (sucesso) */
 
     --lightgrey: #d3d3d3; /* Bordas e separadores suaves */
 
@@ -367,8 +367,8 @@ body {
 
 #turmas .logoOptions,
 #turmas .logoOptions i {
-    background: var(--color7Shadow);
-    color: var(--color7);
+    background: var(--color9Shadow);
+    color: var(--color9);
 }
 
 .viewTurmaInstituicao {
@@ -498,7 +498,7 @@ body {
 }
 
 #turmasBody .iconAndTitle i {
-    color: var(--color7);
+    color: var(--color9);
 }
 
 .headerIdt button {
@@ -529,7 +529,7 @@ body {
 }
 
 #turmasBody .headerIdt button {
-    background: linear-gradient(145deg, var(--color7), var(--color3));
+    background: linear-gradient(145deg, var(--color9), var(--color3));
 }
 
 .headerIdt button:hover {
@@ -584,7 +584,7 @@ body {
 }
 
 #turmasBody .cardIdt i {
-    color: var(--color7);
+    color: var(--color9);
 }
 
 .createIdt {
@@ -880,8 +880,8 @@ body {
 }
 
 .viewDetails .acronym {
-    background: var(--color7Shadow);
-    color: var(--color7);
+    background: var(--color9Shadow);
+    color: var(--color9);
 }
 
 .viewDetails .period {
@@ -979,19 +979,16 @@ body {
 
 .viewDetailsIC {
     display: flex;
-    justify-content: space-around;
     align-items: center;
     gap: 10px;
     max-width: 280px;
     overflow-x: auto;
     padding-bottom: 5px;
-    border: 1px solid red;
 }
 
 .linkDatailsIdt {
     font-size: 0.965rem;
     font-weight: 500;
-    padding: 2px 4px;
     border-radius: 4px;
     text-align: center;
     white-space: nowrap;
