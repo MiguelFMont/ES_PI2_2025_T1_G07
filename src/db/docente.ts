@@ -19,9 +19,9 @@ export async function addDocente(
     try{
         const result = await conn.execute<{ outBinds: { id: number} }>(
             `
-            INSERT INTO DOCENTE (NOME, EMAIL, TELEFONE_CELULAR, SENHA)
+            INSERT INTO Docente (Nome, Email, Telefone, Senha)
             VALUES (:nome, :email, :telefone_celular, :senha)
-            RETURNING ID_DOCENTE INTO :id
+            RETURNING ID_Docente INTO :id
             `,
             { nome, email, telefone_celular, senha, id: {dir: OracleDB.BIND_OUT, type: OracleDB.NUMBER} },
             { autoCommit: true}
@@ -44,8 +44,8 @@ export async function verificarCadastroDocente(email: string): Promise<{ nome: s
     const conn = await open();
     try{
         const result = await conn.execute(
-            `SELECT NOME, EMAIL FROM DOCENTE  
-            WHERE EMAIL = :email
+            `SELECT Nome, Email FROM Docente  
+            WHERE Email = :email
             FETCH FIRST 1 ROWS ONLY`,
             //     ^^^^  ^^^^^ BUSCA ESSES DADOS NO BANCO
             { email },
@@ -72,8 +72,8 @@ export async function verificarLoginDocente(email: string, senha: string): Promi
     const conn = await open();
     try{
         const result = await conn.execute(
-            `SELECT NOME, EMAIL FROM DOCENTE  
-            WHERE EMAIL = :email AND SENHA = :senha
+            `SELECT Nome, Email FROM Docente
+            WHERE Email = :email AND Senha = :senha
             FETCH FIRST 1 ROWS ONLY`,
             //     ^^^^  ^^^^^ BUSCA ESSES DADOS NO BANCO
             { email, senha },
@@ -100,9 +100,9 @@ export async function modificarSenhaDocente(email: string, novaSenha: string): P
     const conn = await open();
     try {
         const result = await conn.execute(
-            `UPDATE DOCENTE 
-             SET SENHA = :novaSenha 
-             WHERE EMAIL = :email`,
+            `UPDATE Docente
+             SET Senha = :novaSenha 
+             WHERE Email = :email`,
             { novaSenha, email },
             { autoCommit: true }
         );
