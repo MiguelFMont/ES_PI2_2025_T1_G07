@@ -11,42 +11,96 @@
         <div class="titleIdt">
             <div class="iconAndTitle">
                 <i class="ph ph-book-open"></i>
-                <h1>Disciplinas</h1>
+                <h1>Diciplinas</h1>
             </div>
-            <p>Gerencie as disciplinas que você leciona</p>
+            <p>Gerencie as diciplinas que você leciona</p>
         </div>
         <button class="newIdt">
             <i class="ph ph-plus"></i>
-            Nova disciplina
+            Nova diciplina
         </button>
     </div>
     <div class="cardIdt">
         <div class="iconIdt">
             <i class="ph ph-book-open"></i>
         </div>
-        <h3>Nenhuma disciplina cadastrada</h3>
-        <p>Clique no botão "Nova Disciplina" para começar</p>
+        <h3>Nenhuma diciplina cadastrada</h3>
+        <p>Clique no botão "Nova diciplina" para começar</p>
         <div class="createIdt">
             <div class="titleCreateIdt">
-                <h2>Nova Instituição</h2>
+                <h2>Nova diciplina</h2>
                 <button>
                     <i class="ph ph-x" id="xClosedCreate"></i>
                 </button>
             </div>
             <div class="campIdt">
-                <p>Instituição</p>
-                <input list="listInstituicao" type="text" placeholder="Selecione a instituição" id="instituicao">
-                <datalist id="listInstituicao"></datalist>
+                <p>Curso</p>
+                <input list="listCursos" type="text" placeholder="Selecione um curso" id="cursoSelect">
+                <datalist id="listCursos"></datalist>
                 <label for="text"></label>
             </div>
-            <div class="campIdt">
-                <p>Curso</p>
-                <input type="text" placeholder="Ex: Engenharia de software">
-                <label for="text"></label>
+            <div class="campIdtToggle">
+                <div class="campIdt">
+                    <p>Nome da diciplina</p>
+                    <input type="text" placeholder="Ex: Projeto Integrador">
+                    <label for="text"></label>
+                </div>
+                <div class="campIdt">
+                    <p>Sigla</p>
+                    <input type="text" placeholder="Ex: PI">
+                    <label for="text"></label>
+                </div>
+                <div class="campIdt">
+                    <p>Código</p>
+                    <input type="text" placeholder="Ex: PI-2025">
+                    <label for="text"></label>
+                </div>
+                <div class="campIdt">
+                    <p>Período</p>
+                    <select id="periodoSelect" required>
+                        <option value="" disabled selected>Selecione o período</option>
+                        <option value="1">1° Semestre</option>
+                        <option value="2">2° Semestre</option>
+                        <option value="3">3° Semestre</option>
+                        <option value="4">4° Semestre</option>
+                        <option value="5">5° Semestre</option>
+                        <option value="6">6° Semestre</option>
+                        <option value="7">7° Semestre</option>
+                        <option value="8">8° Semestre</option>
+                        <option value="9">9° Semestre</option>
+                        <option value="10">10° Semestre</option>
+                        <option value="11">11° Semestre</option>
+                        <option value="12">12° Semestre</option>
+                        <option value="13">13° Semestre</option>
+                        <option value="14">14° Semestre</option>
+                    </select>
+                    <label for="text"></label>
+                </div>
             </div>
             <div class="buttonsCheck">
                 <button id="cancelBtnIdt">Cancelar</button>
                 <button id="createBtnIdt">Criar</button>
+            </div>
+        </div>
+    </div>
+    <div class="cardsCreateIdt">
+        <div class="contentCardIdt">
+            <i class="ph ph-book-open" id="diciplinasIcon"></i>
+            <div class="textContentCardIdt">
+                <h2></h2> <p></p>  
+                <div class="viewDetails">
+                    <div class="code"></div>
+                    <div class="acronym"></div>
+                    <div class="period">°</div>
+                </div>
+            </div>
+            <div class="editAndDelet">
+                <button class="editCard">
+                    <i class="ph ph-pencil-simple"></i>
+                </button>
+                <button class="deletCard">
+                    <i class="ph ph-trash"></i>
+                </button>
             </div>
         </div>
     </div>

@@ -68,10 +68,6 @@ app.get("/", (req, res) => {
   res.sendFile(path.resolve(__dirname, "../index.html"));
 });
 
-app.get('/inicio', (req, res) => {
-    res.sendFile(path.join(__dirname, '../pages/mainPage.html'));
-});
-
 app.get('/cadastro', (req, res) => {
     res.sendFile(path.join(__dirname, '../pages/pageCadastro.html'));
 });
@@ -475,8 +471,10 @@ app.post('/verificar-codigo', async (req: Request, res: Response) => {
 
         if (codigoCerto === codigo) {
             codigoAtivo = '';
+            console.log("Código verificado com sucesso!");
             return res.json({ sucesso: true, mensagem: "Código verificado com sucesso!" });
         } else {
+            console.log("Código incorreto.");
             return res.status(400).json({ sucesso: false, mensagem: "Código incorreto." });
         }
     } catch (error) {
@@ -498,11 +496,34 @@ app.post('/enviar-codigo', async (req: Request, res: Response) => {
         codigoAtivo = codigo;
 
         res.json({
+            sucesso: true,
             mensagem: 'Código enviado',
             codigo
         });
     } catch (error) {
-        res.status(500).json({ erro: 'Erro ao enviar o código' });
+        res.status(500).json({ sucesso: false, erro: 'Erro ao enviar o código' });
+    }
+});
+
+app.post('/reenviar-codigo', async (req: Request, res: Response) => {
+
+    console.log("📩 Solicitação para reenviar código recebida:", req.body)
+    try {
+        const { nome, email } = req.body
+        const codigo = gerarCodigoVericacao();
+
+        await enviarCodigoVerificacao(email, nome, codigo);
+
+        codigoAtivo = codigo;
+        console.log("Código reenviado para:", email);
+        res.json({
+            sucesso: true,
+            mensagem: 'Código enviado',
+            codigo
+        });
+    } catch (error) {
+        console.log("Erro ao reenviar o código:", error);
+        res.status(500).json({ sucesso: false, erro: 'Erro ao enviar o código' });
     }
 });
 
@@ -549,7 +570,7 @@ app.post('/modificar-senha', async (req: Request, res: Response) => {
 
 });
 
-app.listen(port, '0.0.0.0', () => console.log("🚀 Servidor rodando em http://localhost:3000"));
+app.listen(port, '0.0.0.0', () => console.log("🚀 Servidor rodando em https://notadez.cfd e http://localhost:3000"));
 
 // rota de ping/pong (teste de requisicao)
 app.post("/printRequest", (req: Request, res: Response) => {

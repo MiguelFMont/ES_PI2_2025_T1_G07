@@ -4,15 +4,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" class="logo32" type="image/png" href="../assets/Logo32x32.png" />
+    <link rel="icon" class="logo32" type="image/png" href="../assets/logo32x32.png" />
     <link href="../styles/pageVerification.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="../styles/load.css">
+    <link rel="stylesheet" href="../styles/alert.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css"
+        href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+    <link rel="stylesheet" type="text/css"
+        href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css" />
     <title>Verificação de Código</title>
 </head>
 
 <body>
+    <div class="load" style="display: none;">
+        <div class="loadCircle"></div>
+    </div>
     <div class="container">
 
         <div class="title">
@@ -33,14 +42,13 @@
             </div>
 
             <p class="change-email">
-                Deseja mudar o e-mail? <a href="./pageCadastro.html">Mude aqui</a>
+                Deseja mudar o e-mail? <a href="/cadastro">Mude aqui</a>
             </p>
 
             <button class="verify-btn">Verificar </button>
 
             <div class="resend-code">
-                
-                <a href="#">
+                <a href="#" class="resend-code-btn">
                     Reenviar Código
                     <div class="timeReeviar">30s</div>
                 </a>
@@ -48,7 +56,8 @@
         </div>
     </div>
     <script src="../scripts/auth.js"></script>
-    <script src="../scripts/verification.js"></script>
+    <script src="../scripts/alert.js"></script>
+    <script src="../scripts/loader.js"></script>
 </body>
 
 </html>
