@@ -55,10 +55,6 @@ app.get("/", (req, res) => {
   res.sendFile(path.resolve(__dirname, "../index.html"));
 });
 
-app.get('/inicio', (req, res) => {
-    res.sendFile(path.join(__dirname, '../pages/mainPage.html'));
-});
-
 app.get('/cadastro', (req, res) => {
     res.sendFile(path.join(__dirname, '../pages/pageCadastro.html'));
 });
