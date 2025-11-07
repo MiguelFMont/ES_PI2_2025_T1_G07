@@ -1,0 +1,82 @@
+/* ================================================
+    RESET GERAL E VARIÁVEIS DE CORES
+   ================================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Paleta de cores principal usada no projeto */
+:root {
+    --black: #000000;
+    --white: #ffffff;
+    --grey: #808080;
+
+    --shadow: rgba(0, 0, 0, 0.2);
+
+    --color1: #ebe8e8;
+    --color2: #e8e8e8;
+    --color3: #e30075;
+    --color4: #ff4a4a;
+    --color5: #ffb319;
+    --color6: #615c5c;
+    --color7: #25e475;
+
+    --lightgrey: #d3d3d3;
+}
+
+.alert {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+    position: absolute;
+    z-index: 10000000;
+    width: 350px;
+    height: 90px;
+    top: 15px;
+    right: 0;
+    background: var(--color7);
+    box-shadow: -4px 8px 10px var(--shadow);
+    display: none;
+    justify-content: center;
+    padding: 15px;
+    gap: 10px;
+    align-items: center;
+    color: var(--white);
+    animation: mensageAlert 0.2s ease-out forwards;
+}
+
+#bntAlertClosed {
+    background: none;
+    border: none;
+}
+
+#bntAlertClosed i {
+    display: flex;
+    height: 30px;
+    width: 30px;
+    border-radius: 50px;
+    justify-content: center;
+    align-items: center;
+    background: var(--white);
+    color: var(--color7);
+    font-weight: bold;
+}
+
+@keyframes mensageAlert {
+    0% {
+        transform: translateX(100%);
+    }
+    100% {
+        transform: translateX(0);
+    }
+}
+
+@keyframes hideAlert {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}

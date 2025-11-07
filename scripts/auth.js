@@ -1,6 +1,7 @@
 // auth.js — Login e Cadastro unificados com localStorage
+// --- Chave localStorage --
+// -
 
-// --- Chave localStorage ---
 const STORAGE_KEY = "usuariosNotaDez";
 
 // --- Carrega usuários do localStorage ou inicializa com padrão ---
@@ -14,15 +15,13 @@ const inputSenha = document.querySelector("#password");
 const inputNome = document.querySelector("#name");
 const inputTelefone = document.querySelector("#telefone");
 
-// const telefoneInput = document.getElementById('telefone');
-// ... (código da máscara de telefone comentado) ...
-
 // --- Botões ---
 const botaoLogin = document.querySelector(".buttonLogin"); // index.html
 const botaoCadastro = document.querySelector(".buttonSignUp"); // pageCadastro.html
 const botaoVerify = document.querySelector(".verify-btn"); // pageVerification.html
 const botaoModificar = document.querySelector(".modify-btn"); // pageRecoveryPassword.html
 const botaoSolicitarLink = document.querySelector(".solicitar-btn"); // pageEmailToModifyPassword.html
+const resendCodeBtn = document.querySelector(".resend-code-btn"); // pageVerification.html
 // const loader = document.querySelector(".load"); // ⬅️ SELETOR DO LOADER
 
 // --- Labels originais ---
@@ -143,17 +142,6 @@ function validarCamposVazios(campos) {
     return erro;
 }
 
-function mostrarLoader(tipo = 'mostrar') {
-    const loader = document.querySelector(".load");
-    if (!loader) return;
-
-    if (tipo === 'mostrar') {
-        loader.style.display = 'flex';
-    } else {
-        loader.style.display = 'none';
-    }
-}
-
 // Olhos de mostrar/ocultar senha do pageRecovery.html
 function eyePassword(inputId, icon) {
     const input = document.getElementById(inputId);
@@ -164,77 +152,6 @@ function eyePassword(inputId, icon) {
         input.type = 'password';
         icon.classList.replace('ph-eye', 'ph-eye-slash');
     }
-}
-
-function mostrarAlerta(mensagem, tipo = 'sucesso') {
-    let customAlert = document.querySelector(".alert");
-    
-    if (!customAlert) {
-        customAlert = document.createElement('div');
-        customAlert.className = 'alert';
-        customAlert.innerHTML = `
-            <button id="bntAlertClosed">
-                <i class="ph ph-x"></i>
-            </button>
-            <p class="alert-message"></p>
-        `;
-        document.body.appendChild(customAlert);
-    }
-
-    const alertMessage = customAlert.querySelector('.alert-message') || customAlert.querySelector('p');
-    const alertIcon = customAlert.querySelector('i');
-    const iconColor = customAlert.querySelector('#bntAlertClosed i');
-    
-    if (alertMessage) alertMessage.textContent = mensagem;
-
-    customAlert.classList.remove('alert-success', 'alert-warning', 'alert-error');
-
-    switch(tipo.toLowerCase()) {
-        case 'sucesso':
-        case 'success':
-            customAlert.classList.add('alert-success');
-            customAlert.style.background = 'var(--color7)';
-            if (iconColor) iconColor.style.color = 'var(--color7)';
-            if (alertIcon) alertIcon.className = 'ph ph-check';
-            break;
-            
-        case 'aviso':
-        case 'warning':
-        case 'notificacao':
-            customAlert.classList.add('alert-warning');
-            customAlert.style.background = 'var(--color5)';
-            if (iconColor) iconColor.style.color = 'var(--color5)';
-            if (alertIcon) alertIcon.className = 'ph ph-warning';
-            break;
-            
-        case 'erro':
-        case 'error':
-            customAlert.classList.add('alert-error');
-            customAlert.style.background = 'var(--color4)';
-            if (iconColor) iconColor.style.color = 'var(--color4)'; 
-            if (alertIcon) alertIcon.className = 'ph ph-x-circle';
-            break;
-            
-        default:
-            customAlert.style.background = 'var(--color7)';
-            if (alertIcon) alertIcon.className = 'ph ph-check';
-    }
-
-    customAlert.style.display = 'flex';
-
-    const btnClose = customAlert.querySelector('#bntAlertClosed');
-    if (btnClose && !btnClose.hasAttribute('data-listener')) {
-        btnClose.setAttribute('data-listener', 'true');
-        btnClose.addEventListener('click', () => {
-            customAlert.style.display = 'none';
-        });
-    }
-
-    setTimeout(() => {
-        if (customAlert.style.display === 'flex') {
-            customAlert.style.display = 'none';
-        }
-    }, 5000);
 }
 
 // ========================================
@@ -745,4 +662,44 @@ if (botaoModificar) {
             console.error("❌ Detalhes do erro:", err.message, err.stack);
             alert("Ocorreu um erro. Verifique o console para mais detalhes.");
         });
+}
+
+
+// --- Reenviar código de verificação ---
+if (resendCodeBtn) {
+    resendCodeBtn.addEventListener("click", (e) => {
+        if (e) e.preventDefault();
+        const emailParaRecuperacao = JSON.parse(localStorage.getItem("emailParaRecuperacao"));
+        if (!emailParaRecuperacao) {
+            mostrarAlerta("Dados de cadastro não encontrados. Por favor, refaça o cadastro.", "erro");
+            console.warn("⚠️ Dados de cadastro não encontrados no localStorage");
+            return;
+        }
+        // 🟢 Reenviar código de verificação
+        console.log("📤 Reenviando código de verificação para:", emailParaRecuperacao);
+        fetch("/reenviar-codigo", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: emailParaRecuperacao })
+        })
+            .then(res => {
+                console.log("📥 Resposta do servidor:", res.status, res.ok);
+                return res.json();
+            })
+            .then(data => {
+                console.log("📥 Dados recebidos:", data);
+                if (data.sucesso) {
+                    alert("Código de verificação reenviado com sucesso!");
+                    console.log("🟢 Código de verificação reenviado com sucesso");
+                } else {
+                    alert("Erro ao reenviar código de verificação. Tente novamente.");
+                    console.warn("⚠️ Falha ao reenviar código de verificação");
+                }
+            })
+            .catch(err => {
+                console.error("❌ ERRO CAPTURADO:", err);
+                console.error("❌ Detalhes do erro:", err.message, err.stack);
+                alert("Ocorreu um erro. Verifique o console para mais detalhes.");
+            });
+    });
 }
