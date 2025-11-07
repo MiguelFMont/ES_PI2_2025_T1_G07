@@ -16,9 +16,11 @@ console.log("API KEY:", process.env.RESEND_API_KEY);
 
 import {
     addInstituicao,
+    deleteInstituicao,
+    updateInstituicao,
+    verificarCadastroInstituicao,
     getInstituicaoById,
-    getAllInstituicao,
-    verificarCadastroInstituicao
+    getAllInstituicao
 } from "./db/instituicao";
 
 import {
@@ -27,6 +29,15 @@ import {
     verificarCadastroDocente,
     modificarSenhaDocente
 } from "./db/docente";
+
+import {
+    addCurso,
+    deleteCurso,
+    updateCurso,
+    verificarCursoExistente,
+    getCursoById,
+    getAllCursos
+} from "./db/curso"
 
 import {
     gerarCodigoVericacao,
@@ -50,7 +61,9 @@ app.use('/src', express.static(path.join(__dirname, './src')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// definir a rota default;
+/*=========*/
+/* PÁGINAS */
+/*=========*/
 app.get("/", (req, res) => {
   res.sendFile(path.resolve(__dirname, "../index.html"));
 });
@@ -75,30 +88,44 @@ app.get('/verificacao', (req, res) => {
     res.sendFile(path.join(__dirname, '../pages/pageVerification.html'));
 });
 
+/*=============*/
 /* INSTITUIÇÃO */
+/*=============*/
 app.post('/instituicao/verificar', async (req: Request, res: Response) => {
     try {
         const { nome } = req.body;
         console.log("🔍 Verificando instituição:", nome);
 
+        if (!nome) {
+            return res.status(400).json({ 
+                sucesso: false, 
+                mensagem: "O campo nome é obrigatório" 
+            });
+        }
+
         const instituicao = await verificarCadastroInstituicao(nome);
         if (instituicao) {
             console.log("❌ Instituição já cadastrada:", instituicao.nome);
-
             res.json({
                 sucesso: false,
-                mensagem: "A Instituição já está cadastrada.3",
-                nome: instituicao.nome
+                mensagem: "A Instituição já está cadastrada",
+                instituicao: instituicao
             });
         } else {
             console.log("✅ Instituição ainda não cadastrada!")
-            res.status(401).json({ sucesso: true, mensagem: "Credenciais válidas!" });
+            res.json({ 
+                sucesso: true, 
+                mensagem: "Instituição disponível para cadastro" 
+            });
         }
     } catch (error) {
         console.error("❌ Erro ao verificar a instituição:", error);
-        res.status(500).json({ sucesso: false, mensagem: "Erro no servidor" });
+        res.status(500).json({ 
+            sucesso: false, 
+            mensagem: "Erro no servidor" 
+        });
     }
-})
+});
 
 app.post('/instituicao/cadastro', async (req: Request, res: Response) => {
     try {
@@ -115,6 +142,78 @@ app.post('/instituicao/cadastro', async (req: Request, res: Response) => {
         console.error(error);
         console.log("❌ Erro ao registrar a instituição.");
         res.status(500).json({ error: "Erro ao registrar a instituição." })
+    }
+});
+
+app.post('/instituicao/atualizar', async (req: Request, res: Response) => {
+    try {
+        const { id, novo_nome } = req.body;
+        
+        if (!id || !novo_nome) {
+            console.log("❌ ID e novo nome são obrigatórios!");
+            return res.status(400).json({ 
+                error: "Os campos ID e novo_nome são obrigatórios!" 
+            });
+        }
+
+        // Verificar se a instituição existe
+        const instituicaoExistente = await getInstituicaoById(id);
+        if (!instituicaoExistente) {
+            console.log("❌ Instituição não encontrada para o ID:", id);
+            return res.status(404).json({ 
+                error: "Instituição não encontrada com o ID fornecido" 
+            });
+        }
+
+        // Verificar se o novo nome já existe em outra instituição
+        const instituicaoComMesmoNome = await verificarCadastroInstituicao(novo_nome);
+        if (instituicaoComMesmoNome && instituicaoComMesmoNome.id !== id) {
+            console.log("❌ Já existe uma instituição com este nome:", novo_nome);
+            return res.status(409).json({ 
+                error: "Já existe uma instituição cadastrada com este nome" 
+            });
+        }
+
+        await updateInstituicao(id, novo_nome);
+        console.log("✅ Instituição atualizada com sucesso!");
+        res.status(200).json({ 
+            message: "Instituição atualizada com sucesso",
+            id: id,
+            novo_nome: novo_nome
+        });
+    } catch (error) {
+        console.error("❌ Erro ao atualizar a instituição:", error);
+        res.status(500).json({ error: "Erro ao atualizar a instituição." });
+    }
+});
+
+app.post('/instituicao/deletar', async (req: Request, res: Response) => {
+    try {
+        const { id } = req.body;
+        if (!id) {
+            console.log("❌ O campo ID é obrigatório!");
+            return res.status(400).json({ 
+                error: "O campo ID é obrigatório!" 
+            });   
+        }
+
+        const deletado = await deleteInstituicao(id);
+        if (!deletado) {
+            return res.status(404).json({ 
+                error: "Instituição não encontrada" 
+            });
+        }
+
+        console.log("✅ Instituição deletada com sucesso!")
+        res.json({ 
+            message: "Instituição deletada com sucesso" 
+        });
+    } catch (error) {
+        console.error(error);
+        console.log("❌ Erro ao deletar a instituição.");
+        res.status(500).json({ 
+            error: "Erro ao deletar a instituição." 
+        });
     }
 });
 
@@ -147,7 +246,156 @@ app.post('/instituicao/all', async (req: Request, res: Response) => {
     }
 })
 
+/*=======*/
+/* CURSO */
+/*=======*/
+// Verificar se curso já existe
+app.post('/curso/verificar', async (req: Request, res: Response) => {
+    try {
+        const { fk_id_docente, fk_id_instituicao, nome } = req.body;
+        console.log("🔍 Verificando curso:", { fk_id_docente, fk_id_instituicao, nome });
+
+        const curso = await verificarCursoExistente(fk_id_docente, fk_id_instituicao, nome);
+        if (curso) {
+            console.log("❌ Curso já cadastrado:", curso.nome);
+            res.json({
+                sucesso: false,
+                mensagem: "O Curso já está cadastrado.",
+                curso: curso
+            });
+        } else {
+            console.log("✅ Curso ainda não cadastrado!")
+            res.status(200).json({ 
+                sucesso: true, 
+                mensagem: "Curso disponível para cadastro!" 
+            });
+        }
+    } catch (error) {
+        console.error("❌ Erro ao verificar o curso:", error);
+        res.status(500).json({ 
+            sucesso: false, 
+            mensagem: "Erro no servidor ao verificar curso" 
+        });
+    }
+});
+
+// Cadastrar novo curso
+app.post('/curso/cadastro', async (req: Request, res: Response) => {
+    try {
+        const { fk_id_docente, fk_id_instituicao, nome } = req.body;
+        
+        if (!fk_id_docente || !fk_id_instituicao || !nome) {
+            console.log("❌ Campos obrigatórios faltando:", { fk_id_docente, fk_id_instituicao, nome });
+            return res.status(400).json({ 
+                error: "Todos os campos são obrigatórios: docente, instituição e nome!" 
+            });
+        }
+
+        const id = await addCurso(fk_id_docente, fk_id_instituicao, nome);
+        console.log("✅ Curso registrado com sucesso! ID:", id);
+        res.status(201).json({ 
+            message: "Curso registrado com sucesso", 
+            id: id 
+        });
+    } catch (error) {
+        console.error("❌ Erro ao registrar o curso:", error);
+        res.status(500).json({ 
+            error: "Erro ao registrar o curso." 
+        });
+    }
+});
+
+// Atualizar curso existente
+app.post('/curso/atualizar', async (req: Request, res: Response) => {
+    try {
+        const { id, fk_id_docente, fk_id_instituicao, nome } = req.body;
+        
+        if (!id || !fk_id_docente || !fk_id_instituicao || !nome) {
+            console.log("❌ Campos obrigatórios faltando:", { id, fk_id_docente, fk_id_instituicao, nome });
+            return res.status(400).json({ 
+                error: "Todos os campos são obrigatórios: id, docente, instituição e nome!" 
+            });
+        }
+
+        await updateCurso(id, fk_id_docente, fk_id_instituicao, nome);
+        console.log("✅ Curso atualizado com sucesso! ID:", id);
+        res.status(200).json({ 
+            message: "Curso atualizado com sucesso" 
+        });
+    } catch (error) {
+        console.error("❌ Erro ao atualizar o curso:", error);
+        res.status(500).json({ 
+            error: "Erro ao atualizar o curso." 
+        });
+    }
+});
+
+// Deletar curso
+app.post('/curso/deletar', async (req: Request, res: Response) => {
+    try {
+        const { id } = req.body;
+        if (!id) {
+            console.log("❌ O campo ID é obrigatório!");
+            return res.status(400).json({ 
+                error: "O campo ID é obrigatório!" 
+            });   
+        }
+
+        await deleteCurso(id);
+        console.log("✅ Curso deletado com sucesso! ID:", id);
+        res.status(200).json({ 
+            message: "Curso deletado com sucesso" 
+        });
+    } catch (error) {
+        console.error("❌ Erro ao deletar o curso:", error);
+        res.status(500).json({ 
+            error: "Erro ao deletar o curso." 
+        });
+    }
+});
+
+// Obter curso por ID
+app.post('/curso/:id', async (req: Request, res: Response) => {
+    try {
+        const id = Number(req.params.id);
+        const curso = await getCursoById(id);
+        if (curso) {
+            res.json(curso);
+        } else {
+            res.status(404).json({ 
+                message: "Curso não encontrado com o ID fornecido" 
+            });
+        }
+    } catch (error) {
+        console.error("❌ Erro ao buscar curso por ID:", error);
+        res.status(500).json({ 
+            error: "Erro ao buscar o curso pelo ID fornecido." 
+        });
+    }
+});
+
+// Obter todos os cursos
+app.post('/curso/all', async (req: Request, res: Response) => {
+    try {
+        const cursos = await getAllCursos();
+        if (cursos && cursos.length > 0) {
+            res.json(cursos);
+        } else {
+            res.status(404).json({ 
+                message: "Não há cursos cadastrados." 
+            });
+        }
+    } catch (error) {
+        console.error("❌ Erro ao buscar todos os cursos:", error);
+        res.status(500).json({ 
+            error: "Erro ao buscar os cursos." 
+        });
+    }
+});
+
+/*=========*/
 /* DOCENTE */
+/*=========*/
 app.post('/docente', async (req: Request, res: Response) => {
     try {
         const { nome, email, telefone, senha } = req.body;

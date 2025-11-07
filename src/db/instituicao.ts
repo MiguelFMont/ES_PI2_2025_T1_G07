@@ -12,9 +12,9 @@ export async function addInstituicao(nome: string): Promise<number> {
     try {
         const result = await conn.execute<{outBinds : {id: number}}>(
             `
-            INSERT INTO INSTITUICAO (NOME)
+            INSERT INTO Instituicao (Nome)
             VALUES (:nome)
-            RETURNING ID_INSTITUICAO INTO :id
+            RETURNING ID_Instituicao INTO :id
             `,
             {nome, id: {dir: OracleDB.BIND_OUT, type: OracleDB.NUMBER}},
             {autoCommit: true}
@@ -27,27 +27,60 @@ export async function addInstituicao(nome: string): Promise<number> {
         }
 
         return outBinds.id[0];
+    } finally {
+        await close(conn);
+    }
+}
+
+// Deletar uma instituição da tabela
+export async function deleteInstituicao(id: number): Promise<boolean> {
+    const conn = await open();
+    try {
+        const result = await conn.execute(
+            `DELETE FROM Instituicao WHERE ID_Instituicao = :id`,
+            { id },
+            { autoCommit: true }
+        );
         
+        return result.rowsAffected !== undefined && result.rowsAffected > 0;
+    } finally {
+        await close(conn);
+    }
+}
+
+export async function updateInstituicao(id: number, novo_nome: string): Promise<boolean> {
+    const conn = await open();
+    try {
+        const result = await conn.execute(
+            `
+            UPDATE Instituicao
+            SET Nome = :novo_nome
+            WHERE ID_Instituicao = :id
+            `,
+            { novo_nome, id },
+            { autoCommit: true }
+        );
+        
+        return result.rowsAffected !== undefined && result.rowsAffected > 0;
     } finally {
         await close(conn);
     }
 }
 
 // Verifica se a instituição já não está cadastrada
-export async function verificarCadastroInstituicao(nome: string): Promise<{ nome: string } | null>{
+export async function verificarCadastroInstituicao(nome: string): Promise<Instituicao | null> {
     const conn = await open();
     try {
         const result = await conn.execute(
-            `SELECT NOME FROM INSTITUICAO  
-            WHERE NOME = :nome
+            `SELECT ID_Instituicao as "id", Nome as "nome" FROM Instituicao  
+            WHERE UPPER(Nome) = UPPER(:nome)
             FETCH FIRST 1 ROWS ONLY`,
             { nome },
             { outFormat: OracleDB.OUT_FORMAT_OBJECT }
         );
         
         if (result.rows && result.rows.length > 0) {
-            const docente = result.rows[0] as { NOME: string };
-            return { nome: docente.NOME };
+            return result.rows[0] as Instituicao;
         }
         
         return null;
@@ -62,12 +95,18 @@ export async function verificarCadastroInstituicao(nome: string): Promise<{ nome
 export async function getInstituicaoById(id: number): Promise<Instituicao | null> {
     const conn = await open();
     try {
-        const result = await conn.execute (
-            `SELECT ID_INSTITUICAO as "id", NOME as "nome" FROM INSTITUICAO
-            WHERE ID_INSTITUICAO = :id`,
-            [id]
+        const result = await conn.execute(
+            `SELECT ID_Instituicao as "id", Nome as "nome" FROM Instituicao
+            WHERE ID_Instituicao = :id`,
+            { id },
+            { outFormat: OracleDB.OUT_FORMAT_OBJECT }
         );
-        return (result.rows && result.rows[0]) as Instituicao | null;
+        
+        if (result.rows && result.rows.length > 0) {
+            return result.rows[0] as Instituicao;
+        }
+        
+        return null;
     } finally {
         await close(conn);
     }
@@ -77,10 +116,14 @@ export async function getInstituicaoById(id: number): Promise<Instituicao | null
 export async function getAllInstituicao(): Promise<Instituicao[]> {
     const conn = await open();
     try {
-        const result = await conn.execute (
-            `SELECT ID_INSTITUICAO as "id", NOME as "nome" FROM INSTITUICAO`
+        const result = await conn.execute(
+            `SELECT ID_Instituicao as "id", Nome as "nome" FROM Instituicao
+            ORDER BY Nome`,
+            {},
+            { outFormat: OracleDB.OUT_FORMAT_OBJECT }
         );
-        return result.rows as Instituicao[];
+        
+        return result.rows ? result.rows as Instituicao[] : [];
     } finally {
         await close(conn);
     }
