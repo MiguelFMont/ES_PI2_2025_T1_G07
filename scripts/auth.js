@@ -108,11 +108,18 @@ function marcarErroCampo(input, msg) {
     if (!input || !input.parentElement) return;
     const parent = input.parentElement;
     const label = parent.querySelector("label");
+    const [email, nome, tel, senha] = parent.querySelector("mail", "name", "tel", "password");
     parent.classList.add("error");
     if (label) {
         label.textContent = msg;
         label.style.color = "var(--color4)";
+
+        // email.style.borderColor = "1px solid var(--color4)";
+        // nome.style.borderColor = "1px solid var(--color4)";
+        // tel.style.borderColor = "1px solid var(--color4)";
+        // senha.style.borderColor = "1px solid var(--color4)";
     }
+
 }
 
 function limparErroCampo(input) {
@@ -165,6 +172,7 @@ function marcarErroCampo(input, msg) {
     if (label) {
         label.textContent = msg;
         label.style.color = "var(--color4)";
+
     }
 }
 
@@ -433,6 +441,7 @@ if (botaoCadastro) {
                     mostrarLoader('esconder');
                     mostrarAlerta("Código enviado! Verifique seu e-mail. Você será redirecionado para a página de verificação.", "sucesso");
                     console.log("✅ Código enviado para:", emailDigitado);
+                    fecharAlerta();
                     // Redireciona após 5 segundos
                     redirectTimer = setTimeout(() => {
                         window.location.href = "/verificacao";
@@ -448,7 +457,6 @@ if (botaoCadastro) {
 
                 // 2. Esconde o loader e o alerta
                 mostrarLoader('esconder');
-                if (customAlert) customAlert.style.display = "none";
 
                 // 3. Loga o erro
                 console.error("❌ Erro no cadastro:", err);
@@ -456,6 +464,7 @@ if (botaoCadastro) {
     });
 }
 
+// --- VERIFICAÇÃO DE CÓDIGO ---
 if (botaoVerify) {
     botaoVerify.addEventListener("click", (e) => {
         if (e) e.preventDefault();
@@ -463,10 +472,11 @@ if (botaoVerify) {
         const cadastroTemp = JSON.parse(localStorage.getItem("cadastroTemp"));
 
         if (!cadastroTemp) {
-            alert("Dados de cadastro não encontrados. Por favor, refaça o cadastro.");
-            window.location.href = "../index.html";
+            mostrarAlerta("Dados de cadastro não encontrados. Por favor, refaça o cadastro.", "erro")
+            window.location.href = "/cadastro";
             return;
         }
+        mostrarLoader('mostrar');
 
         const { nome, email, telefone, senha } = cadastroTemp;
 
@@ -492,6 +502,8 @@ if (botaoVerify) {
             .then(data => {
                 console.log("3. Dados da verificação:", data);
                 if (data.sucesso) {
+                    mostrarLoader('esconder');
+                    mostrarAlerta("Código válido! Cadastrando docente...", "sucesso");
                     console.log("4. Código válido! Cadastrando docente...");
                     return fetch("/docente", {
                         method: "POST",
@@ -504,7 +516,8 @@ if (botaoVerify) {
                         })
                     });
                 } else {
-                    alert("Código inválido. Tente novamente.");
+                    mostrarLoader('esconder');
+                    mostrarAlerta("Código inválido. Tente novamente.", "erro");
                     throw new Error("Código inválido");
                 }
             })
@@ -523,17 +536,20 @@ if (botaoVerify) {
                     }));
                     console.log("✅ Docente cadastrado e logado:", cadastroTemp.email);
                     localStorage.removeItem("cadastroTemp");
-                    alert("Docente cadastrado com sucesso! Você será redirecionado para a página inicial.");
-                    window.location.href = "../pages/mainPage.html";
+                    mostrarLoader('esconder');
+                    mostrarAlerta("Docente cadastrado com sucesso! Você será redirecionado para a página inicial.", "sucesso");
+                    window.location.href = "/inicio";
                 } else {
                     console.log("❌ Erro ao cadastrar docente:", data.message);
-                    alert("Erro ao cadastrar o docente.");
+                    mostrarLoader('esconder');
+                    mostrarAlerta("Erro ao cadastrar docente. Tente novamente.", "erro");
                 }
             })
             .catch(err => {
                 console.error("❌ ERRO CAPTURADO:", err);
                 console.error("❌ Detalhes do erro:", err.message, err.stack);
-                alert("Ocorreu um erro. Verifique o console para mais detalhes.");
+                mostrarLoader('esconder');
+                mostrarAlerta("Ocorreu um erro. Verifique o console para mais detalhes.", "erro");
             });
     });
 }
@@ -570,7 +586,7 @@ if (botaoSolicitarLink) {
             return;
         }
         // Enviar solicitação de link de alteração de senha
-        if (loader) loader.style.display = "flex";
+        mostrarLoader('mostrar');
         fetch("/link-alterar-senha", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -583,20 +599,21 @@ if (botaoSolicitarLink) {
             .then(data => {
                 console.log("📥 Dados recebidos:", data);
                 if (data.sucesso) {
-                    if (loader) loader.style.display = "none";
+                    mostrarLoader('esconder');
+                    mostrarAlerta("Link de alteração enviado! Verifique seu e-mail.", "sucesso");
                     console.log("🟢 Link de alteração enviado para:", emailDigitado);
-                    alert("E-mail de recuperação enviado com sucesso!");
                     inputEmail.value = "";
                 } else {
-                    alert("Erro ao enviar e-mail de recuperação. Tente novamente.");
-                    if (loader) loader.style.display = "none";
+                    mostrarLoader('esconder');
+                    mostrarAlerta("Erro ao enviar e-mail de recuperação. Tente novamente.", "erro");
                     console.warn("⚠️ Falha ao enviar link de alteração para:", emailDigitado);
                 }
             })
             .catch(err => {
                 console.error("❌ ERRO CAPTURADO:", err);
                 console.error("❌ Detalhes do erro:", err.message, err.stack);
-                alert("Ocorreu um erro. Verifique o console para mais detalhes.");
+                mostrarLoader('esconder');
+                mostrarAlerta("Ocorreu um erro. Verifique o console para mais detalhes.", "erro");
             });
     });
 }
@@ -627,7 +644,7 @@ if (botaoModificar) {
             erroAtivo = true;
             return;
         }
-        if (loader) loader.style.display = "flex";
+        mostrarLoader('mostrar');
         // 🟢 Enviar nova senha para o servidor
         console.log("📤 Enviando nova senha para o servidor")
         fetch("/modificar-senha", {
@@ -643,15 +660,14 @@ if (botaoModificar) {
                 console.log("📥 Dados recebidos:", data);
                 if (data.sucesso) {
 
-                    if (loader) loader.style.display = "none";
-                    alert("Senha modificada com sucesso! Você será redirecionado para o login.");
+                    mostrarLoader('esconder');
+                    mostrarAlerta("Senha modificada com sucesso! Você será redirecionado para o login.", "sucesso");
                     console.log("🟢 Senha modificada com sucesso");
                     localStorage.removeItem("emailParaRecuperacao");
-                    window.location.href = "../index.html";
+                    window.location.href = "/";
                 } else {
-
-                    if (loader) loader.style.display = "none";
-                    alert("Erro ao modificar a senha. Tente novamente.");
+                    mostrarLoader('esconder');
+                    mostrarAlerta("Erro ao modificar a senha. Tente novamente.", "erro");
                     console.warn("⚠️ Falha ao modificar a senha");
                 }
             }
@@ -660,7 +676,8 @@ if (botaoModificar) {
         .catch(err => {
             console.error("❌ ERRO CAPTURADO:", err);
             console.error("❌ Detalhes do erro:", err.message, err.stack);
-            alert("Ocorreu um erro. Verifique o console para mais detalhes.");
+            mostrarLoader('esconder');
+            mostrarAlerta("Ocorreu um erro. Verifique o console para mais detalhes.", "erro");
         });
 }
 
@@ -669,18 +686,21 @@ if (botaoModificar) {
 if (resendCodeBtn) {
     resendCodeBtn.addEventListener("click", (e) => {
         if (e) e.preventDefault();
-        const emailParaRecuperacao = JSON.parse(localStorage.getItem("emailParaRecuperacao"));
-        if (!emailParaRecuperacao) {
+        const cadastroTemp = JSON.parse(localStorage.getItem("cadastroTemp"));
+
+        if (!cadastroTemp) {
+            // mostrarLoader('esconder');
             mostrarAlerta("Dados de cadastro não encontrados. Por favor, refaça o cadastro.", "erro");
             console.warn("⚠️ Dados de cadastro não encontrados no localStorage");
             return;
         }
+        mostrarLoader('mostrar');
         // 🟢 Reenviar código de verificação
-        console.log("📤 Reenviando código de verificação para:", emailParaRecuperacao);
+        console.log("📤 Reenviando código de verificação para:", cadastroTemp);
         fetch("/reenviar-codigo", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: emailParaRecuperacao })
+            body: JSON.stringify({ nome: cadastroTemp.nome, email: cadastroTemp.email })
         })
             .then(res => {
                 console.log("📥 Resposta do servidor:", res.status, res.ok);
@@ -689,17 +709,20 @@ if (resendCodeBtn) {
             .then(data => {
                 console.log("📥 Dados recebidos:", data);
                 if (data.sucesso) {
-                    alert("Código de verificação reenviado com sucesso!");
+                    mostrarLoader('esconder');
+                    mostrarAlerta("Código de verificação reenviado com sucesso!", "sucesso");
                     console.log("🟢 Código de verificação reenviado com sucesso");
                 } else {
-                    alert("Erro ao reenviar código de verificação. Tente novamente.");
+                    mostrarLoader('esconder');
+                    mostrarAlerta("Erro ao reenviar código de verificação. Tente novamente.", "erro");
                     console.warn("⚠️ Falha ao reenviar código de verificação");
                 }
             })
             .catch(err => {
                 console.error("❌ ERRO CAPTURADO:", err);
                 console.error("❌ Detalhes do erro:", err.message, err.stack);
-                alert("Ocorreu um erro. Verifique o console para mais detalhes.");
+                mostrarLoader('esconder');
+                mostrarAlerta("Ocorreu um erro. Verifique o console para mais detalhes.", "erro");
             });
     });
 }

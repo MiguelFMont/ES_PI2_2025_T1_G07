@@ -65,7 +65,7 @@ function mostrarAlerta(mensagem, tipo = 'sucesso') {
 
     setTimeout(() => {
         if (customAlert.style.display === 'flex') {
-            customAlert.style.display = 'none';
+            customAlert.className = 'hideAlert' ;
         }
     }, 5000);
 }

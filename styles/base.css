@@ -429,15 +429,6 @@ input {
     border: 1px solid var(--color5);
 }
 
-.login > div.error {
-    border: 1px solid var(--color4) !important;
-}
-
-.login > div.error label {
-    color: var(--color4) !important;
-}
-
-
 /* ================================================
     ESQUECI MINHA SENHA
    ================================================ */

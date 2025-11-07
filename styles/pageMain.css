@@ -862,7 +862,8 @@ body {
     justify-content: space-around;
     align-items: center;
     gap: 10px;
-    width: max-content;
+    max-width: 280px;
+    overflow-x: auto;
 }
 
 .viewDetails div {
@@ -899,6 +900,7 @@ body {
 }
 
 .containerAddIdt {
+    display: block;
     width: 100%;
     height: min-content;
     border-radius: 8px;
@@ -945,6 +947,7 @@ body {
     align-items: center;
     gap: 10px;
     padding: 15px;
+    padding-top: 0;
 }
 
 #cancelAddIdt, #saveAddIdt {
@@ -972,4 +975,37 @@ body {
 #saveAddIdt:hover {
     background: linear-gradient(145deg, var(--color5Hover), var(--color4));
     cursor: pointer;
+}
+
+.viewDetailsIC {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 10px;
+    max-width: 280px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+    border: 1px solid red;
+}
+
+.linkDatailsIdt {
+    font-size: 0.965rem;
+    font-weight: 500;
+    padding: 2px 4px;
+    border-radius: 4px;
+    text-align: center;
+    white-space: nowrap;
+    background: var(--color4Shadow);
+    color: var(--color4);
+}
+
+.viewDetailsIC::-webkit-scrollbar {
+    height: 5px;
+    background: var(--color1);
+    border-radius: 8px;
+}
+
+.viewDetailsIC::-webkit-scrollbar-thumb {
+    background: var(--lightgrey);
+    border-radius: 50px;
 }

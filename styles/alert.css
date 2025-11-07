@@ -46,6 +46,26 @@
     animation: mensageAlert 0.2s ease-out forwards;
 }
 
+.hideAlert {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+    position: absolute;
+    z-index: 10000000;
+    width: 350px;
+    height: 90px;
+    top: 15px;
+    right: 0;
+    background: var(--color7);
+    box-shadow: -4px 8px 10px var(--shadow);
+    display: none;
+    justify-content: center;
+    padding: 15px;
+    gap: 10px;
+    align-items: center;
+    color: var(--white);
+    animation: hideAlert 0.2s ease-out forwards;
+}
+
 #bntAlertClosed {
     background: none;
     border: none;

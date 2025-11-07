@@ -227,8 +227,10 @@ app.post('/verificar-codigo', async (req: Request, res: Response) => {
 
         if (codigoCerto === codigo) {
             codigoAtivo = '';
+            console.log("Código verificado com sucesso!");
             return res.json({ sucesso: true, mensagem: "Código verificado com sucesso!" });
         } else {
+            console.log("Código incorreto.");
             return res.status(400).json({ sucesso: false, mensagem: "Código incorreto." });
         }
     } catch (error) {
@@ -255,6 +257,28 @@ app.post('/enviar-codigo', async (req: Request, res: Response) => {
             codigo
         });
     } catch (error) {
+        res.status(500).json({ sucesso: false, erro: 'Erro ao enviar o código' });
+    }
+});
+
+app.post('/reenviar-codigo', async (req: Request, res: Response) => {
+
+    console.log("📩 Solicitação para reenviar código recebida:", req.body)
+    try {
+        const { nome, email } = req.body
+        const codigo = gerarCodigoVericacao();
+
+        await enviarCodigoVerificacao(email, nome, codigo);
+
+        codigoAtivo = codigo;
+        console.log("Código reenviado para:", email);
+        res.json({
+            sucesso: true,
+            mensagem: 'Código enviado',
+            codigo
+        });
+    } catch (error) {
+        console.log("Erro ao reenviar o código:", error);
         res.status(500).json({ sucesso: false, erro: 'Erro ao enviar o código' });
     }
 });
