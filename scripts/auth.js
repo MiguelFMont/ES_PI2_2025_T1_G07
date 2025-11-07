@@ -526,7 +526,7 @@ if (botaoVerify) {
                     localStorage.removeItem("cadastroTemp");
                     mostrarLoader('esconder');
                     mostrarAlerta("Docente cadastrado com sucesso! Você será redirecionado para a página inicial.", "sucesso");
-                    window.location.href = "/inicio";
+                    window.location.href = "../pages/mainPage.html";
                 } else {
                     console.log("❌ Erro ao cadastrar docente:", data.message);
                     mostrarLoader('esconder');
