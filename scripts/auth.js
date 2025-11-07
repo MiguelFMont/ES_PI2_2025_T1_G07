@@ -108,16 +108,10 @@ function marcarErroCampo(input, msg) {
     if (!input || !input.parentElement) return;
     const parent = input.parentElement;
     const label = parent.querySelector("label");
-    const [email, nome, tel, senha] = parent.querySelector("mail", "name", "tel", "password");
     parent.classList.add("error");
     if (label) {
         label.textContent = msg;
         label.style.color = "var(--color4)";
-
-        // email.style.borderColor = "1px solid var(--color4)";
-        // nome.style.borderColor = "1px solid var(--color4)";
-        // tel.style.borderColor = "1px solid var(--color4)";
-        // senha.style.borderColor = "1px solid var(--color4)";
     }
 
 }
@@ -289,7 +283,7 @@ if (botaoLogin) {
         const emailDigitado = inputEmail.value.trim();
         const senhaDigitada = inputSenha.value.trim();
 
-
+        mostrarLoader('mostrar');
         console.log("📤 Enviando login para:", emailDigitado);
         fetch("/verificar-docente", {
             method: "POST",
@@ -298,15 +292,14 @@ if (botaoLogin) {
         })
             .then(res => {
                 console.log("📥 Status da resposta:", res.status, res.ok);
-                if (!res.ok) {
-                    throw new Error("Credenciais inválidas");
-                }
                 return res.json();
             })
             .then(data => {
                 console.log("📥 Dados recebidos:", data);
 
                 if (data.sucesso && data.nome && data.email) {
+                    mostrarLoader('esconder');
+                    mostrarAlerta("Login bem-sucedido! Redirecionando...", "sucesso");
                     console.log("✅ Login bem-sucedido! Nome:", data.nome, "Email:", data.email);
 
                     errorMessage.style.display = "none";
@@ -320,8 +313,11 @@ if (botaoLogin) {
                     const salvou = localStorage.getItem("usuarioLogado");
                     console.log("💾 Salvou no localStorage:", salvou);
 
-                    window.location.href = "/inicio";
+                    window.location.href = "../pages/mainPage.html";
+
                 } else {
+                    mostrarLoader('esconder');
+                    mostrarAlerta("Login falhou. Verifique suas credenciais.", "erro");
                     console.log("❌ Login falhou - dados incompletos");
                     throw new Error("Dados de resposta inválidos");
                 }
@@ -379,18 +375,11 @@ if (botaoCadastro) {
         if (algumErro) {
             errorMessage.style.display = "block";
             erroAtivo = true;
-            return; 
+            return;
         }
-        
-        // 🟢 MOSTRA O LOADER E AGENDA OS EVENTOS
-        
-        // 1. Mostra o loader
         mostrarLoader('mostrar');
 
-        // 2. Salva os IDs dos timers para podermos cancelá-los
-        let alertTimer = null;
         let redirectTimer = null;
-
 
         // Salva os dados temporários
         localStorage.setItem("cadastroTemp", JSON.stringify({
@@ -441,7 +430,6 @@ if (botaoCadastro) {
                     mostrarLoader('esconder');
                     mostrarAlerta("Código enviado! Verifique seu e-mail. Você será redirecionado para a página de verificação.", "sucesso");
                     console.log("✅ Código enviado para:", emailDigitado);
-                    fecharAlerta();
                     // Redireciona após 5 segundos
                     redirectTimer = setTimeout(() => {
                         window.location.href = "/verificacao";
@@ -450,7 +438,7 @@ if (botaoCadastro) {
             })
             .catch(err => {
                 // ❌ TRATAMENTO DE ERRO CENTRALIZADO ❌
-                
+
                 // 1. PARA OS TIMERS AGENDADOS!
                 clearTimeout(alertTimer);
                 clearTimeout(redirectTimer);

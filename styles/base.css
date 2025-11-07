@@ -378,6 +378,10 @@ input {
     caret-color: var(--color5);
 }
 
+.error input {
+    border-color: var(--color4) !important;
+}
+
 .mail input, .password input, .name input, .tel input {
     border: none;
     border-radius: 8px;
@@ -531,56 +535,9 @@ input {
     text-decoration: none;
     color: var(--color5);
     cursor: pointer;
-    outline: none; /* remove a borda de foco padrão quando aperta tab (Miguel)*/
+    outline: none; 
     transition: all 0.2s ease;
 }
-
-.alert {
-    border-top-left-radius: 8px;
-    border-bottom-left-radius: 8px;
-    position: absolute;
-    z-index: 10000000;
-    width: 350px;
-    height: 90px;
-    top: 15px;
-    right: 0;
-    background: var(--color7);
-    box-shadow: -4px 8px 10px var(--shadow);
-    display: none;
-    justify-content: center;
-    padding: 15px;
-    gap: 10px;
-    align-items: center;
-    color: var(--white);
-    animation: mensageAlert 0.2s ease-out forwards;
-}
-
-#bntAlertClosed {
-    background: none;
-    border: none;
-}
-
-#bntAlertClosed i {
-    display: flex;
-    height: 30px;
-    width: 30px;
-    border-radius: 50px;
-    justify-content: center;
-    align-items: center;
-    background: var(--white);
-    color: var(--color7);
-    font-weight: bold;
-}
-
-@keyframes mensageAlert {
-    0% {
-        transform: translateX(100%);
-    }
-    100% {
-        transform: translateX(0);
-    }
-}
-
 
 /* Ícone de olho para mostrar/esconder senha */
 .eyes-password {

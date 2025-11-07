@@ -6,6 +6,8 @@
     <link href="styles/base.css" rel="stylesheet" type="text/css" />
     <meta charset="UTF-8" />
     <link rel="icon" class="logo32" type="image/png" href="/assets/logo32x32.png" />
+    <link rel="stylesheet" href="styles/load.css" />
+    <link rel="stylesheet" href="styles/alert.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -52,6 +54,11 @@
             </div>
         </div>
     </div>
+
+    <div class="load" style="display: none;">
+        <div class="loadCircle"></div>
+    </div>
+
     <div class="container">
         <div class="title">
             <img class="logo" src="./assets/logoComIcone.png" alt="">
@@ -89,8 +96,9 @@
         </div>
     </div>
 
-    <script src="scripts/monster.js"></script>
-    <!-- códigos de movimentação dos monstros -->
+    <script src="scripts/loader.js"></script>
+    <script src="scripts/alert.js"></script>
     <script src="scripts/auth.js"></script>
+    <!-- códigos de movimentação dos monstros -->
     <script src="scripts/monster.js"></script>
 </body>
