@@ -50,7 +50,6 @@ if (!errorMessage) {
 // estado de erro
 let erroAtivo = false;
 
-// --- Helpers --- //////////////////////////////////////////////////////////////////////////////////////////////
 
 // pageVerification.html - Manter o email preenchido
 
@@ -184,6 +183,7 @@ function mostrarAlerta(mensagem, tipo = 'sucesso') {
 
     const alertMessage = customAlert.querySelector('.alert-message') || customAlert.querySelector('p');
     const alertIcon = customAlert.querySelector('i');
+    const iconColor = customAlert.querySelector('#bntAlertClosed i');
     
     if (alertMessage) alertMessage.textContent = mensagem;
 
@@ -194,6 +194,7 @@ function mostrarAlerta(mensagem, tipo = 'sucesso') {
         case 'success':
             customAlert.classList.add('alert-success');
             customAlert.style.background = 'var(--color7)';
+            if (iconColor) iconColor.style.color = 'var(--color7)';
             if (alertIcon) alertIcon.className = 'ph ph-check';
             break;
             
@@ -202,6 +203,7 @@ function mostrarAlerta(mensagem, tipo = 'sucesso') {
         case 'notificacao':
             customAlert.classList.add('alert-warning');
             customAlert.style.background = 'var(--color5)';
+            if (iconColor) iconColor.style.color = 'var(--color5)';
             if (alertIcon) alertIcon.className = 'ph ph-warning';
             break;
             
@@ -209,6 +211,7 @@ function mostrarAlerta(mensagem, tipo = 'sucesso') {
         case 'error':
             customAlert.classList.add('alert-error');
             customAlert.style.background = 'var(--color4)';
+            if (iconColor) iconColor.style.color = 'var(--color4)'; 
             if (alertIcon) alertIcon.className = 'ph ph-x-circle';
             break;
             
