@@ -395,7 +395,7 @@ input {
     margin-left: 8px;
     transition: all 0.3s ease;
     background: var(--color1);
-    font-size: 1rem;
+    font-size: 15px;
     color: var(--grey);
     pointer-events: none;
 }
