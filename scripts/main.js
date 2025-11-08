@@ -1,39 +1,39 @@
 // main.js
 document.addEventListener("DOMContentLoaded", () => {
     // --- LOGIN ---
-    // const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
-    // if (usuario) {
-    //     const nomeEl = document.querySelector(".titleUser h1");
-    //     const emailEl = document.querySelector(".titleUser p");
+    const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+    if (usuario) {
+        const nomeEl = document.querySelector(".titleUser h1");
+        const emailEl = document.querySelector(".titleUser p");
 
-    //     if (nomeEl) {
-    //         const partesNome = usuario.nome.trim().split(/\s+/);
-    //         let primeiro = partesNome[0];
-    //         let segundoMenor = "";
-    //         if (partesNome.length > 1) {
-    //             const restantes = partesNome.slice(1);
-    //             const nomesValidos = restantes.filter(n => n.length >= 4);
-    //             if (nomesValidos.length > 0) {
-    //                 segundoMenor = nomesValidos.reduce((menor, atual) =>
-    //                     atual.length < menor.length ? atual : menor
-    //                 );
-    //             } else {
-    //                 segundoMenor = partesNome[partesNome.length - 1];
-    //             }
-    //         }
-    //         const formatarNome = (nome) =>
-    //             nome.charAt(0).toUpperCase() + nome.slice(1).toLowerCase();
-    //         const nomeFormatado = segundoMenor
-    //             ? `${formatarNome(primeiro)} ${formatarNome(segundoMenor)}`
-    //             : formatarNome(primeiro);
-    //         nomeEl.textContent = nomeFormatado;
-    //         nomeEl.style.whiteSpace = "nowrap";
-    //     }
-    //     if (emailEl) emailEl.textContent = usuario.email;
-    // } else {
-    //     window.location.href = "/";
-    //     return;
-    // }
+        if (nomeEl) {
+            const partesNome = usuario.nome.trim().split(/\s+/);
+            let primeiro = partesNome[0];
+            let segundoMenor = "";
+            if (partesNome.length > 1) {
+                const restantes = partesNome.slice(1);
+                const nomesValidos = restantes.filter(n => n.length >= 4);
+                if (nomesValidos.length > 0) {
+                    segundoMenor = nomesValidos.reduce((menor, atual) =>
+                        atual.length < menor.length ? atual : menor
+                    );
+                } else {
+                    segundoMenor = partesNome[partesNome.length - 1];
+                }
+            }
+            const formatarNome = (nome) =>
+                nome.charAt(0).toUpperCase() + nome.slice(1).toLowerCase();
+            const nomeFormatado = segundoMenor
+                ? `${formatarNome(primeiro)} ${formatarNome(segundoMenor)}`
+                : formatarNome(primeiro);
+            nomeEl.textContent = nomeFormatado;
+            nomeEl.style.whiteSpace = "nowrap";
+        }
+        if (emailEl) emailEl.textContent = usuario.email;
+    } else {
+        window.location.href = "/";
+        return;
+    }
     // --- LOGOUT ---
     const logoutBtn = document.querySelector("#logoutBtn");
     if (logoutBtn) {
