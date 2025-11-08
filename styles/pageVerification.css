@@ -199,3 +199,21 @@ h1 {
 .timeReeviar {
     display: none;
 }
+
+.input-error {
+    border: 2px solid var(--color4) !important; /* Vermelho */
+    animation: shake 0.3s ease-in-out;
+}
+
+/* Animação de "tremer" para chamar atenção */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Remove a borda vermelha ao focar */
+.input-error:focus {
+    border-color: var(--color3) !important;
+    background-color: var(--white) !important;
+}

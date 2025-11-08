@@ -49,34 +49,7 @@ if (!errorMessage) {
 // estado de erro
 let erroAtivo = false;
 
-
-// pageVerification.html - Manter o email preenchido
-
-const inputsCodigo = [
-    document.getElementById("num1"),
-    document.getElementById("num2"),
-    document.getElementById("num3"),
-    document.getElementById("num4"),
-    document.getElementById("num5"),
-    document.getElementById("num6")
-];
-
-inputsCodigo.forEach((input, index) => {
-    if (!input) return; // Garante que o input existe (evita erros)
-    input.addEventListener("input", () => {
-        if (input.value.length > 0 && index < inputsCodigo.length - 1) {
-            inputsCodigo[index + 1].focus();
-        }
-    });
-    input.addEventListener("keydown", (e) => {
-        if (e.key === "Backspace" && input.value.length === 0 && index > 0) {
-            inputsCodigo[index - 1].focus();
-        }
-    });
-});
-
 // --- Foco e digitação ---
-
 
 [inputEmail, inputSenha, inputNome, inputTelefone].forEach((input) => {
     if (!input) return;
@@ -88,9 +61,8 @@ inputsCodigo.forEach((input, index) => {
             label.style.color = "";
         }
 
-        if (erroAtivo) {
+        if (erroAtivo || input.parentElement.classList.contains("error")) {
             if (input.parentElement) input.parentElement.classList.remove("error");
-            // if (input) input.value = "";
             if (label) label.style.color = "";
         }
     });
@@ -99,38 +71,41 @@ inputsCodigo.forEach((input, index) => {
         if (input.value.trim() !== "" && input.parentElement) {
             input.parentElement.classList.remove("error");
             const label = input.parentElement.querySelector("label");
-            if (label) label.style.color = "";
+            if (label) {
+                label.textContent = originalLabels[input.id] || originalLabels[input.name] || label.textContent;
+                label.style.color = "";
+            }
         }
     });
 });
 
 function marcarErroCampo(input, msg) {
     if (!input || !input.parentElement) return;
-    const parent = input.parentElement;
+    const parent = input.parentElement; // A div (.mail, .password, etc)
     const label = parent.querySelector("label");
+    
+    // ✅ Adiciona classe de erro na DIV (parent)
     parent.classList.add("error");
+    
     if (label) {
         label.textContent = msg;
         label.style.color = "var(--color4)";
     }
-
 }
 
 function limparErroCampo(input) {
     if (!input || !input.parentElement) return;
     const parent = input.parentElement;
     const label = parent.querySelector("label");
+    
+    // ✅ Remove classe de erro da DIV (parent)
     parent.classList.remove("error");
+    
     if (label) {
         label.textContent = originalLabels[input.id] || originalLabels[input.name] || label.textContent;
         label.style.color = "";
     }
 }
-
-function salvarUsuarios() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(usuarios));
-}
-
 function validarCamposVazios(campos) {
     let erro = false;
     campos.forEach((input) => {
@@ -142,6 +117,11 @@ function validarCamposVazios(campos) {
     });
     return erro;
 }
+
+function salvarUsuarios() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(usuarios));
+}
+
 
 // Olhos de mostrar/ocultar senha do pageRecovery.html
 function eyePassword(inputId, icon) {
@@ -158,40 +138,6 @@ function eyePassword(inputId, icon) {
 // ========================================
 // VALIDAÇÃO DE CAMPOS
 // ========================================
-function marcarErroCampo(input, msg) {
-    if (!input || !input.parentElement) return;
-    const parent = input.parentElement;
-    const label = parent.querySelector("label");
-    parent.classList.add("error");
-    if (label) {
-        label.textContent = msg;
-        label.style.color = "var(--color4)";
-
-    }
-}
-
-function limparErroCampo(input) {
-    if (!input || !input.parentElement) return;
-    const parent = input.parentElement;
-    const label = parent.querySelector("label");
-    parent.classList.remove("error");
-    if (label) {
-        label.textContent = originalLabels[input.id] || originalLabels[input.name] || label.textContent;
-        label.style.color = "";
-    }
-}
-
-function validarCamposVazios(campos) {
-    let erro = false;
-    campos.forEach((input) => {
-        if (!input) return;
-        if (input.value.trim() === "") {
-            marcarErroCampo(input, "Campo não preenchido");
-            erro = true;
-        }
-    });
-    return erro;
-}
 
 function validarSenha(senha) {
     if (senha.length < 8) {
@@ -285,6 +231,7 @@ if (botaoLogin) {
 
         mostrarLoader('mostrar');
         console.log("📤 Enviando login para:", emailDigitado);
+
         fetch("/verificar-docente", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -312,8 +259,9 @@ if (botaoLogin) {
 
                     const salvou = localStorage.getItem("usuarioLogado");
                     console.log("💾 Salvou no localStorage:", salvou);
-
-                    window.location.href = "../pages/mainPage.html";
+                    setTimeout(() => {
+                        window.location.href = "../pages/mainPage.html";
+                    }, 6000);
 
                 } else {
                     mostrarLoader('esconder');
@@ -378,9 +326,6 @@ if (botaoCadastro) {
             return;
         }
         mostrarLoader('mostrar');
-
-        let redirectTimer = null;
-
         // Salva os dados temporários
         localStorage.setItem("cadastroTemp", JSON.stringify({
             nome: nomeDigitado,
@@ -431,26 +376,95 @@ if (botaoCadastro) {
                     mostrarAlerta("Código enviado! Verifique seu e-mail. Você será redirecionado para a página de verificação.", "sucesso");
                     console.log("✅ Código enviado para:", emailDigitado);
                     // Redireciona após 5 segundos
-                    redirectTimer = setTimeout(() => {
+                    setTimeout(() => {
                         window.location.href = "/verificacao";
-                    }, 5000);
+                    }, 6000);
                 }
             })
             .catch(err => {
                 // ❌ TRATAMENTO DE ERRO CENTRALIZADO ❌
-
-                // 1. PARA OS TIMERS AGENDADOS!
-                clearTimeout(alertTimer);
-                clearTimeout(redirectTimer);
-
-                // 2. Esconde o loader e o alerta
                 mostrarLoader('esconder');
-
-                // 3. Loga o erro
                 console.error("❌ Erro no cadastro:", err);
             });
     });
 }
+
+
+// pageVerification.html - Manter o email preenchido
+
+const inputsCodigo = [
+    document.getElementById("num1"),
+    document.getElementById("num2"),
+    document.getElementById("num3"),
+    document.getElementById("num4"),
+    document.getElementById("num5"),
+    document.getElementById("num6")
+];
+
+inputsCodigo.forEach((input, index) => {
+    if (!input) return;
+
+    // Navegação ao digitar
+    input.addEventListener("input", () => {
+
+        if (input.value.length > 0 && index < inputsCodigo.length - 1) {
+            inputsCodigo[index + 1].focus();
+        }
+    });
+
+    // Navegação com Backspace
+    input.addEventListener("keydown", (e) => {
+        if (e.key === "Backspace" && input.value.length === 0 && index > 0) {
+            inputsCodigo[index - 1].focus();
+        }
+    });
+
+    // ✅ EVENTO DE COLAR
+    input.addEventListener("paste", (e) => {
+        e.preventDefault(); // Previne o comportamento padrão
+
+        const pastedData = e.clipboardData.getData("text").trim();
+        const digitos = pastedData.replace(/\D/g, ""); // Remove tudo que não é número
+
+        // Distribui os dígitos nos inputs
+        for (let i = 0; i < inputsCodigo.length; i++) {
+            if (digitos[i]) {
+                inputsCodigo[i].value = digitos[i];
+            }
+        }
+
+        // Foca no último input preenchido ou no último disponível
+        const ultimoIndex = Math.min(digitos.length, inputsCodigo.length) - 1;
+        if (inputsCodigo[ultimoIndex]) {
+            inputsCodigo[ultimoIndex].focus();
+        }
+    });
+});
+
+// ✅ COLAR DE FORA (clicando externamente)
+document.addEventListener("paste", (e) => {
+    // Verifica se o foco está fora dos inputs
+    const focoNosInputs = inputsCodigo.some(input => input === document.activeElement);
+
+    if (!focoNosInputs) {
+        e.preventDefault();
+
+        const pastedData = e.clipboardData.getData("text").trim();
+        const digitos = pastedData.replace(/\D/g, "");
+
+        // Preenche os inputs
+        for (let i = 0; i < inputsCodigo.length; i++) {
+            if (digitos[i]) {
+                inputsCodigo[i].value = digitos[i];
+            }
+        }
+
+        // Foca no primeiro input
+        if (inputsCodigo[0]) {
+            inputsCodigo[0].focus();
+        }
+    }
+});
 
 // --- VERIFICAÇÃO DE CÓDIGO ---
 if (botaoVerify) {
@@ -474,6 +488,13 @@ if (botaoVerify) {
 
         for (let i = 0; i < inputsCodigo.length; i++) {
             codigoCompleto += inputsCodigo[i] ? inputsCodigo[i].value.trim() : '';
+        }
+
+        if (inputsCodigo.some(input => !input || input.value.trim() === '')) {
+            mostrarLoader('esconder');
+            mostrarAlerta("Por favor, preencha todos os campos do código.", "erro");
+            console.warn("⚠️ Código incompleto fornecido");
+            return;
         }
 
         console.log("1. Verificando código:", codigoCompleto);
@@ -506,7 +527,6 @@ if (botaoVerify) {
                 } else {
                     mostrarLoader('esconder');
                     mostrarAlerta("Código inválido. Tente novamente.", "erro");
-                    throw new Error("Código inválido");
                 }
             })
             .then(res => {
@@ -526,7 +546,9 @@ if (botaoVerify) {
                     localStorage.removeItem("cadastroTemp");
                     mostrarLoader('esconder');
                     mostrarAlerta("Docente cadastrado com sucesso! Você será redirecionado para a página inicial.", "sucesso");
-                    window.location.href = "../pages/mainPage.html";
+                    setTimeout(() => {
+                        window.location.href = "../pages/mainPage.html";
+                    }, 6000);
                 } else {
                     console.log("❌ Erro ao cadastrar docente:", data.message);
                     mostrarLoader('esconder');
@@ -569,7 +591,7 @@ if (botaoSolicitarLink) {
         const emailDigitado = inputEmail.value.trim();
         localStorage.setItem("emailParaRecuperacao", emailDigitado);
         if (emailDigitado === "") {
-            alert("Por favor, insira seu e-mail para solicitar o link de alteração de senha.");
+            mostrarAlerta("Por favor, insira seu e-mail para solicitar o link de alteração de senha.", "aviso")
             console.warn("⚠️ E-mail não fornecido.");
             return;
         }
@@ -652,7 +674,9 @@ if (botaoModificar) {
                     mostrarAlerta("Senha modificada com sucesso! Você será redirecionado para o login.", "sucesso");
                     console.log("🟢 Senha modificada com sucesso");
                     localStorage.removeItem("emailParaRecuperacao");
-                    window.location.href = "/";
+                    setTimeout(() => {
+                        window.location.href = "/";
+                    }, 6000);
                 } else {
                     mostrarLoader('esconder');
                     mostrarAlerta("Erro ao modificar a senha. Tente novamente.", "erro");

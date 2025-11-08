@@ -26,10 +26,14 @@
     --lightgrey: #d3d3d3;
 }
 
+body.alert-active {
+    overflow-x: hidden;
+}
+
 .alert {
     border-top-left-radius: 8px;
     border-bottom-left-radius: 8px;
-    position: absolute;
+    position: fixed;
     z-index: 10000000;
     width: 350px;
     height: 90px;
@@ -49,7 +53,7 @@
 .hideAlert {
     border-top-left-radius: 8px;
     border-bottom-left-radius: 8px;
-    position: absolute;
+    position: fixed;
     z-index: 10000000;
     width: 350px;
     height: 90px;

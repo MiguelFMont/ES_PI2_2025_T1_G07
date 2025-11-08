@@ -377,9 +377,41 @@ body {
 input {
     caret-color: var(--color5);
 }
+/* ========================================
+   ESTILOS DE ERRO NAS DIVS
+   ======================================== */
 
-.error input {
-    border-color: var(--color4) !important;
+/* Divs com erro - Borda vermelha */
+.mail.error, 
+.password.error, 
+.name.error, 
+.tel.error {
+    border: 1px solid var(--color4) !important;
+    animation: shake 0.3s ease-in-out;
+}
+
+/* Animação de tremer */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
+    20%, 40%, 60%, 80% { transform: translateX(3px); }
+}
+
+/* Label com erro dentro das divs */
+.mail.error label,
+.password.error label,
+.name.error label,
+.tel.error label {
+    color: var(--color4) !important;
+    font-weight: 600;
+}
+
+/* Remove o erro ao focar no input */
+.mail.error input:focus,
+.password.error input:focus,
+.name.error input:focus,
+.tel.error input:focus {
+    outline: none;
 }
 
 .mail input, .password input, .name input, .tel input {

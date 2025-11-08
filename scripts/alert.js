@@ -1,5 +1,8 @@
 
 function mostrarAlerta(mensagem, tipo = 'sucesso') {
+
+    document.body.classList.add('alert-active');
+
     let customAlert = document.querySelector(".alert");
 
     if (!customAlert) {
@@ -13,6 +16,8 @@ function mostrarAlerta(mensagem, tipo = 'sucesso') {
         `;
         document.body.appendChild(customAlert);
     }
+
+    customAlert.className = 'alert';
 
     const alertMessage = customAlert.querySelector('.alert-message') || customAlert.querySelector('p');
     const alertIcon = customAlert.querySelector('i');
@@ -65,7 +70,17 @@ function mostrarAlerta(mensagem, tipo = 'sucesso') {
 
     setTimeout(() => {
         if (customAlert.style.display === 'flex') {
-            customAlert.className = 'hideAlert' ;
+            fecharAlerta(customAlert);
         }
     }, 5000);
+}
+
+function fecharAlerta(alertElement) {
+    alertElement.className = 'hideAlert';
+    
+    // Aguarda a animação terminar antes de esconder
+    setTimeout(() => {
+        alertElement.style.display = 'none';
+        document.body.classList.remove('alert-active');
+    }, 300); // Tempo da animação
 }
