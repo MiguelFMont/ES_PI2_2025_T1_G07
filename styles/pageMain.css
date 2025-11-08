@@ -900,7 +900,7 @@ body {
 }
 
 .containerAddIdt {
-    display: block;
+    display: none;
     width: 100%;
     height: min-content;
     border-radius: 8px;
@@ -989,6 +989,7 @@ body {
 .linkDatailsIdt {
     font-size: 0.965rem;
     font-weight: 500;
+    padding: 2px 4px;
     border-radius: 4px;
     text-align: center;
     white-space: nowrap;
@@ -1005,4 +1006,72 @@ body {
 .viewDetailsIC::-webkit-scrollbar-thumb {
     background: var(--lightgrey);
     border-radius: 50px;
+}
+
+#addCursoEdit {
+    display: none;
+} 
+
+#deletCursoEdit {
+    display: none;
+}
+
+.cursosEdidCamp {
+    overflow: auto;
+    width: 900px;
+    display: flex;
+    gap: 20px;
+}
+.cursosEdidCamp .linkDatailsIdt {
+    margin: 10px 0px;
+    position: relative;
+}
+
+.cursosEdidCamp::-webkit-scrollbar {
+    height: 5px;
+    background: var(--color1);
+    border-radius: 8px;
+}
+
+.cursosEdidCamp::-webkit-scrollbar-thumb {
+    background: var(--lightgrey);
+    border-radius: 50px;
+}
+
+.linkDatailsIdt .cursoAddinIcon,
+.linkDatailsIdt .cursoDeletinIcon {
+    width: 20px;
+    height: 20px;
+    padding: 5px;
+    font-size: 1rem;
+    position: absolute;
+    top: -10px;
+    right: -14px;
+    transition: all 0.1s ease;
+}
+
+.cursoDeletinIcon {
+    font-size: 0.1rem;
+}
+
+.cursoAddinIcon {
+    color: var(--color8) !important;
+    background: var(--color8Shadow) !important; 
+}
+
+.cursoAddinIcon:hover {
+    background: var(--color8) !important;
+    color: var(--white) !important;
+    cursor: pointer;
+}
+
+.cursoDeletinIcon {
+    color: var(--red) !important;
+    background: var(--redShadow) !important;
+}
+
+.cursoDeletinIcon:hover {
+    background: var(--red) !important;
+    color: var(--white) !important;
+    cursor: pointer;
 }
