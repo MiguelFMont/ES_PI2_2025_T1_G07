@@ -53,6 +53,7 @@ import {
     enviarCodigoVerificacao,
     enviarLinkAlterarSenha
 } from "./services/email";
+import { isNumberObject } from "util/types";
 
 
 const app = express();
@@ -222,7 +223,7 @@ app.post('/instituicao/deletar', async (req: Request, res: Response) => {
     }
 });
 
-app.post('/instituicao/:id', async (req: Request, res: Response) => {
+app.get('/instituicao/id/:id', async (req: Request, res: Response) => {
     try {
         const id = Number(req.params.id);
         const instituicao = await getInstituicaoById(id);
@@ -237,7 +238,7 @@ app.post('/instituicao/:id', async (req: Request, res: Response) => {
     }
 });
 
-app.post('/instituicao/all', async (req: Request, res: Response) => {
+app.get('/instituicao/all', async (req: Request, res: Response) => {
     try {
         const instituicao = await getAllInstituicao();
         if (instituicao) {
@@ -360,7 +361,7 @@ app.post('/curso/deletar', async (req: Request, res: Response) => {
 });
 
 // Obter curso por ID
-app.post('/curso/:id', async (req: Request, res: Response) => {
+app.get('/curso/id/:id', async (req: Request, res: Response) => {
     try {
         const id = Number(req.params.id);
         const curso = await getCursoById(id);
@@ -380,7 +381,7 @@ app.post('/curso/:id', async (req: Request, res: Response) => {
 });
 
 // Obter todos os cursos
-app.post('/curso/all', async (req: Request, res: Response) => {
+app.get('/curso/all', async (req: Request, res: Response) => {
     try {
         const cursos = await getAllCursos();
         if (cursos && cursos.length > 0) {
@@ -533,7 +534,7 @@ app.post('/disciplina/deletar', async (req: Request, res: Response) => {
 });
 
 // Obter disciplina por código
-app.post('/disciplina/:codigo', async (req: Request, res: Response) => {
+app.get('/disciplina/codigo/:codigo', async (req: Request, res: Response) => {
     try {
         const codigo = Number(req.params.codigo);
         const disciplina = await getDisciplinaByCodigo(codigo);
@@ -554,7 +555,7 @@ app.post('/disciplina/:codigo', async (req: Request, res: Response) => {
 });
 
 // Obter todas as disciplinas
-app.post('/disciplina/all', async (req: Request, res: Response) => {
+app.get('/disciplina/all', async (req: Request, res: Response) => {
     try {
         const disciplinas = await getAllDisciplina();
         

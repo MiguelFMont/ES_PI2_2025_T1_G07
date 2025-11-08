@@ -118,23 +118,14 @@ export async function getAllDisciplina(): Promise<Disciplina[]> {
             `SELECT CODIGO as "codigo", FK_ID_CURSO as "id_curso", NOME as "nome", PERIODO as "periodo", SIGLA as "sigla" FROM DISCIPLINA`
         );
         
-        if (result.rows) {
-            return result.rows.map((row: any) => ({
-                codigo: row[0],
-                id_curso: row[1],
-                nome: row[2],
-                periodo: row[3],
-                sigla: row[4]
-            }));
-        }
-        return [];
+        return result.rows as Disciplina[];
     } finally {
         await close(conn);
     }
 }
 
 // Obter a disciplina pelo ID.
-export async function getDisciplinaByCodigo(codigo: number): Promise<Disciplina | null> {
+export async function getDisciplinaByCodigo(codigo: number): Promise<Disciplina[] | null> {
     const conn = await open();
     try {
         const result = await conn.execute(
@@ -143,17 +134,7 @@ export async function getDisciplinaByCodigo(codigo: number): Promise<Disciplina 
             [codigo]
         );
         
-        if (result.rows && result.rows.length > 0) {
-            const row = result.rows[0] as any;
-            return {
-                codigo: row[0],
-                id_curso: row[1],
-                nome: row[2],
-                periodo: row[3],
-                sigla: row[4]
-            };
-        }
-        return null;
+        return result.rows as Disciplina[];
     } finally {
         await close(conn);
     }
