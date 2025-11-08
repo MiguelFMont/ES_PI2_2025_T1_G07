@@ -40,6 +40,15 @@ import {
 } from "./db/curso"
 
 import {
+    addDisciplina,
+    deleteDisciplina,
+    updateDisciplina,
+    verificarCadastroDisciplina,
+    getDisciplinaByCodigo,
+    getAllDisciplina
+} from "./db/disciplina"
+
+import {
     gerarCodigoVericacao,
     enviarCodigoVerificacao,
     enviarLinkAlterarSenha
@@ -385,6 +394,181 @@ app.post('/curso/all', async (req: Request, res: Response) => {
         console.error("❌ Erro ao buscar todos os cursos:", error);
         res.status(500).json({ 
             error: "Erro ao buscar os cursos." 
+        });
+    }
+});
+
+/*=============*/
+/*  DISCIPLINA */
+/*=============*/
+// Verificar se disciplina já existe
+app.post('/disciplina/verificar', async (req: Request, res: Response) => {
+    try {
+        const { nome, id_curso } = req.body;
+        console.log("🔍 Verificando disciplina:", nome);
+
+        if (!nome || !id_curso) {
+            return res.status(400).json({ 
+                sucesso: false, 
+                mensagem: "Os campos nome e id_curso são obrigatórios" 
+            });
+        }
+
+        const disciplina = await verificarCadastroDisciplina(nome, id_curso);
+        if (disciplina) {
+            console.log("❌ Disciplina já cadastrada:", disciplina.nome);
+            res.json({
+                sucesso: false,
+                mensagem: "A Disciplina já está cadastrada neste curso",
+                disciplina: disciplina
+            });
+        } else {
+            console.log("✅ Disciplina ainda não cadastrada!")
+            res.json({ 
+                sucesso: true, 
+                mensagem: "Disciplina disponível para cadastro" 
+            });
+        }
+    } catch (error) {
+        console.error("❌ Erro ao verificar a disciplina:", error);
+        res.status(500).json({ 
+            sucesso: false, 
+            mensagem: "Erro no servidor" 
+        });
+    }
+});
+
+// Cadastrar nova disciplina
+app.post('/disciplina/cadastro', async (req: Request, res: Response) => {
+    try {
+        const { id_curso, nome, periodo, sigla } = req.body;
+        
+        if (!id_curso || !nome) {
+            console.log("❌ Campos obrigatórios faltando!");
+            return res.status(400).json({ 
+                error: "Campos id_curso e nome são obrigatórios!" 
+            });
+        }
+
+        const codigo = await addDisciplina(id_curso, nome, periodo, sigla);
+        console.log("✅ Disciplina registrada com sucesso!")
+        res.status(201).json({ 
+            message: "Disciplina registrada com sucesso", 
+            codigo 
+        });
+    } catch (error) {
+        console.error("❌ Erro ao registrar a disciplina:", error);
+        res.status(500).json({ 
+            error: "Erro ao registrar a disciplina." 
+        });
+    }
+});
+
+// Atualizar disciplina
+app.post('/disciplina/atualizar', async (req: Request, res: Response) => {
+    try {
+        const { codigo, id_curso, nome, periodo, sigla } = req.body;
+        
+        if (!codigo || !id_curso || !nome) {
+            console.log("❌ Campos obrigatórios faltando!");
+            return res.status(400).json({ 
+                error: "Campos codigo, id_curso e nome são obrigatórios!" 
+            });
+        }
+
+        // Verificar se a disciplina existe
+        const disciplinaExistente = await getDisciplinaByCodigo(codigo);
+        if (!disciplinaExistente) {
+            console.log("❌ Disciplina não encontrada para o código:", codigo);
+            return res.status(404).json({ 
+                error: "Disciplina não encontrada com o código fornecido" 
+            });
+        }
+
+        await updateDisciplina(codigo, id_curso, nome, periodo, sigla);
+        console.log("✅ Disciplina atualizada com sucesso!");
+        res.status(200).json({ 
+            message: "Disciplina atualizada com sucesso",
+            codigo: codigo
+        });
+    } catch (error) {
+        console.error("❌ Erro ao atualizar a disciplina:", error);
+        res.status(500).json({ 
+            error: "Erro ao atualizar a disciplina." 
+        });
+    }
+});
+
+// Deletar disciplina
+app.post('/disciplina/deletar', async (req: Request, res: Response) => {
+    try {
+        const { codigo } = req.body;
+        
+        if (!codigo) {
+            console.log("❌ O campo código é obrigatório!");
+            return res.status(400).json({ 
+                error: "O campo código é obrigatório!" 
+            });   
+        }
+
+        // Verificar se a disciplina existe
+        const disciplinaExistente = await getDisciplinaByCodigo(codigo);
+        if (!disciplinaExistente) {
+            return res.status(404).json({ 
+                error: "Disciplina não encontrada" 
+            });
+        }
+
+        await deleteDisciplina(codigo);
+        console.log("✅ Disciplina deletada com sucesso!")
+        res.json({ 
+            message: "Disciplina deletada com sucesso" 
+        });
+    } catch (error) {
+        console.error("❌ Erro ao deletar a disciplina:", error);
+        res.status(500).json({ 
+            error: "Erro ao deletar a disciplina." 
+        });
+    }
+});
+
+// Obter disciplina por código
+app.post('/disciplina/:codigo', async (req: Request, res: Response) => {
+    try {
+        const codigo = Number(req.params.codigo);
+        const disciplina = await getDisciplinaByCodigo(codigo);
+        
+        if (disciplina) {
+            res.json(disciplina);
+        } else {
+            res.status(404).json({ 
+                message: "Disciplina não encontrada com o código fornecido" 
+            });
+        }
+    } catch (error) {
+        console.error("❌ Erro ao buscar disciplina:", error);
+        res.status(500).json({ 
+            error: "Erro ao buscar a disciplina pelo código fornecido." 
+        });
+    }
+});
+
+// Obter todas as disciplinas
+app.post('/disciplina/all', async (req: Request, res: Response) => {
+    try {
+        const disciplinas = await getAllDisciplina();
+        
+        if (disciplinas && disciplinas.length > 0) {
+            res.json(disciplinas);
+        } else {
+            res.status(404).json({ 
+                message: "Não há disciplinas cadastradas." 
+            });
+        }
+    } catch (error) {
+        console.error("❌ Erro ao buscar disciplinas:", error);
+        res.status(500).json({ 
+            error: "Erro ao buscar as disciplinas." 
         });
     }
 });
