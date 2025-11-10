@@ -1009,6 +1009,7 @@ body {
 .viewDetailsIC::-webkit-scrollbar-thumb {
     background: var(--lightgrey);
     border-radius: 50px;
+    cursor: pointer;
 }
 
 #addCursoEdit {
@@ -1039,6 +1040,7 @@ body {
 .cursosEdidCamp::-webkit-scrollbar-thumb {
     background: var(--lightgrey);
     border-radius: 50px;
+    cursor: pointer;
 }
 
 .linkDatailsIdt .cursoAddinIcon,
@@ -1076,5 +1078,37 @@ body {
 .cursoDeletinIcon:hover {
     background: var(--red) !important;
     color: var(--white) !important;
+    cursor: pointer;
+}
+
+.checkInstituicao {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    width: max-content;
+    gap: 5px;
+    padding: 5px;
+}
+
+.checkInstituicao label {
+    font-size: 0.9rem;
+    color: var(--grey);
+}
+
+.checkInstituicao input {
+    height: 15px;
+    width: 15px;
+}
+
+.checkInstituicao input:checked {
+    accent-color: var(--black);
+}
+
+.checkInstituicao input:checked + label {
+    color: var(--black);
+    font-weight: 500;
+}
+
+.checkInstituicao input:hover {
     cursor: pointer;
 }
