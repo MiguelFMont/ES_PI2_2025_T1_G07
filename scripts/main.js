@@ -127,11 +127,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const createBtn = createIdt.querySelector("#createBtnIdt");
             const inputs = createIdt.querySelectorAll(".campIdt input");
             const inputInstituicao = inputs[0]; // Correto: Instituição
-            const inputCurso = inputs[2];
+            const inputCurso = inputs[2]; 
 
-            // ======================================================
-            // MUDANÇA (1): Selecionar o checkbox
-            // ======================================================
             const checkNoInstituicao = createIdt.querySelector("#noInstituicao");
 
 
@@ -181,9 +178,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (pIdt) pIdt.style.display = display;
             }
 
-            // ======================================================
-            // MUDANÇA (2): Adicionar o event listener para o checkbox
-            // ======================================================
             if (checkNoInstituicao && inputInstituicao) {
                 checkNoInstituicao.addEventListener('change', () => {
                     if (checkNoInstituicao.checked) {
@@ -202,9 +196,6 @@ document.addEventListener("DOMContentLoaded", () => {
             function popularCursosParaEdicao(item) {
                 if (!cursosAdicionadosCamp || !deletCursoContainer || !addCursoContainer) return;
 
-                // ======================================================
-                //  MUDANÇA AQUI: Definindo a paleta de cores
-                // ======================================================
                 const bgColors = ['--color4Shadow', '--color3Shadow', '--color9Shadow', '--color8Shadow'];
                 const textColors = ['--color4', '--color3', '--color9', '--color8'];
 
@@ -242,9 +233,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         divAdicionado.className = 'linkDatailsIdt';
                         divAdicionado.textContent = cursoNome;
 
-                        // ======================================================
-                        //  MUDANÇA AQUI: Aplicando cores (Adicionados)
-                        // ======================================================
                         const colorIndex = index % bgColors.length;
                         divAdicionado.style.background = `var(${bgColors[colorIndex]})`;
                         divAdicionado.style.color = `var(${textColors[colorIndex]})`;
@@ -260,9 +248,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         const trashIcon = document.createElement('i');
                         trashIcon.className = 'ph ph-trash cursoDeletinIcon'; // Usando classe
 
-                        // ======================================================
-                        //  MUDANÇA AQUI: Aplicando cores (Deletar)
-                        // ======================================================
                         divDeletar.style.background = `var(${bgColors[colorIndex]})`;
                         divDeletar.style.color = `var(${textColors[colorIndex]})`;
 
@@ -285,9 +270,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         const addIcon = document.createElement('i');
                         addIcon.className = 'ph ph-plus cursoAddinIcon'; // NOVO: Classe para adicionar
 
-                        // ======================================================
-                        //  MUDANÇA AQUI: Aplicando cores (Adicionar)
-                        // ======================================================
                         const colorIndex = index % bgColors.length;
                         divAdicionar.style.background = `var(${bgColors[colorIndex]})`;
                         divAdicionar.style.color = `var(${textColors[colorIndex]})`;
@@ -409,9 +391,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (inputInstituicao) inputInstituicao.value = "";
                 if (inputCurso) inputCurso.value = "";
 
-                // ======================================================
-                // MUDANÇA (3): Resetar o checkbox e input ao fechar
-                // ======================================================
                 if (checkNoInstituicao) {
                     checkNoInstituicao.checked = false;
                 }
@@ -498,9 +477,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (inputInstituicao) inputInstituicao.value = "";
                 if (inputCurso) inputCurso.value = "";
 
-                // ======================================================
-                // MUDANÇA (4): Resetar o checkbox e input ao CRIAR
-                // ======================================================
                 if (checkNoInstituicao) {
                     checkNoInstituicao.checked = false;
                 }
@@ -564,9 +540,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         createIdt.dataset.editingId = id;
 
-                        // ======================================================
-                        // MUDANÇA (5): Ajustar o estado ao ABRIR PARA EDITAR
-                        // ======================================================
                         if (STORAGE_KEY === 'cursosBody' && checkNoInstituicao && inputInstituicao) {
                             if (item.nome) { // Se tem uma instituição salva
                                 checkNoInstituicao.checked = false;
@@ -637,15 +610,31 @@ document.addEventListener("DOMContentLoaded", () => {
                         createIdt.classList.add("show");
                         if (createBtn) createBtn.textContent = "Salvar";
                     }
-
+                    
                     if (deleteBtn) {
                         const nomeItem = (STORAGE_KEY === 'diciplinasBody') ? item.curso : (item.curso || item.nome);
                         if (confirm(`Tem certeza que deseja excluir "${nomeItem}"?`)) {
-                            // ✅ SE FOR INSTITUIÇÃO, USA O BANCO
+                            
                             if (STORAGE_KEY === 'instituicoesBody') {
-                                deletarInstituicaoDB(id);
+                                deletarInstituicaoDB(id); // (Sua função existente)
                             } else {
-                                // Outros casos continuam usando localStorage
+                                
+                                // LÓGICA NOVA: Desvincular curso da instituição
+                                if (STORAGE_KEY === 'cursosBody' && item.nome) {
+                                    try {
+                                        let instituicoes = JSON.parse(localStorage.getItem("instituicoesBody")) || [];
+                                        const instituicaoAlvo = instituicoes.find(inst => inst.nome.toLowerCase() === item.nome.toLowerCase());
+                                        if (instituicaoAlvo && Array.isArray(instituicaoAlvo.cursos)) {
+                                            instituicaoAlvo.cursos = instituicaoAlvo.cursos.filter(c => c.toLowerCase() !== item.curso.toLowerCase());
+                                            localStorage.setItem("instituicoesBody", JSON.stringify(instituicoes));
+                                        }
+                                    } catch (error) {
+                                        console.error("Erro ao desvincular curso da instituição:", error);
+                                    }
+                                }
+                                // FIM DA LÓGICA NOVA
+
+                                // Lógica original: Deleta o item (curso, disciplina, etc.)
                                 let novosItens = itens.filter(i => i.id != id);
                                 saveItens(novosItens);
                                 loadAndRender();
@@ -727,18 +716,13 @@ document.addEventListener("DOMContentLoaded", () => {
                             return;
                         }
                     } else { // 'cursosBody'
-                        // ======================================================
-                        // MUDANÇA (6): Lógica de validação do checkbox
-                        // ======================================================
                         if (checkNoInstituicao && checkNoInstituicao.checked) {
-                            // Se o checkbox está marcado, 'novoNome' (instituição) não é obrigatório.
-                            // 'novoNome' já será "" por causa do listener.
+                            novoNome = ""; // Garante que o nome da instituição seja vazio se o checkbox estiver marcado
                             if (!novoCurso) {
                                 alert("Por favor, preencha o Nome do curso.");
                                 return;
                             }
                         } else {
-                            // Checkbox NÃO está marcado, ambos são obrigatórios.
                             if (!novoNome || !novoCurso) {
                                 alert("Por favor, preencha a Instituição e o Nome do curso.");
                                 return;
@@ -754,19 +738,83 @@ document.addEventListener("DOMContentLoaded", () => {
                         // --- MODO SALVAR (Edição) ---
                         const item = itens.find(i => i.id == currentEditingCard.id);
                         if (item) {
-                            item.nome = novoNome;
-                            if (STORAGE_KEY === 'diciplinasBody') {
+
+                            // ======================================================
+                            //  INÍCIO DA MUDANÇA: LÓGICA DE EDIÇÃO DE CURSO
+                            // ======================================================
+                            if (STORAGE_KEY === 'cursosBody') {
+                                // Pega os valores antes e depois da edição
+                                const instituicaoAntiga = originalItemBeforeEdit.nome || "";
+                                const instituicaoNova = novoNome || "";
+                                const nomeAntigoDoCurso = originalItemBeforeEdit.curso;
+                                const nomeNovoDoCurso = novoCurso;
+
+                                // 1. Se a instituição MUDOU
+                                if (instituicaoAntiga.toLowerCase() !== instituicaoNova.toLowerCase()) {
+                                    let instituicoes = JSON.parse(localStorage.getItem("instituicoesBody")) || [];
+
+                                    // 1a. REMOVE da instituição ANTIGA (se ela existia)
+                                    if (instituicaoAntiga) {
+                                        const instAntiga = instituicoes.find(i => i.nome.toLowerCase() === instituicaoAntiga.toLowerCase());
+                                        if (instAntiga && Array.isArray(instAntiga.cursos)) {
+                                            instAntiga.cursos = instAntiga.cursos.filter(c => c.toLowerCase() !== nomeAntigoDoCurso.toLowerCase());
+                                        }
+                                    }
+
+                                    // 1b. ADICIONA à instituição NOVA (se ela existe)
+                                    if (instituicaoNova) {
+                                        const instNova = instituicoes.find(i => i.nome.toLowerCase() === instituicaoNova.toLowerCase());
+                                        if (instNova) {
+                                            if (!Array.isArray(instNova.cursos)) instNova.cursos = [];
+                                            // Adiciona se não existir
+                                            if (!instNova.cursos.find(c => c.toLowerCase() === nomeNovoDoCurso.toLowerCase())) {
+                                                instNova.cursos.push(nomeNovoDoCurso);
+                                            }
+                                        }
+                                    }
+                                    // Salva as mudanças nas instituições
+                                    localStorage.setItem("instituicoesBody", JSON.stringify(instituicoes));
+                                }
+                                // 2. Se a instituição é a MESMA, mas o NOME DO CURSO mudou
+                                else if (instituicaoNova && (nomeAntigoDoCurso.toLowerCase() !== nomeNovoDoCurso.toLowerCase())) {
+                                    let instituicoes = JSON.parse(localStorage.getItem("instituicoesBody")) || [];
+                                    const inst = instituicoes.find(i => i.nome.toLowerCase() === instituicaoNova.toLowerCase());
+                                    
+                                    if (inst && Array.isArray(inst.cursos)) {
+                                        // Encontra o índice do nome antigo
+                                        const index = inst.cursos.findIndex(c => c.toLowerCase() === nomeAntigoDoCurso.toLowerCase());
+                                        if (index !== -1) {
+                                            // Atualiza para o nome novo
+                                            inst.cursos[index] = nomeNovoDoCurso;
+                                            localStorage.setItem("instituicoesBody", JSON.stringify(instituicoes));
+                                        }
+                                    }
+                                }
+
+                                // Atualiza o próprio item do curso
+                                item.nome = novoNome;
+                                item.curso = novoCurso;
+                            
+                            } 
+                            // ======================================================
+                            //  FIM DA MUDANÇA
+                            // ======================================================
+                            
+                            // Lógica original para outros tipos
+                            else if (STORAGE_KEY === 'diciplinasBody') {
+                                item.nome = novoNome;
                                 item.curso = novoCurso;
                                 item.sigla = novoSigla;
                                 item.codigo = novoCodigo;
                                 item.periodo = novoPeriodo;
-                            }
-                            if (STORAGE_KEY === 'cursosBody') {
-                                item.curso = novoCurso;
+                            } else {
+                                // Assumindo instituicoesBody (ou outros)
+                                item.nome = novoNome;
                             }
                         }
                         // Limpa o backup, pois as mudanças foram salvas
                         originalItemBeforeEdit = null;
+                    
                     } else {
                         // --- MODO CRIAR (Novo) ---
                         if (!listContainer || !cardTemplate) {
@@ -777,9 +825,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         const novoItem = {
                             id: Date.now().toString(),
-                            nome: novoNome,
-                            curso: novoCurso
+                            nome: novoNome,  // Nome da Instituição (em cursosBody)
+                            curso: novoCurso // Nome do Curso (em cursosBody)
                         };
+
+                        // LÓGICA: Linkar curso à instituição
+                        if (STORAGE_KEY === 'cursosBody' && novoItem.nome) {
+                            let instituicoes = JSON.parse(localStorage.getItem("instituicoesBody")) || [];
+                            const instituicaoAlvo = instituicoes.find(inst => inst.nome.toLowerCase() === novoItem.nome.toLowerCase());
+                            if (instituicaoAlvo) {
+                                if (!Array.isArray(instituicaoAlvo.cursos)) {
+                                    instituicaoAlvo.cursos = [];
+                                }
+                                const cursoJaExiste = instituicaoAlvo.cursos.find(c => c.toLowerCase() === novoItem.curso.toLowerCase());
+                                if (!cursoJaExiste) {
+                                    instituicaoAlvo.cursos.push(novoItem.curso);
+                                    localStorage.setItem("instituicoesBody", JSON.stringify(instituicoes));
+                                }
+                            }
+                        }
+
 
                         if (STORAGE_KEY === 'diciplinasBody') {
                             novoItem.sigla = novoSigla;
@@ -891,7 +956,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         const cursoValido = todosCursos.find(c => c.curso.toLowerCase() === cursoSelecionado.toLowerCase());
 
                         if (!cursoValido) {
-                            mostrarAlerta(`Curso "${cursoSelecionado}" não encontrado.\n\nPor favor, selecione um curso que já foi criado na aba "Cursos".`, "aviso")
+                            mostrarAlerta(`Curso "${cursoSelecionado}" não encontrado.\n\Por favor, selecione um curso que já foi criado na aba "Cursos".`, "aviso")
                             return;
                         }
 
