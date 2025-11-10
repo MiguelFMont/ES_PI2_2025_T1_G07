@@ -313,13 +313,7 @@ if (botaoCadastro) {
             marcarErroCampo(inputSenha, senhaCheck.mensagem);
             algumErro = true;
         }
-
-        // (Esta verificação local é boa, mas a do servidor é a principal)
-        if (usuarios.some(u => u.email === emailDigitado)) {
-            marcarErroCampo(inputEmail, "Email já cadastrado");
-            algumErro = true;
-        }
-
+        
         if (algumErro) {
             errorMessage.style.display = "block";
             erroAtivo = true;
@@ -339,7 +333,7 @@ if (botaoCadastro) {
             body: JSON.stringify({ email: emailDigitado })
         })
             .then(res => {
-                console.log("📥 Status da verificação de cadastro:", res.status, res.ok);
+                console.log("📥 Status da verificação de cadastro:", res.status);
                 return res.json();
             })
             .then(data => {

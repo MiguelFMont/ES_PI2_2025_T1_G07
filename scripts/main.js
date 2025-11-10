@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const paginas = {
         "dashboard": "./components/dashboard.html",
         "instituições": "./components/instituicoes.html",
-        "cursos": "./components/cursos.html", 
+        "cursos": "./components/cursos.html",
         "diciplinas": "./components/diciplina.html",
         "turmas": "./components/turmas.html"
     };
@@ -88,11 +88,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 const res = await fetch(paginas[nome]);
                 const html = await res.text();
                 divAtual.innerHTML = html;
-                
+
                 if (nome === "dashboard") {
                     atualizarContadoresDashboard();
                 } else if (paginas[nome].includes("components/")) {
-                    ativarCreateIdt(); 
+                    ativarCreateIdt();
                 }
 
             } catch (error) {
@@ -112,9 +112,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const cardIdt = container.querySelector(".cardIdt");
             if (!cardIdt) return;
-            
-            const createIdt = cardIdt.querySelector(".createIdt"); 
-            if (!createIdt) return; 
+
+            const createIdt = cardIdt.querySelector(".createIdt");
+            if (!createIdt) return;
 
             // --- Elementos do Card "Nenhum" ---
             const iconIdt = cardIdt.querySelector(".iconIdt");
@@ -131,38 +131,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // NOVO: Adicionar referência aos campos de adicionar/editar
             const addCursoEdit = container.querySelector('#addCursoEdit');
-            const deletCursoEdit = container.querySelector('#deletCursoEdit'); 
+            const deletCursoEdit = container.querySelector('#deletCursoEdit');
             const linkCursoContainer = container.querySelector(".containerAddIdt");
-            
+
             // (Usando :nth-child(3) para pegar o "Cursos Adicionados" do HTML)
             const cursosAdicionadosCamp = createIdt.querySelector('.campIdt:nth-child(3)');
-            
+
             // NOVO: Container para "Adicionar Curso"
             const addCursoContainer = addCursoEdit ? addCursoEdit.querySelector('.cursosEdidCamp') : null;
             const deletCursoContainer = deletCursoEdit ? deletCursoEdit.querySelector('.cursosEdidCamp') : null;
 
             // --- Elementos dos Cards (OPCIONAL) ---
-            const listContainer = container.querySelector(".cardsCreateIdt"); 
-            let cardTemplate = null; 
+            const listContainer = container.querySelector(".cardsCreateIdt");
+            let cardTemplate = null;
 
             if (listContainer) {
                 cardTemplate = listContainer.querySelector(".contentCardIdt");
                 if (cardTemplate) {
-                    cardTemplate.remove(); 
+                    cardTemplate.remove();
                 }
             }
 
             // --- Variável de Estado ---
-            let currentEditingCard = null; 
+            let currentEditingCard = null;
             let originalItemBeforeEdit = null; // Cópia de segurança
 
             // --- Storage ---
             const STORAGE_KEY = container.id || 'itensGenericos';
-            
+
             function getItens() {
                 return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
             }
-            
+
             function saveItens(data) {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
             }
@@ -205,7 +205,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const cursosAtuais = item.cursos ? item.cursos.map(c => c.toLowerCase()) : [];
 
                 // --- Filtra os Cursos Disponíveis ---
-                const cursosDisponiveis = todosCursos.filter(curso => 
+                const cursosDisponiveis = todosCursos.filter(curso =>
                     !cursosAtuais.includes(curso.curso.toLowerCase())
                 );
 
@@ -218,7 +218,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         const divAdicionado = document.createElement('div');
                         divAdicionado.className = 'linkDatailsIdt';
                         divAdicionado.textContent = cursoNome;
-                        
+
                         // ======================================================
                         //  MUDANÇA AQUI: Aplicando cores (Adicionados)
                         // ======================================================
@@ -233,16 +233,16 @@ document.addEventListener("DOMContentLoaded", () => {
                         divDeletar.className = 'linkDatailsIdt';
                         divDeletar.textContent = cursoNome;
                         divDeletar.dataset.cursoNome = cursoNome; // Guarda o nome para deleção
-                        
+
                         const trashIcon = document.createElement('i');
                         trashIcon.className = 'ph ph-trash cursoDeletinIcon'; // Usando classe
-                        
+
                         // ======================================================
                         //  MUDANÇA AQUI: Aplicando cores (Deletar)
                         // ======================================================
                         divDeletar.style.background = `var(${bgColors[colorIndex]})`;
                         divDeletar.style.color = `var(${textColors[colorIndex]})`;
-                        
+
                         divDeletar.appendChild(trashIcon);
                         deletCursoContainer.appendChild(divDeletar);
                     });
@@ -250,7 +250,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 // --- Popula "Adicionar Curso" ---
                 if (cursosDisponiveis.length === 0) {
-                     addCursoContainer.innerHTML = '<div class="linkDatailsIdt" style="background: var(--color6Shadow); color: var(--color6); padding: 2px 4px; border-radius: 4px;">Nenhum curso disponível</div>';
+                    addCursoContainer.innerHTML = '<div class="linkDatailsIdt" style="background: var(--color6Shadow); color: var(--color6); padding: 2px 4px; border-radius: 4px;">Nenhum curso disponível</div>';
                 } else {
                     cursosDisponiveis.forEach((curso, index) => { // <-- Pega o index
                         // Popula "Adicionar Curso" (com ícone de mais)
@@ -258,17 +258,17 @@ document.addEventListener("DOMContentLoaded", () => {
                         divAdicionar.className = 'linkDatailsIdt';
                         divAdicionar.textContent = curso.curso;
                         divAdicionar.dataset.cursoNome = curso.curso; // Guarda o nome para adição
-                        
+
                         const addIcon = document.createElement('i');
                         addIcon.className = 'ph ph-plus cursoAddinIcon'; // NOVO: Classe para adicionar
-                        
+
                         // ======================================================
                         //  MUDANÇA AQUI: Aplicando cores (Adicionar)
                         // ======================================================
                         const colorIndex = index % bgColors.length;
                         divAdicionar.style.background = `var(${bgColors[colorIndex]})`;
                         divAdicionar.style.color = `var(${textColors[colorIndex]})`;
-                        
+
                         divAdicionar.appendChild(addIcon);
                         addCursoContainer.appendChild(divAdicionar);
                     });
@@ -279,40 +279,40 @@ document.addEventListener("DOMContentLoaded", () => {
             // --- Função para Renderizar ---
             function loadAndRender() {
                 const itens = getItens();
-                
-                if (listContainer && cardTemplate) { 
-                    listContainer.innerHTML = ''; 
+
+                if (listContainer && cardTemplate) {
+                    listContainer.innerHTML = '';
 
                     itens.forEach(item => {
                         const newCard = cardTemplate.cloneNode(true);
                         newCard.dataset.id = item.id;
-                        
+
                         const cardTitleEl = newCard.querySelector(".textContentCardIdt h2");
                         const cardSubtitleEl = newCard.querySelector(".textContentCardIdt p");
-                        
+
                         const viewDetailsContainer = newCard.querySelector(".viewDetailsIC");
 
-                        if (STORAGE_KEY === 'diciplinasBody') { 
+                        if (STORAGE_KEY === 'diciplinasBody') {
                             if (cardTitleEl) cardTitleEl.textContent = item.curso;
                             if (cardSubtitleEl) cardSubtitleEl.textContent = item.nome;
-                            
+
                             const codeEl = newCard.querySelector(".code");
                             const acronymEl = newCard.querySelector(".acronym");
                             const periodEl = newCard.querySelector(".period");
 
                             if (codeEl) codeEl.textContent = item.codigo;
                             if (acronymEl) acronymEl.textContent = item.sigla;
-                            if (periodEl) periodEl.textContent = `${item.periodo}°`; 
+                            if (periodEl) periodEl.textContent = `${item.periodo}°`;
 
                             if (viewDetailsContainer) viewDetailsContainer.style.display = 'none';
-                        } 
+                        }
                         else if (STORAGE_KEY === 'instituicoesBody') {
-                            if (cardTitleEl) cardTitleEl.textContent = item.nome; 
-                            if (cardSubtitleEl) cardSubtitleEl.style.display = 'none'; 
-                            
+                            if (cardTitleEl) cardTitleEl.textContent = item.nome;
+                            if (cardSubtitleEl) cardSubtitleEl.style.display = 'none';
+
                             if (viewDetailsContainer) {
-                                viewDetailsContainer.innerHTML = ''; 
-                                
+                                viewDetailsContainer.innerHTML = '';
+
                                 if (Array.isArray(item.cursos) && item.cursos.length > 0) {
                                     item.cursos.forEach(cursoNome => {
                                         const div = document.createElement('div');
@@ -323,12 +323,12 @@ document.addEventListener("DOMContentLoaded", () => {
                                 }
                             }
                         }
-                        else { 
-                           if (cardTitleEl) cardTitleEl.textContent = item.curso;
-                           if (cardSubtitleEl) cardSubtitleEl.textContent = item.nome;
-                           if (viewDetailsContainer) viewDetailsContainer.style.display = 'none';
+                        else {
+                            if (cardTitleEl) cardTitleEl.textContent = item.curso;
+                            if (cardSubtitleEl) cardSubtitleEl.textContent = item.nome;
+                            if (viewDetailsContainer) viewDetailsContainer.style.display = 'none';
                         }
-                        
+
                         listContainer.appendChild(newCard);
 
                         // Paleta de cores para os CARDS PRINCIPAIS
@@ -345,13 +345,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     if (itens.length > 0) {
                         listContainer.style.display = "grid";
-                        listContainer.style.opacity = "1"; 
-                        listContainer.style.pointerEvents = "all"; 
+                        listContainer.style.opacity = "1";
+                        listContainer.style.pointerEvents = "all";
                         cardIdt.style.display = "none";
                     } else {
                         listContainer.style.display = "none";
-                        listContainer.style.opacity = "0"; 
-                        listContainer.style.pointerEvents = "none"; 
+                        listContainer.style.opacity = "0";
+                        listContainer.style.pointerEvents = "none";
                         cardIdt.style.display = "flex";
                         cardIdt.style.background = "";
                         cardIdt.style.border = "1px dashed var(--lightgrey)";
@@ -379,29 +379,29 @@ document.addEventListener("DOMContentLoaded", () => {
                     saveItens(itens); // Salva a versão restaurada
                 }
                 originalItemBeforeEdit = null; // Limpa a cópia de segurança
-                
+
                 // Restante da função
                 createIdt.classList.remove("show");
-                if (inputInstituicao) inputInstituicao.value = ""; 
-                if (inputCurso) inputCurso.value = ""; 
-                
+                if (inputInstituicao) inputInstituicao.value = "";
+                if (inputCurso) inputCurso.value = "";
+
                 if (STORAGE_KEY === 'diciplinasBody') {
-                    const inputCursoSelect = createIdt.querySelector("#cursoSelect"); 
-                    if (inputCursoSelect) inputCursoSelect.value = ""; 
+                    const inputCursoSelect = createIdt.querySelector("#cursoSelect");
+                    if (inputCursoSelect) inputCursoSelect.value = "";
 
                     const allInputs = createIdt.querySelectorAll(".campIdt input, .campIdtToggle .campIdt input");
                     if (allInputs[1]) allInputs[1].value = ""; // Nome Disciplina
                     if (allInputs[2]) allInputs[2].value = ""; // Sigla
                     if (allInputs[3]) allInputs[3].value = ""; // Código
-                    
+
                     const inputPeriodoSelect = createIdt.querySelector("#periodoSelect");
-                    if (inputPeriodoSelect) inputPeriodoSelect.value = ""; 
+                    if (inputPeriodoSelect) inputPeriodoSelect.value = "";
                 }
 
                 if (addCursoEdit) {
                     addCursoEdit.style.display = 'none';
                 }
-                if (deletCursoEdit) { 
+                if (deletCursoEdit) {
                     deletCursoEdit.style.display = 'none';
                 }
 
@@ -409,7 +409,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (cursosAdicionadosCamp) {
                     const dynamicContainer = cursosAdicionadosCamp.querySelector('.cursosEdidCamp');
                     if (dynamicContainer) dynamicContainer.remove(); // Remove o container dinâmico
-                    
+
                     // Restaura o placeholder original do HTML
                     if (!cursosAdicionadosCamp.querySelector('.linkDatailsIdt')) {
                         const placeholder = document.createElement('div');
@@ -444,44 +444,44 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
                 currentEditingCard = null;
-                
-                loadAndRender(); 
+
+                loadAndRender();
             }
 
             // --- Evento: Abrir para CRIAR ---
             btn.addEventListener("click", () => {
-                currentEditingCard = null; 
+                currentEditingCard = null;
                 originalItemBeforeEdit = null; // Limpa backup
-                
+
                 if (createBtn) createBtn.textContent = "Criar";
-                
+
                 if (inputInstituicao) inputInstituicao.value = "";
                 if (inputCurso) inputCurso.value = "";
 
                 if (addCursoEdit) {
                     addCursoEdit.style.display = 'none';
                 }
-                if (deletCursoEdit) { 
+                if (deletCursoEdit) {
                     deletCursoEdit.style.display = 'none';
                 }
 
                 if (STORAGE_KEY === 'diciplinasBody') {
-                    const inputCursoSelect = createIdt.querySelector("#cursoSelect"); 
-                    if (inputCursoSelect) inputCursoSelect.value = ""; 
+                    const inputCursoSelect = createIdt.querySelector("#cursoSelect");
+                    if (inputCursoSelect) inputCursoSelect.value = "";
 
                     const allInputs = createIdt.querySelectorAll(".campIdt input, .campIdtToggle .campIdt input");
-                    if (allInputs[1]) allInputs[1].value = ""; 
-                    if (allInputs[2]) allInputs[2].value = ""; 
-                    if (allInputs[3]) allInputs[3].value = ""; 
-                    
+                    if (allInputs[1]) allInputs[1].value = "";
+                    if (allInputs[2]) allInputs[2].value = "";
+                    if (allInputs[3]) allInputs[3].value = "";
+
                     const inputPeriodoSelect = createIdt.querySelector("#periodoSelect");
-                    if (inputPeriodoSelect) inputPeriodoSelect.value = ""; 
+                    if (inputPeriodoSelect) inputPeriodoSelect.value = "";
                 }
 
                 cardIdt.style.display = "flex";
                 cardIdt.style.border = "none";
                 cardIdt.style.background = "none";
-                hideCardIdtContent(true); 
+                hideCardIdtContent(true);
 
                 createIdt.classList.add("show");
             });
@@ -491,11 +491,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 listContainer.addEventListener('click', (e) => {
                     const editBtn = e.target.closest('.editCard');
                     const deleteBtn = e.target.closest('.deletCard');
-                    const addCursoBtn = e.target.closest('.addCurso'); 
+                    const addCursoBtn = e.target.closest('.addCurso');
                     const card = e.target.closest('.contentCardIdt');
-                    
+
                     if (!card) return;
-                    const id = card.dataset.id; 
+                    const id = card.dataset.id;
                     if (!id) return;
 
                     const itens = getItens();
@@ -507,18 +507,20 @@ document.addEventListener("DOMContentLoaded", () => {
                         // Salva uma cópia de segurança ANTES de qualquer modificação
                         originalItemBeforeEdit = JSON.parse(JSON.stringify(item));
 
+                        createIdt.dataset.editingId = id;
+
                         if (addCursoEdit) {
                             if (STORAGE_KEY === 'instituicoesBody') {
                                 addCursoEdit.style.display = 'flex';
                             } else {
-                                addCursoEdit.style.display = 'none'; 
+                                addCursoEdit.style.display = 'none';
                             }
                         }
-                        if (deletCursoEdit) { 
+                        if (deletCursoEdit) {
                             if (STORAGE_KEY === 'instituicoesBody') {
                                 deletCursoEdit.style.display = 'flex';
                             } else {
-                                deletCursoEdit.style.display = 'none'; 
+                                deletCursoEdit.style.display = 'none';
                             }
                         }
 
@@ -528,10 +530,10 @@ document.addEventListener("DOMContentLoaded", () => {
                             const inputNomeDisciplina = allInputs[1];
                             const inputSigla = allInputs[2];
                             const inputCodigo = allInputs[3];
-                            const inputPeriodoSelect = createIdt.querySelector("#periodoSelect"); 
+                            const inputPeriodoSelect = createIdt.querySelector("#periodoSelect");
 
-                            if (inputCursoSelect) inputCursoSelect.value = item.nome; 
-                            if (inputNomeDisciplina) inputNomeDisciplina.value = item.curso; 
+                            if (inputCursoSelect) inputCursoSelect.value = item.nome;
+                            if (inputNomeDisciplina) inputNomeDisciplina.value = item.curso;
                             if (inputSigla) inputSigla.value = item.sigla || "";
                             if (inputCodigo) inputCodigo.value = item.codigo || "";
                             if (inputPeriodoSelect) inputPeriodoSelect.value = item.periodo || "";
@@ -549,15 +551,21 @@ document.addEventListener("DOMContentLoaded", () => {
                         cardIdt.style.background = "none";
                         hideCardIdtContent(true);
                         createIdt.classList.add("show");
-                        if (createBtn) createBtn.textContent = "Salvar"; 
+                        if (createBtn) createBtn.textContent = "Salvar";
                     }
 
                     if (deleteBtn) {
                         const nomeItem = (STORAGE_KEY === 'diciplinasBody') ? item.curso : (item.curso || item.nome);
-                        if (confirm(`Tem certeza que deseja excluir "${nomeItem}"?`)) { 
-                            let novosItens = itens.filter(i => i.id != id); 
-                            saveItens(novosItens); 
-                            loadAndRender(); 
+                        if (confirm(`Tem certeza que deseja excluir "${nomeItem}"?`)) {
+                            // ✅ SE FOR INSTITUIÇÃO, USA O BANCO
+                            if (STORAGE_KEY === 'instituicoesBody') {
+                                deletarInstituicaoDB(id);
+                            } else {
+                                // Outros casos continuam usando localStorage
+                                let novosItens = itens.filter(i => i.id != id);
+                                saveItens(novosItens);
+                                loadAndRender();
+                            }
                         }
                     }
 
@@ -574,7 +582,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (!viewDetails) return;
                     e.preventDefault();
                     viewDetails.scrollLeft += e.deltaY;
-                }, { passive: false }); 
+                }, { passive: false });
             }
 
             // --- Evento: Fechar (Botão X) ---
@@ -590,47 +598,52 @@ document.addEventListener("DOMContentLoaded", () => {
             // --- Evento: CRIAR ou SALVAR (Botão Principal) (MODIFICADO) ---
             if (createBtn) {
                 createBtn.addEventListener("click", () => {
-                    let novoNome, novoCurso, novoSigla, novoCodigo, novoPeriodo; 
-                    
+
+                    if (STORAGE_KEY === 'instituicoesBody') {
+                        return; // Sai da função, deixa o functionMain.js tratar
+                    }
+
+                    let novoNome, novoCurso, novoSigla, novoCodigo, novoPeriodo;
+
                     if (STORAGE_KEY === 'diciplinasBody') {
                         const inputCursoSelect = createIdt.querySelector("#cursoSelect");
                         const allInputs = createIdt.querySelectorAll(".campIdt input, .campIdtToggle .campIdt input");
-                        
-                        const inputNomeDisciplina = allInputs[1]; 
+
+                        const inputNomeDisciplina = allInputs[1];
                         const inputSigla = allInputs[2];
                         const inputCodigo = allInputs[3];
                         const inputPeriodoSelect = createIdt.querySelector("#periodoSelect");
-                        
-                        novoNome = inputCursoSelect ? inputCursoSelect.value.trim() : ""; 
-                        novoCurso = inputNomeDisciplina ? inputNomeDisciplina.value.trim() : ""; 
+
+                        novoNome = inputCursoSelect ? inputCursoSelect.value.trim() : "";
+                        novoCurso = inputNomeDisciplina ? inputNomeDisciplina.value.trim() : "";
                         novoSigla = inputSigla ? inputSigla.value.trim() : "";
                         novoCodigo = inputCodigo ? inputCodigo.value.trim() : "";
                         novoPeriodo = inputPeriodoSelect ? inputPeriodoSelect.value : "";
-                    
-                    } else { 
+
+                    } else {
                         novoNome = inputInstituicao ? inputInstituicao.value.trim() : "";
-                        
+
                         if (STORAGE_KEY === 'instituicoesBody') {
-                            novoCurso = ""; 
+                            novoCurso = "";
                         } else {
-                            novoCurso = inputCurso ? inputCurso.value.trim() : ""; 
+                            novoCurso = inputCurso ? inputCurso.value.trim() : "";
                         }
                     }
 
                     // --- Validação ---
                     if (STORAGE_KEY === 'diciplinasBody') {
-                        if (!novoNome || !novoCurso || !novoSigla || !novoCodigo || !novoPeriodo) { 
+                        if (!novoNome || !novoCurso || !novoSigla || !novoCodigo || !novoPeriodo) {
                             alert("Por favor, preencha todos os campos da disciplina (Curso, Nome, Sigla, Código, Período).");
                             return;
                         }
                     }
                     else if (STORAGE_KEY === 'instituicoesBody') {
-                        if (!novoNome) { 
+                        if (!novoNome) {
                             alert("Por favor, preencha o nome da instituição.");
                             return;
                         }
                     } else { // 'cursosBody'
-                        if (!novoNome || !novoCurso) { 
+                        if (!novoNome || !novoCurso) {
                             alert("Por favor, preencha todos os campos.");
                             return;
                         }
@@ -644,7 +657,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         // --- MODO SALVAR (Edição) ---
                         const item = itens.find(i => i.id == currentEditingCard.id);
                         if (item) {
-                            item.nome = novoNome; 
+                            item.nome = novoNome;
                             if (STORAGE_KEY === 'diciplinasBody') {
                                 item.curso = novoCurso;
                                 item.sigla = novoSigla;
@@ -652,25 +665,25 @@ document.addEventListener("DOMContentLoaded", () => {
                                 item.periodo = novoPeriodo;
                             }
                             if (STORAGE_KEY === 'cursosBody') {
-                                item.curso = novoCurso; 
+                                item.curso = novoCurso;
                             }
                         }
                         // Limpa o backup, pois as mudanças foram salvas
-                        originalItemBeforeEdit = null; 
+                        originalItemBeforeEdit = null;
                     } else {
                         // --- MODO CRIAR (Novo) ---
                         if (!listContainer || !cardTemplate) {
                             console.warn(`Tentativa de CRIAR item em uma página sem .cardsCreateIdt ou template. Operação cancelada.`);
-                            closeAndResetModal(); 
-                            return; 
+                            closeAndResetModal();
+                            return;
                         }
 
                         const novoItem = {
                             id: Date.now().toString(),
-                            nome: novoNome, 
+                            nome: novoNome,
                             curso: novoCurso
                         };
-                        
+
                         if (STORAGE_KEY === 'diciplinasBody') {
                             novoItem.sigla = novoSigla;
                             novoItem.codigo = novoCodigo;
@@ -678,22 +691,22 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
 
                         if (STORAGE_KEY === 'instituicoesBody') {
-                            novoItem.cursos = []; 
-                            delete novoItem.curso; 
+                            novoItem.cursos = [];
+                            delete novoItem.curso;
                         }
 
                         itens.push(novoItem);
                     }
 
-                    saveItens(itens); 
-                    closeAndResetModal(); 
+                    saveItens(itens);
+                    closeAndResetModal();
                 });
             }
 
             // Event listener para DELETAR e ADICIONAR Cursos
             if (createIdt) {
                 createIdt.addEventListener('click', (e) => {
-                    const trashIcon = e.target.closest('.cursoDeletinIcon'); 
+                    const trashIcon = e.target.closest('.cursoDeletinIcon');
                     const addIcon = e.target.closest('.cursoAddinIcon'); // NOVO
 
                     if (!currentEditingCard) return;
@@ -727,7 +740,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         if (!instituicao.cursos) { // Garante que o array exista
                             instituicao.cursos = [];
                         }
-                        
+
                         instituicao.cursos.push(nomeDoCurso); // Adiciona o curso
                         saveItens(instituicoes);
                         popularCursosParaEdicao(instituicao); // Recarrega as 3 listas
@@ -746,19 +759,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 // Popula o datalist
                 if (datalistLink) {
-                    datalistLink.innerHTML = ''; 
+                    datalistLink.innerHTML = '';
                     const cursos = JSON.parse(localStorage.getItem("cursosBody")) || [];
                     cursos.forEach(curso => {
                         const option = document.createElement('option');
-                        option.value = curso.curso; 
+                        option.value = curso.curso;
                         datalistLink.appendChild(option);
                     });
                 }
-                
+
                 const closeLinkModal = () => {
                     linkCursoContainer.style.display = 'none';
-                    if (inputLink) inputLink.value = ''; 
-                    linkCursoContainer.removeAttribute('data-instituicao-id'); 
+                    if (inputLink) inputLink.value = '';
+                    linkCursoContainer.removeAttribute('data-instituicao-id');
                 };
 
                 if (closeLinkBtn) closeLinkBtn.addEventListener('click', closeLinkModal);
@@ -781,12 +794,12 @@ document.addEventListener("DOMContentLoaded", () => {
                         const cursoValido = todosCursos.find(c => c.curso.toLowerCase() === cursoSelecionado.toLowerCase());
 
                         if (!cursoValido) {
-                            alert(`Curso "${cursoSelecionado}" não encontrado.\n\nPor favor, selecione um curso que já foi criado na aba "Cursos".`);
+                            mostrarAlerta(`Curso "${cursoSelecionado}" não encontrado.\n\nPor favor, selecione um curso que já foi criado na aba "Cursos".`, "aviso")
                             return;
                         }
-                        
+
                         // Validação 2: Já foi adicionado?
-                        let instituicoes = getItens(); 
+                        let instituicoes = getItens();
                         const instituicao = instituicoes.find(i => i.id == instituicaoId);
 
                         if (!instituicao) return;
@@ -801,10 +814,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
 
                         // SALVAR
-                        instituicao.cursos.push(cursoValido.curso); 
-                        saveItens(instituicoes); 
+                        instituicao.cursos.push(cursoValido.curso);
+                        saveItens(instituicoes);
 
-                        closeLinkModal(); 
+                        closeLinkModal();
                         loadAndRender(); // Atualiza a tela
                     });
                 }
@@ -815,19 +828,19 @@ document.addEventListener("DOMContentLoaded", () => {
             if (STORAGE_KEY === 'diciplinasBody') {
                 const datalist = container.querySelector("#listCursos");
                 if (datalist) {
-                    datalist.innerHTML = ''; 
+                    datalist.innerHTML = '';
                     const cursos = JSON.parse(localStorage.getItem("cursosBody")) || [];
                     cursos.forEach(curso => {
                         const option = document.createElement('option');
-                        option.value = curso.curso; 
+                        option.value = curso.curso;
                         datalist.appendChild(option);
                     });
                 }
             }
-            else if (STORAGE_KEY === 'cursosBody') { 
+            else if (STORAGE_KEY === 'cursosBody') {
                 const datalist = container.querySelector("#listInstituicao");
                 if (datalist) {
-                    datalist.innerHTML = ''; 
+                    datalist.innerHTML = '';
                     const instituicoes = JSON.parse(localStorage.getItem("instituicoesBody")) || [];
                     instituicoes.forEach(inst => {
                         const option = document.createElement('option');
@@ -838,10 +851,10 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // --- Carregamento Inicial ---
-            if (listContainer) { 
-                listContainer.style.display = "none"; 
+            if (listContainer) {
+                listContainer.style.display = "none";
             }
-            loadAndRender(); 
+            loadAndRender();
         });
     }
 
@@ -861,7 +874,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- LINKS GLOBAIS (Dashboard, etc.) ---
     document.addEventListener("click", (e) => {
         const link = e.target.closest("a");
-        if (!link) return; 
+        if (!link) return;
 
         const texto = link.textContent.toLowerCase();
         const id = link.id;
@@ -869,11 +882,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (texto.includes("cadastrar instituição")) {
             e.preventDefault();
             carregarPagina("instituições");
-        } 
+        }
         else if (id === "instituicoes") {
             e.preventDefault();
             carregarPagina("instituições");
-        } 
+        }
         else if (id === "cursos") {
             e.preventDefault();
             carregarPagina("cursos");
@@ -881,7 +894,7 @@ document.addEventListener("DOMContentLoaded", () => {
         else if (id === "diciplinas") {
             e.preventDefault();
             carregarPagina("diciplinas");
-        } 
+        }
         else if (id === "turmas") {
             e.preventDefault();
             carregarPagina("turmas");

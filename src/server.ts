@@ -105,7 +105,7 @@ app.post('/instituicao/verificar', async (req: Request, res: Response) => {
         if (!nome) {
             return res.status(400).json({ 
                 sucesso: false, 
-                mensagem: "O campo nome é obrigatório" 
+                message: "O campo nome é obrigatório" 
             });
         }
 
@@ -114,26 +114,27 @@ app.post('/instituicao/verificar', async (req: Request, res: Response) => {
             console.log("❌ Instituição já cadastrada:", instituicao.nome);
             res.json({
                 sucesso: false,
-                mensagem: "A Instituição já está cadastrada",
+                message: "A Instituição já está cadastrada",
                 instituicao: instituicao
             });
         } else {
             console.log("✅ Instituição ainda não cadastrada!")
             res.json({ 
                 sucesso: true, 
-                mensagem: "Instituição disponível para cadastro" 
+                message: "Instituição disponível para cadastro" 
             });
         }
     } catch (error) {
         console.error("❌ Erro ao verificar a instituição:", error);
         res.status(500).json({ 
             sucesso: false, 
-            mensagem: "Erro no servidor" 
+            message: "Erro no servidor" 
         });
     }
 });
 
 app.post('/instituicao/cadastro', async (req: Request, res: Response) => {
+    console.log("Recebendo dados para cadastro de insituição")
     try {
         const { nome } = req.body;
         if (!nome) {
@@ -143,11 +144,11 @@ app.post('/instituicao/cadastro', async (req: Request, res: Response) => {
 
         const id = await addInstituicao(nome);
         console.log("✅ Instituição registrada com sucesso!")
-        res.status(201).json({ message: "Instituição registrada com sucesso", id});
+        res.status(201).json({ sucesso: true, message: "Instituição registrada com sucesso", id});
     } catch (error) {
         console.error(error);
         console.log("❌ Erro ao registrar a instituição.");
-        res.status(500).json({ error: "Erro ao registrar a instituição." })
+        res.status(500).json({ sucesso: false, error: "Erro ao registrar a instituição." })
     }
 });
 
@@ -266,21 +267,21 @@ app.post('/curso/verificar', async (req: Request, res: Response) => {
             console.log("❌ Curso já cadastrado:", curso.nome);
             res.json({
                 sucesso: false,
-                mensagem: "O Curso já está cadastrado.",
+                message: "O Curso já está cadastrado.",
                 curso: curso
             });
         } else {
             console.log("✅ Curso ainda não cadastrado!")
             res.status(200).json({ 
                 sucesso: true, 
-                mensagem: "Curso disponível para cadastro!" 
+                message: "Curso disponível para cadastro!" 
             });
         }
     } catch (error) {
         console.error("❌ Erro ao verificar o curso:", error);
         res.status(500).json({ 
             sucesso: false, 
-            mensagem: "Erro no servidor ao verificar curso" 
+            message: "Erro no servidor ao verificar curso" 
         });
     }
 });
@@ -411,7 +412,7 @@ app.post('/disciplina/verificar', async (req: Request, res: Response) => {
         if (!nome || !id_curso) {
             return res.status(400).json({ 
                 sucesso: false, 
-                mensagem: "Os campos nome e id_curso são obrigatórios" 
+                message: "Os campos nome e id_curso são obrigatórios" 
             });
         }
 
@@ -420,7 +421,7 @@ app.post('/disciplina/verificar', async (req: Request, res: Response) => {
             console.log("❌ Disciplina já cadastrada:", disciplina.nome);
             res.json({
                 sucesso: false,
-                mensagem: "A Disciplina já está cadastrada neste curso",
+                message: "A Disciplina já está cadastrada neste curso",
                 disciplina: disciplina
             });
         } else {
