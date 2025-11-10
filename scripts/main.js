@@ -1,39 +1,39 @@
 // main.js
 document.addEventListener("DOMContentLoaded", () => {
     // --- LOGIN ---
-    const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
-    if (usuario) {
-        const nomeEl = document.querySelector(".titleUser h1");
-        const emailEl = document.querySelector(".titleUser p");
+    // const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+    // if (usuario) {
+    //     const nomeEl = document.querySelector(".titleUser h1");
+    //     const emailEl = document.querySelector(".titleUser p");
 
-        if (nomeEl) {
-            const partesNome = usuario.nome.trim().split(/\s+/);
-            let primeiro = partesNome[0];
-            let segundoMenor = "";
-            if (partesNome.length > 1) {
-                const restantes = partesNome.slice(1);
-                const nomesValidos = restantes.filter(n => n.length >= 4);
-                if (nomesValidos.length > 0) {
-                    segundoMenor = nomesValidos.reduce((menor, atual) =>
-                        atual.length < menor.length ? atual : menor
-                    );
-                } else {
-                    segundoMenor = partesNome[partesNome.length - 1];
-                }
-            }
-            const formatarNome = (nome) =>
-                nome.charAt(0).toUpperCase() + nome.slice(1).toLowerCase();
-            const nomeFormatado = segundoMenor
-                ? `${formatarNome(primeiro)} ${formatarNome(segundoMenor)}`
-                : formatarNome(primeiro);
-            nomeEl.textContent = nomeFormatado;
-            nomeEl.style.whiteSpace = "nowrap";
-        }
-        if (emailEl) emailEl.textContent = usuario.email;
-    } else {
-        window.location.href = "/";
-        return;
-    }
+    //     if (nomeEl) {
+    //         const partesNome = usuario.nome.trim().split(/\s+/);
+    //         let primeiro = partesNome[0];
+    //         let segundoMenor = "";
+    //         if (partesNome.length > 1) {
+    //             const restantes = partesNome.slice(1);
+    //             const nomesValidos = restantes.filter(n => n.length >= 4);
+    //             if (nomesValidos.length > 0) {
+    //                 segundoMenor = nomesValidos.reduce((menor, atual) =>
+    //                     atual.length < menor.length ? atual : menor
+    //                 );
+    //             } else {
+    //                 segundoMenor = partesNome[partesNome.length - 1];
+    //             }
+    //         }
+    //         const formatarNome = (nome) =>
+    //             nome.charAt(0).toUpperCase() + nome.slice(1).toLowerCase();
+    //         const nomeFormatado = segundoMenor
+    //             ? `${formatarNome(primeiro)} ${formatarNome(segundoMenor)}`
+    //             : formatarNome(primeiro);
+    //         nomeEl.textContent = nomeFormatado;
+    //         nomeEl.style.whiteSpace = "nowrap";
+    //     }
+    //     if (emailEl) emailEl.textContent = usuario.email;
+    // } else {
+    //     window.location.href = "/";
+    //     return;
+    // }
     // --- LOGOUT ---
     const logoutBtn = document.querySelector("#logoutBtn");
     if (logoutBtn) {
@@ -126,8 +126,14 @@ document.addEventListener("DOMContentLoaded", () => {
             const cancelBtn = createIdt.querySelector("#cancelBtnIdt");
             const createBtn = createIdt.querySelector("#createBtnIdt");
             const inputs = createIdt.querySelectorAll(".campIdt input");
-            const inputInstituicao = inputs[0]; // Genérico, pode ser Instituição ou Curso
-            const inputCurso = inputs[1]; // Genérico, pode ser Nome do Curso
+            const inputInstituicao = inputs[0]; // Correto: Instituição
+            const inputCurso = inputs[2];
+
+            // ======================================================
+            // MUDANÇA (1): Selecionar o checkbox
+            // ======================================================
+            const checkNoInstituicao = createIdt.querySelector("#noInstituicao");
+
 
             // NOVO: Adicionar referência aos campos de adicionar/editar
             const addCursoEdit = container.querySelector('#addCursoEdit');
@@ -135,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const linkCursoContainer = container.querySelector(".containerAddIdt");
 
             // (Usando :nth-child(3) para pegar o "Cursos Adicionados" do HTML)
-            const cursosAdicionadosCamp = createIdt.querySelector('.campIdt:nth-child(3)');
+            const cursosAdicionadosCamp = createIdt.querySelector('#cursosAdicionadosCamp');
 
             // NOVO: Container para "Adicionar Curso"
             const addCursoContainer = addCursoEdit ? addCursoEdit.querySelector('.cursosEdidCamp') : null;
@@ -174,6 +180,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (h3Idt) h3Idt.style.display = display;
                 if (pIdt) pIdt.style.display = display;
             }
+
+            // ======================================================
+            // MUDANÇA (2): Adicionar o event listener para o checkbox
+            // ======================================================
+            if (checkNoInstituicao && inputInstituicao) {
+                checkNoInstituicao.addEventListener('change', () => {
+                    if (checkNoInstituicao.checked) {
+                        inputInstituicao.disabled = true;
+                        inputInstituicao.value = ""; // Limpa o valor
+                        inputInstituicao.placeholder = "Não é necessário";
+                    } else {
+                        inputInstituicao.disabled = false;
+                        inputInstituicao.placeholder = "Selecione a instituição"; // Placeholder original
+                    }
+                });
+            }
+
 
             // NOVO: Função para popular os cursos no modal de edição
             function popularCursosParaEdicao(item) {
@@ -323,9 +346,10 @@ document.addEventListener("DOMContentLoaded", () => {
                                 }
                             }
                         }
-                        else {
-                            if (cardTitleEl) cardTitleEl.textContent = item.curso;
-                            if (cardSubtitleEl) cardSubtitleEl.textContent = item.nome;
+                        else { // Assumindo cursosBody
+                            if (cardTitleEl) cardTitleEl.textContent = item.curso; // Nome do Curso
+                            // Se 'item.nome' (Instituição) for "", não mostra nada
+                            if (cardSubtitleEl) cardSubtitleEl.textContent = item.nome || "Sem instituição";
                             if (viewDetailsContainer) viewDetailsContainer.style.display = 'none';
                         }
 
@@ -385,6 +409,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (inputInstituicao) inputInstituicao.value = "";
                 if (inputCurso) inputCurso.value = "";
 
+                // ======================================================
+                // MUDANÇA (3): Resetar o checkbox e input ao fechar
+                // ======================================================
+                if (checkNoInstituicao) {
+                    checkNoInstituicao.checked = false;
+                }
+                if (inputInstituicao) {
+                    inputInstituicao.disabled = false;
+                    inputInstituicao.placeholder = "Selecione a instituição";
+                }
+
+
                 if (STORAGE_KEY === 'diciplinasBody') {
                     const inputCursoSelect = createIdt.querySelector("#cursoSelect");
                     if (inputCursoSelect) inputCursoSelect.value = "";
@@ -403,6 +439,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 if (deletCursoEdit) {
                     deletCursoEdit.style.display = 'none';
+                }
+
+                if (cursosAdicionadosCamp) {
+                    cursosAdicionadosCamp.style.display = 'none';
                 }
 
                 // Limpa os containers de cursos do modal
@@ -458,11 +498,26 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (inputInstituicao) inputInstituicao.value = "";
                 if (inputCurso) inputCurso.value = "";
 
+                // ======================================================
+                // MUDANÇA (4): Resetar o checkbox e input ao CRIAR
+                // ======================================================
+                if (checkNoInstituicao) {
+                    checkNoInstituicao.checked = false;
+                }
+                if (inputInstituicao) {
+                    inputInstituicao.disabled = false;
+                    inputInstituicao.placeholder = "Selecione a instituição";
+                }
+
+
                 if (addCursoEdit) {
                     addCursoEdit.style.display = 'none';
                 }
                 if (deletCursoEdit) {
                     deletCursoEdit.style.display = 'none';
+                }
+                if (cursosAdicionadosCamp) {
+                    cursosAdicionadosCamp.style.display = 'none';
                 }
 
                 if (STORAGE_KEY === 'diciplinasBody') {
@@ -509,6 +564,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         createIdt.dataset.editingId = id;
 
+                        // ======================================================
+                        // MUDANÇA (5): Ajustar o estado ao ABRIR PARA EDITAR
+                        // ======================================================
+                        if (STORAGE_KEY === 'cursosBody' && checkNoInstituicao && inputInstituicao) {
+                            if (item.nome) { // Se tem uma instituição salva
+                                checkNoInstituicao.checked = false;
+                                inputInstituicao.disabled = false;
+                                inputInstituicao.placeholder = "Selecione a instituição";
+                            } else { // Se não tem (foi salvo com 'Não tenho')
+                                checkNoInstituicao.checked = true;
+                                inputInstituicao.disabled = true;
+                                inputInstituicao.value = ""; // Garante que esteja limpo
+                                inputInstituicao.placeholder = "Não é necessário";
+                            }
+                        }
+
+
                         if (addCursoEdit) {
                             if (STORAGE_KEY === 'instituicoesBody') {
                                 addCursoEdit.style.display = 'flex';
@@ -521,6 +593,13 @@ document.addEventListener("DOMContentLoaded", () => {
                                 deletCursoEdit.style.display = 'flex';
                             } else {
                                 deletCursoEdit.style.display = 'none';
+                            }
+                        }
+                        if (cursosAdicionadosCamp) {
+                            if (STORAGE_KEY === 'instituicoesBody') {
+                                cursosAdicionadosCamp.style.display = 'block';
+                            } else {
+                                cursosAdicionadosCamp.style.display = 'none';
                             }
                         }
 
@@ -537,7 +616,12 @@ document.addEventListener("DOMContentLoaded", () => {
                             if (inputSigla) inputSigla.value = item.sigla || "";
                             if (inputCodigo) inputCodigo.value = item.codigo || "";
                             if (inputPeriodoSelect) inputPeriodoSelect.value = item.periodo || "";
-                        } else {
+                        
+                        } else if (STORAGE_KEY === 'cursosBody') {
+                            if (inputInstituicao) inputInstituicao.value = item.nome; // Campo Instituição
+                            if (inputCurso) inputCurso.value = item.curso; // Campo Nome do Curso
+                        
+                        } else { // instituicoesBody
                             if (inputInstituicao) inputInstituicao.value = item.nome;
                         }
 
@@ -643,9 +727,22 @@ document.addEventListener("DOMContentLoaded", () => {
                             return;
                         }
                     } else { // 'cursosBody'
-                        if (!novoNome || !novoCurso) {
-                            alert("Por favor, preencha todos os campos.");
-                            return;
+                        // ======================================================
+                        // MUDANÇA (6): Lógica de validação do checkbox
+                        // ======================================================
+                        if (checkNoInstituicao && checkNoInstituicao.checked) {
+                            // Se o checkbox está marcado, 'novoNome' (instituição) não é obrigatório.
+                            // 'novoNome' já será "" por causa do listener.
+                            if (!novoCurso) {
+                                alert("Por favor, preencha o Nome do curso.");
+                                return;
+                            }
+                        } else {
+                            // Checkbox NÃO está marcado, ambos são obrigatórios.
+                            if (!novoNome || !novoCurso) {
+                                alert("Por favor, preencha a Instituição e o Nome do curso.");
+                                return;
+                            }
                         }
                     }
                     // --- Fim da Validação ---
