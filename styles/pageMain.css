@@ -218,7 +218,8 @@ body {
     gap: 5px;
 }
 
-#logoutBtn {
+#logoutBtn,
+#userSettings {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -228,7 +229,8 @@ body {
     width: 25px;
 }
 
-#logoutBtn i {
+#logoutBtn i,
+#userSettings i {
     background: none;
     font-size: 1rem;
     font-weight: 600;
@@ -236,7 +238,8 @@ body {
     color: var(--black);
 }
 
-#logoutBtn:hover{
+#logoutBtn:hover,
+#userSettings:hover{
     background: var(--color2);
     border-radius: 50%;
 }

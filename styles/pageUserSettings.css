@@ -1,0 +1,229 @@
+/* ================================================
+    RESET GERAL E VARIÁVEIS DE CORES
+   ================================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Paleta de cores principal usada no projeto */
+:root {
+    --black: #000000;
+    --white: #ffffff;
+    --grey: #808080;
+
+    --shadow: rgba(0, 0, 0, 0.2);
+
+    --color1: #ebe8e8;
+    --color2: #e8e8e8;
+    --color3: #e30075;
+    --color4: #ff4a4a;
+    --color5: #ffb319;
+    --color6: #615c5c;
+    --color7: #25e475;
+
+    --lightgrey: #d3d3d3;
+}
+
+/* ================================================
+    CONFIGURAÇÃO DO BODY
+   ================================================ */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--color1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+
+.container h1 {
+    color: #333;
+    font-size: 30px;
+    margin-bottom: 25px;
+    font-weight: 500;
+}
+
+.title {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.logo {
+    max-width: 50%;
+    height: auto;
+}
+
+.modal {
+    text-align: center;
+    border: none;
+    padding: 40px 30px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    align-items: center;
+}
+
+/* Container dos inputs em colunas */
+.modal-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    width: 100%;
+}
+
+/* Email alinhado à esquerda */
+.email {
+    width: 100%;
+    text-align: left;
+}
+
+.email p {
+    font-size: 1rem;
+    color: var(--grey);
+}
+
+.name,
+.password,
+.tel {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--black);
+    border-radius: 50px;
+    width: 100%;
+    padding: 0 20px;
+    height: 45px;
+    background: var(--color1);
+}
+
+.name input,
+.password input,
+.tel input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 1rem;
+    background: var(--color1);
+    height: 100%;
+}
+
+input {
+    caret-color: var(--color5);
+}
+
+.name label,
+.password label,
+.tel label {
+    position: absolute;
+    z-index: 100;
+    margin-left: 8px;
+    transition: all 0.3s ease;
+    background: var(--color1);
+    font-size: 1rem;
+    color: var(--grey);
+    pointer-events: none;
+    padding: 0 0 5px 0;
+}
+
+
+.name:has(input:focus),
+.name:has(input:not(:placeholder-shown)),
+.password:has(input:focus),
+.password:has(input:not(:placeholder-shown)),
+.tel:has(input:focus),
+.tel:has(input:not(:placeholder-shown)) {
+    border: 1px solid var(--color5);
+}
+
+.name input:focus+label,
+.name input:not(:placeholder-shown)+label,
+.password input:focus+label,
+.password input:not(:placeholder-shown)+label,
+.tel input:focus+label,
+.tel input:not(:placeholder-shown)+label
+ {
+    margin-bottom: 47px;
+    margin-left: 20px;
+    font-size: 0.875rem;
+    padding: 0px 4px;
+    color: var(--color5);
+}
+
+.update-btn {
+    padding: 10px 40px;
+    background: var(--black);
+    color: var(--white);
+    border: none;
+    border-radius: 50px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.5s ease;
+}
+
+
+.update-btn:hover,
+.update-btn:focus {
+    background-color: var(--color5);
+    color: var(--black);
+    outline: none;
+}
+
+.update-btn:active {
+    transform: translateY(1px);
+}
+
+/* Divs com erro - Borda vermelha */
+.name.error {
+    border: 1px solid var(--color4) !important;
+    animation: shake 0.3s ease-in-out;
+}
+
+/* Animação de tremer */
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
+        transform: translateX(-3px);
+    }
+
+    20%,
+    40%,
+    60%,
+    80% {
+        transform: translateX(3px);
+    }
+}
+
+/* Label com erro dentro das divs */
+.name.error label {
+    color: var(--color4) !important;
+    font-weight: 600;
+}
+
+/* Remove o erro ao focar no input */
+.name.error input:focus {
+    outline: none;
+}

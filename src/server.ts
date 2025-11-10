@@ -94,6 +94,10 @@ app.get('/verificacao', (req, res) => {
     res.sendFile(path.join(__dirname, '../pages/pageVerification.html'));
 });
 
+app.get('/userSettings', (req, res) => {
+    res.sendFile(path.join(__dirname, '../pages/userSettings.html'));
+});
+
 /*=============*/
 /* INSTITUIÇÃO */
 /*=============*/
