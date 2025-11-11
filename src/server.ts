@@ -154,7 +154,8 @@ app.post("/instituicao/cadastro", async (req, res) => {
         res.json({
             sucesso: true,
             message: "Instituição cadastrada com sucesso",
-            id: id
+            id: id.id,
+            nome: id.nome,
         });
     } catch (error) {
         console.error("Erro ao cadastrar instituição:", error);
