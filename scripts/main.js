@@ -86,47 +86,56 @@
 // main.js
 document.addEventListener("DOMContentLoaded", () => {
     // --- LOGIN ---
-    // const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
-    // if (usuario) {
-    //     const nomeEl = document.querySelector(".titleUser h1");
-    //     const emailEl = document.querySelector(".titleUser p");
+    const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+    if (usuario) {
+        const nomeEl = document.querySelector(".titleUser h1");
+        const emailEl = document.querySelector(".titleUser p");
 
-    //     if (nomeEl) {
-    //         const partesNome = usuario.nome.trim().split(/\s+/);
-    //         let primeiro = partesNome[0];
-    //         let segundoMenor = "";
-    //         if (partesNome.length > 1) {
-    //             const restantes = partesNome.slice(1);
-    //             const nomesValidos = restantes.filter(n => n.length >= 4);
-    //             if (nomesValidos.length > 0) {
-    //                 segundoMenor = nomesValidos.reduce((menor, atual) =>
-    //                     atual.length < menor.length ? atual : menor
-    //                 );
-    //             } else {
-    //                 segundoMenor = partesNome[partesNome.length - 1];
-    //             }
-    //         }
-    //         const formatarNome = (nome) =>
-    //             nome.charAt(0).toUpperCase() + nome.slice(1).toLowerCase();
-    //         const nomeFormatado = segundoMenor
-    //             ? `${formatarNome(primeiro)} ${formatarNome(segundoMenor)}`
-    //             : formatarNome(primeiro);
-    //         nomeEl.textContent = nomeFormatado;
-    //         nomeEl.style.whiteSpace = "nowrap";
-    //     }
-    //     if (emailEl) emailEl.textContent = usuario.email;
-    // } else {
-    //     window.location.href = "/";
-    //     return;
-    // }
+        if (nomeEl) {
+            const partesNome = usuario.nome.trim().split(/\s+/);
+            let primeiro = partesNome[0];
+            let segundoMenor = "";
+            if (partesNome.length > 1) {
+                const restantes = partesNome.slice(1);
+                const nomesValidos = restantes.filter(n => n.length >= 4);
+                if (nomesValidos.length > 0) {
+                    segundoMenor = nomesValidos.reduce((menor, atual) =>
+                        atual.length < menor.length ? atual : menor
+                    );
+                } else {
+                    segundoMenor = partesNome[partesNome.length - 1];
+                }
+            }
+            const formatarNome = (nome) =>
+                nome.charAt(0).toUpperCase() + nome.slice(1).toLowerCase();
+            const nomeFormatado = segundoMenor
+                ? `${formatarNome(primeiro)} ${formatarNome(segundoMenor)}`
+                : formatarNome(primeiro);
+            nomeEl.textContent = nomeFormatado;
+            nomeEl.style.whiteSpace = "nowrap";
+        }
+        if (emailEl) emailEl.textContent = usuario.email;
+    } else {
+        window.location.href = "/";
+        return;
+    }
     // --- LOGOUT ---
     const logoutBtn = document.querySelector("#logoutBtn");
     if (logoutBtn) {
-        logoutBtn.addEventListener("click", () => {
-            localStorage.removeItem("usuarioLogado");
-            window.location.href = "/";
-        });
-    }
+    logoutBtn.addEventListener("click", () => {
+        // ✅ LIMPAR TODO O CACHE DO USUÁRIO ANTERIOR
+        localStorage.removeItem("usuarioLogado");
+        localStorage.removeItem("instituicoesBody");
+        localStorage.removeItem("cursosBody");
+        localStorage.removeItem("diciplinasBody");
+        localStorage.removeItem("turmasBody");
+        localStorage.removeItem("cadastroTemp");
+        localStorage.removeItem("emailParaRecuperacao");
+        
+        console.log("🗑️ Cache do usuário limpo");
+        window.location.href = "/";
+    });
+}
 
     // --- VARIÁVEIS GERAIS ---
     const links = document.querySelectorAll(".content ul li a");
@@ -210,7 +219,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const closeBtn = createIdt.querySelector("#xClosedCreate");
             const cancelBtn = createIdt.querySelector("#cancelBtnIdt");
             const createBtn = createIdt.querySelector("#createBtnIdt");
-            
+
             // [REMOVIDO DAQUI] const inputs = createIdt.querySelectorAll(".campIdt input");
             // [REMOVIDO DAQUI] const inputInstituicao = inputs[0]; 
             // [REMOVIDO DAQUI] const inputCurso = inputs[1]; 
@@ -459,14 +468,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 // Restante da função
                 createIdt.classList.remove("show");
-                
+
                 // [NOVO] Limpa os inputs de forma segura
                 const allInputsInModal = createIdt.querySelectorAll(".campIdt input");
                 allInputsInModal.forEach(input => {
                     input.value = "";
                     input.disabled = false;
                 });
-                
+
                 // Reseta placeholders específicos
                 if (STORAGE_KEY === 'cursosBody') {
                     const inputInstituicao = allInputsInModal[0];
@@ -634,7 +643,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 cursosAdicionadosCamp.style.display = 'none';
                             }
                         }
-                        
+
                         // [NOVO] Pega os inputs no momento do clique
                         const allInputsInModal = createIdt.querySelectorAll(".campIdt input");
 
@@ -650,13 +659,13 @@ document.addEventListener("DOMContentLoaded", () => {
                             if (inputSigla) inputSigla.value = item.sigla || "";
                             if (inputCodigo) inputCodigo.value = item.codigo || "";
                             if (inputPeriodoSelect) inputPeriodoSelect.value = item.periodo || "";
-                        
+
                         } else if (STORAGE_KEY === 'cursosBody') {
                             const inputInstituicao = allInputsInModal[0];
                             const inputCurso = allInputsInModal[1];
                             if (inputInstituicao) inputInstituicao.value = item.nome; // Campo Instituição
                             if (inputCurso) inputCurso.value = item.curso; // Campo Nome do Curso
-                        
+
                         } else { // instituicoesBody
                             const inputInstituicao = allInputsInModal[0];
                             if (inputInstituicao) inputInstituicao.value = item.nome;
@@ -674,14 +683,15 @@ document.addEventListener("DOMContentLoaded", () => {
                         createIdt.classList.add("show");
                         if (createBtn) createBtn.textContent = "Salvar";
                     }
-                    
+
                     // (código de deleteBtn omitido para brevidade)
                     if (deleteBtn) {
                         const nomeItem = (STORAGE_KEY === 'diciplinasBody') ? item.curso : (item.curso || item.nome);
                         if (confirm(`Tem certeza que deseja excluir "${nomeItem}"?`)) {
-                            
+
                             if (STORAGE_KEY === 'instituicoesBody') {
-                                // deletarInstituicaoDB(id); // (Função não fornecida, assumindo que deleta aqui)
+                                deletarInstituicaoDB(id);
+                                return;
 
                                 // LÓGICA DE DELETAR INSTITUIÇÃO: Limpa todos os cursos vinculados a ela
                                 let cursos = JSON.parse(localStorage.getItem("cursosBody")) || [];
@@ -697,7 +707,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                         }
                                     });
                                     localStorage.setItem("cursosBody", JSON.stringify(cursos));
-                                    
+
                                     // Deleta a instituição
                                     let novosItens = instituicoes.filter(i => i.id != id);
                                     saveItens(novosItens);
@@ -706,7 +716,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
                             } else {
-                                
+
                                 // LÓGICA NOVA: Desvincular curso da instituição
                                 if (STORAGE_KEY === 'cursosBody' && item.nome) {
                                     try {
@@ -737,7 +747,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     }
                 });
-                
+
                 // (código de wheel event omitido)
                 listContainer.addEventListener('wheel', (e) => {
                     const viewDetails = e.target.closest('.viewDetailsIC');
@@ -761,8 +771,14 @@ document.addEventListener("DOMContentLoaded", () => {
             if (createBtn) {
                 createBtn.addEventListener("click", () => {
 
+                    //NÃO TIRAR, essa função serve para salvar a instituição no banco
+                    if (STORAGE_KEY === 'instituicoesBody') {
+                        salvarInstituicao(); // Chama a função do backend
+                        return;
+                    }
+
                     let novoNome, novoCurso, novoSigla, novoCodigo, novoPeriodo;
-                    
+
                     // [NOVO] Pega os inputs no momento do clique
                     const allInputsInModal = createIdt.querySelectorAll(".campIdt input");
 
@@ -863,7 +879,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 else if (instituicaoNova && (nomeAntigoDoCurso.toLowerCase() !== nomeNovoDoCurso.toLowerCase())) {
                                     let instituicoes = JSON.parse(localStorage.getItem("instituicoesBody")) || [];
                                     const inst = instituicoes.find(i => i.nome.toLowerCase() === instituicaoNova.toLowerCase());
-                                    
+
                                     if (inst && Array.isArray(inst.cursos)) {
                                         // Encontra o índice do nome antigo
                                         const index = inst.cursos.findIndex(c => c.toLowerCase() === nomeAntigoDoCurso.toLowerCase());
@@ -878,12 +894,12 @@ document.addEventListener("DOMContentLoaded", () => {
                                 // Atualiza o próprio item do curso
                                 item.nome = novoNome;
                                 item.curso = novoCurso;
-                            
-                            } 
+
+                            }
                             // ======================================================
                             //  FIM DA MUDANÇA
                             // ======================================================
-                            
+
                             // Lógica original para outros tipos
                             else if (STORAGE_KEY === 'diciplinasBody') {
                                 item.nome = novoNome;
@@ -920,7 +936,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                         // Limpa o backup, pois as mudanças foram salvas
                         originalItemBeforeEdit = null;
-                    
+
                     } else {
                         // --- MODO CRIAR (Novo) ---
                         // (código de criação omitido para brevidade)
@@ -986,7 +1002,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     let instituicoes = getItens();
                     const instituicao = instituicoes.find(i => i.id == currentEditingCard.id);
                     if (!instituicao) return;
-                    
+
                     const nomeInst = instituicao.nome;
 
                     // --- Lógica de DELETAR ---
@@ -1000,11 +1016,11 @@ document.addEventListener("DOMContentLoaded", () => {
                             // 1. Remove da lista de cursos da Instituição
                             instituicao.cursos = instituicao.cursos.filter(c => c.toLowerCase() !== nomeDoCurso.toLowerCase());
                             saveItens(instituicoes);
-                            
+
                             // 2. Remove o nome da Instituição do objeto Curso no localStorage
                             let cursos = JSON.parse(localStorage.getItem("cursosBody")) || [];
                             const cursoAlvo = cursos.find(c => c.curso.toLowerCase() === nomeDoCurso.toLowerCase());
-                            
+
                             if (cursoAlvo && cursoAlvo.nome.toLowerCase() === nomeInst.toLowerCase()) {
                                 cursoAlvo.nome = ""; // Desvincula o curso da instituição
                                 localStorage.setItem("cursosBody", JSON.stringify(cursos));
@@ -1028,16 +1044,16 @@ document.addEventListener("DOMContentLoaded", () => {
                         // 1. Adiciona na lista de cursos da Instituição
                         instituicao.cursos.push(nomeDoCurso); // Adiciona o curso
                         saveItens(instituicoes);
-                        
+
                         // 2. Adiciona o nome da Instituição ao objeto Curso no localStorage
                         let cursos = JSON.parse(localStorage.getItem("cursosBody")) || [];
                         const cursoAlvo = cursos.find(c => c.curso.toLowerCase() === nomeDoCurso.toLowerCase());
-                        
+
                         if (cursoAlvo) {
                             cursoAlvo.nome = nomeInst; // Vincula o curso à instituição
                             localStorage.setItem("cursosBody", JSON.stringify(cursos));
                         }
-                        
+
                         popularCursosParaEdicao(instituicao); // Recarrega as 3 listas
                     }
                 });
@@ -1113,7 +1129,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         // Validação 3: Curso já pertence a OUTRA instituição?
                         if (cursoValido.nome && cursoValido.nome.toLowerCase() !== nomeInst.toLowerCase()) {
-                             alert(`O curso "${cursoSelecionado}" já está vinculado à instituição "${cursoValido.nome}". Desvincule-o primeiro na aba "Cursos" ou edite a instituição lá.`);
+                            alert(`O curso "${cursoSelecionado}" já está vinculado à instituição "${cursoValido.nome}". Desvincule-o primeiro na aba "Cursos" ou edite a instituição lá.`);
                             return;
                         }
 
@@ -1168,6 +1184,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 listContainer.style.display = "none";
             }
             loadAndRender();
+
+            //NOVO: Listener para recarregar quando instituições forem atualizadas
+            // carrega na pagina atual ao inves de voltar para o dashboard
+            // funciona tanto para deletar quanto para adicionar
+            // NÃO MEXER
+            if (STORAGE_KEY === 'instituicoesBody') {
+                document.addEventListener('recarregarInstituicoes', () => {
+                    console.log("🔄 Recarregando instituições na tela...");
+                    loadAndRender();
+                });
+            }
         });
     }
 

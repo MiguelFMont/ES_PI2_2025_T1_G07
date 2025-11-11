@@ -7,16 +7,20 @@ export interface Instituicao {
 };
 
 // Adicionar uma instituição
-export async function addInstituicao(nome: string): Promise<number> {
+export async function addInstituicao(nome: string, id_docente: number): Promise<number> {
     const conn = await open();
     try {
         const result = await conn.execute<{outBinds : {id: number}}>(
             `
-            INSERT INTO Instituicao (Nome)
-            VALUES (:nome)
+            INSERT INTO webapp.Instituicao (FK_ID_Docente, Nome)
+            VALUES (:id_docente, :nome)
             RETURNING ID_Instituicao INTO :id
             `,
-            {nome, id: {dir: OracleDB.BIND_OUT, type: OracleDB.NUMBER}},
+            {
+                id_docente, 
+                nome, 
+                id: {dir: OracleDB.BIND_OUT, type: OracleDB.NUMBER}
+            },
             {autoCommit: true}
         );
 
@@ -113,13 +117,16 @@ export async function getInstituicaoById(id: number): Promise<Instituicao | null
 }
 
 // Obter todas as instituições da tabela INSTITUICAO do Oracle
-export async function getAllInstituicao(): Promise<Instituicao[]> {
+// Obter todas as instituições cadastradas por um docente específico
+export async function getAllInstituicao(id_docente: number): Promise<Instituicao[]> {
     const conn = await open();
     try {
         const result = await conn.execute(
-            `SELECT ID_Instituicao as "id", Nome as "nome" FROM Instituicao
+            
+            `SELECT ID_Instituicao as "id", Nome as "nome", FK_ID_Docente as "id_docente" FROM Instituicao
+            WHERE FK_ID_Docente = :id_docente
             ORDER BY Nome`,
-            {},
+            { id_docente },
             { outFormat: OracleDB.OUT_FORMAT_OBJECT }
         );
         

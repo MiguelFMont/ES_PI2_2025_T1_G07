@@ -68,21 +68,22 @@ export async function verificarCadastroDocente(email: string): Promise<{ nome: s
     }
 }
 
-export async function verificarLoginDocente(email: string, senha: string): Promise<{ nome: string, email: string } | null> {
+export async function verificarLoginDocente(email: string, senha: string): Promise<{ id: number, nome: string, email: string } | null> {
     const conn = await open();
     try{
         const result = await conn.execute(
-            `SELECT Nome, Email FROM Docente
+            `SELECT ID_Docente, Nome, Email FROM Docente
             WHERE Email = :email AND Senha = :senha
             FETCH FIRST 1 ROWS ONLY`,
-            //     ^^^^  ^^^^^ BUSCA ESSES DADOS NO BANCO
+            //     ^^^^^^^^^^  ^^^^  ^^^^^ BUSCA ESSES DADOS NO BANCO (incluindo ID)
             { email, senha },
             { outFormat: OracleDB.OUT_FORMAT_OBJECT }
         );
         
         if (result.rows && result.rows.length > 0) {
-            const docente = result.rows[0] as { NOME: string, EMAIL: string };
+            const docente = result.rows[0] as { ID_DOCENTE: number, NOME: string, EMAIL: string };
             return {
+                id: docente.ID_DOCENTE,
                 nome: docente.NOME,
                 email: docente.EMAIL
             };

@@ -4,9 +4,17 @@
 
 // Função para carregar instituições do banco de dados
 function carregarInstituicoesFromDB() {
+    const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
+    if (!usuarioLogado || !usuarioLogado.id) {
+        console.error("❌ Usuário não autenticado");
+        mostrarAlerta("Erro: Usuário não autenticado. Faça login novamente.", "erro");
+        return;
+    }
+    const id_docente = usuarioLogado.id;
+
     mostrarLoader('mostrar');
-    
-    fetch("/instituicao/all", {
+
+    fetch(`/instituicao/all/${id_docente}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" }
     })
@@ -15,34 +23,43 @@ function carregarInstituicoesFromDB() {
             return res.json();
         })
         .then(dados => {
-            console.log("✅ Instituições recebidas:", dados);
+            
+            // ✅ CORREÇÃO: Aceitar AMBOS os formatos
+            let instituicoes;
+            
             if (Array.isArray(dados)) {
-                // Formata os dados para o formato esperado pelo main.js
-                let instituicoesFormatadas = dados.map(inst => ({
-                    id: inst.id.toString(),
-                    nome: inst.nome,
-                    cursos: inst.cursos || []
-                }));
-                
-                // Salva no localStorage
-                localStorage.setItem("instituicoesBody", JSON.stringify(instituicoesFormatadas));
-                console.log("💾 Instituições salvas no localStorage:", instituicoesFormatadas.length);
-                
-                // Atualiza o contador no dashboard
-                atualizarContadorInstituicoes(instituicoesFormatadas.length);
-                
-                // Dispara evento para recarregar a interface
-                let evento = new CustomEvent('instituicoesAtualizadas', { 
-                    detail: { instituicoes: instituicoesFormatadas }
-                });
-                document.dispatchEvent(evento);
-                
-                mostrarLoader('esconder');
+                // Se for array direto
+                instituicoes = dados;
+                console.log("🔄 Formato 1: Array direto");
+            } else if (dados.instituicoes && Array.isArray(dados.instituicoes)) {
+                // Se for objeto com propriedade instituicoes
+                instituicoes = dados.instituicoes;
+                console.log("🔄 Formato 2: Objeto com propriedade .instituicoes");
             } else {
-                console.warn("⚠️ Formato de dados inesperado:", dados);
+                // Nenhum dos dois
+                console.log("⚠️ Nenhuma instituição foi cadastrada para o usuário atual:", dados);
                 mostrarLoader('esconder');
-                mostrarAlerta("Formato de dados inesperado recebido do servidor.", "erro");
+                mostrarAlerta("Cadastre uma instituição!", "aviso");
+                return;
             }
+            
+            // Formata os dados para o formato esperado pelo main.js
+            let instituicoesFormatadas = instituicoes.map(inst => ({
+                id: inst.id.toString(),
+                nome: inst.nome,
+                cursos: inst.cursos || []
+            }));
+
+            // Salva no localStorage
+            localStorage.setItem("instituicoesBody", JSON.stringify(instituicoesFormatadas));
+            console.log("💾 Instituições salvas no localStorage:", instituicoesFormatadas.length);
+
+            // Atualiza o contador no dashboard
+            atualizarContadorInstituicoes(instituicoesFormatadas.length);
+            
+            forcarReRenderizacao();
+
+            mostrarLoader('esconder');
         })
         .catch(err => {
             console.error("❌ Erro ao carregar instituições:", err);
@@ -60,26 +77,14 @@ function atualizarContadorInstituicoes(quantidade) {
     }
 }
 
-// Função para salvar instituição no banco
-document.addEventListener("click", (e) => {
-    const createBtn = e.target.closest("#createBtnIdt");
-
-    if (!createBtn) return;
-
-    const container = createBtn.closest("#instituicoesBody");
-    if (!container) return;
-
-    e.preventDefault();
-
-    const modal = createBtn.closest(".createIdt");
+function salvarInstituicao() {
+    const modal = document.querySelector("#instituicoesBody .createIdt");
     if (!modal) {
         console.error("Modal não encontrado!");
         return;
     }
 
-    // ✅ CORREÇÃO: nomeDaInstituicao (com "a" no final)
     const inputNome = modal.querySelector("#nomeDaInstituicao");
-
     if (!inputNome) {
         console.error("Input não encontrado!");
         return;
@@ -92,77 +97,64 @@ document.addEventListener("click", (e) => {
         return;
     }
 
+    const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
+    // ✅ MUDANÇA: Trocar id_docente por id
+    if (!usuarioLogado || !usuarioLogado.id) {
+        mostrarAlerta("Erro: Usuário não autenticado. Faça login novamente.", "erro");
+        return;
+    }
+    const id_docente = usuarioLogado.id;  // ✅ MUDANÇA: usar .id ao invés de .id_docente
+
     mostrarLoader("mostrar");
 
     fetch("/instituicao/verificar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome: nomeInstituicao })
+        body: JSON.stringify({ nome: nomeInstituicao, id_docente: id_docente })
     })
-        .then(res => {
-            console.log("📥 Status dos dados recebidos:", res.status);
-            return res.json();
-        })
+        .then(res => res.json())
         .then(data => {
             if (data.sucesso) {
                 mostrarLoader('esconder');
                 mostrarAlerta("Instituição ainda não cadastrada!", "sucesso");
-                console.log("Intituição ainda não cadastrada: ", nomeInstituicao,);
 
-                mostrarLoader('mostrar');
-                fetch("/instituicao/cadastro", {
+                // Cadastra a instituição
+                return fetch("/instituicao/cadastro", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ nome: nomeInstituicao })
-                })
-                    .then(res => {
-                        console.log("📥 Status dos dados recebidos:", res.status);
-                        return res.json();
-                    })
-                    .then(dados => {
-                        console.log("✅ Dados da verificação:", dados);
-                        if (dados.sucesso) {
-                            mostrarLoader('esconder');
-                            mostrarAlerta("Cadastro de instituição realizado com sucesso", "sucesso");
-                            console.log("Cadastro realizado com sucesso!");
-
-                            inputNome.value = "";
-
-                            const modal = createBtn.closest(".createIdt");
-                            if (modal) modal.classList.remove("show");
-
-                        } else {
-                            mostrarLoader('esconder');
-                            mostrarAlerta("Erro ao realizar o cadastro!", "erro");
-                            console.log("Erro ao realizar o cadastro!");
-                        }
-                    })
-                    .catch(err => {
-                        console.error("Erro ao cadastrar instituição. Error:", err);
-                        console.error("Detalhes do erro:", err.message);
-                        mostrarLoader('esconder');
-                        mostrarAlerta("Ocorreu um erro. Verifique o console para mais detalhes.", "erro");
-                    });
-
+                    body: JSON.stringify({ nome: nomeInstituicao, id_docente: id_docente })
+                });
             } else {
                 mostrarLoader('esconder');
-                mostrarAlerta("Instituição ja possui cadastro!", "aviso");
-                console.log("Instituição ja possui cadastro!");
+                mostrarAlerta("Instituição já possui cadastro!", "aviso");
+                throw new Error("Instituição duplicada");
+            }
+        })
+        .then(res => res.json())
+        .then(dados => {
+            if (dados.sucesso) {
+                mostrarLoader('esconder');
+                mostrarAlerta("Cadastro realizado com sucesso", "sucesso");
+
+                inputNome.value = "";
+                modal.classList.remove("show");
+                carregarInstituicoesFromDB();
+            } else {
+                mostrarLoader('esconder');
+                mostrarAlerta("Erro ao realizar o cadastro!", "erro");
             }
         })
         .catch(err => {
-            mostrarLoader("mostrar");
-            mostrarAlerta("Ocorreu um erro. Verifique o console para mais detalhes.", "erro");
-            console.error("Erro ao verificar Instituição: err: ", err);
-            console.error("Mensagem: ", err.message);
+            mostrarLoader('esconder');
+            mostrarAlerta("Ocorreu um erro. Verifique o console.", "erro");
+            console.error("Erro:", err);
         });
-});
-
+}
 // Função para deletar instituição do banco
 function deletarInstituicaoDB(id) {
     console.log(`🗑️ Deletando instituição ID: ${id}`);
     mostrarLoader('mostrar');
-    
+
     fetch("/instituicao/deletar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -171,7 +163,7 @@ function deletarInstituicaoDB(id) {
         .then(res => res.json())
         .then(dados => {
             console.log("✅ Resposta do servidor:", dados);
-            
+
             if (dados.message) {
                 mostrarLoader('esconder');
                 mostrarAlerta("Instituição deletada com sucesso!", "sucesso");
@@ -194,11 +186,11 @@ function deletarInstituicaoDB(id) {
 // Listener para atualizar a interface quando houver mudanças
 document.addEventListener('instituicoesAtualizadas', (e) => {
     console.log("🔄 Evento instituicoesAtualizadas disparado");
-    
+
     let instituicoesContainer = document.querySelector('.instituições');
     if (instituicoesContainer && instituicoesContainer.style.display === 'block') {
         console.log("🔄 Recarregando página de instituições...");
-        
+
         let reloadBtn = document.querySelector('.instituições .newIdt');
         if (reloadBtn) {
             let evento = new Event('DOMContentLoaded');
@@ -207,14 +199,34 @@ document.addEventListener('instituicoesAtualizadas', (e) => {
     }
 });
 
+// Função para forçar re-renderização na página atual
+function forcarReRenderizacao() {
+    console.log("🔄 Forçando re-renderização...");
+
+    // Verifica se está na página de instituições
+    const instituicoesContainer = document.querySelector('.instituições');
+    if (instituicoesContainer && instituicoesContainer.style.display === 'block') {
+
+        // Pega a função loadAndRender do escopo do main.js
+        const listContainer = instituicoesContainer.querySelector('.cardsCreateIdt');
+
+        if (listContainer) {
+            // Dispara um evento customizado que o main.js vai escutar
+            const evento = new CustomEvent('recarregarInstituicoes');
+            document.dispatchEvent(evento);
+            console.log("✅ Evento recarregarInstituicoes disparado");
+        }
+    }
+}
+
 // Carrega instituições ao iniciar e configura interceptadores
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         console.log("🔧 Configurando integração com banco de dados...");
-        
+
         // Carrega instituições ao iniciar
         carregarInstituicoesFromDB();
-        
+
         // Observa quando o botão de salvar for adicionado ao DOM
         let observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
@@ -225,12 +237,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
         });
-        
+
         observer.observe(document.body, {
             childList: true,
             subtree: true
         });
-        
+
     }, 500);
 });
 

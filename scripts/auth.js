@@ -83,10 +83,10 @@ function marcarErroCampo(input, msg) {
     if (!input || !input.parentElement) return;
     const parent = input.parentElement; // A div (.mail, .password, etc)
     const label = parent.querySelector("label");
-    
+
     // ✅ Adiciona classe de erro na DIV (parent)
     parent.classList.add("error");
-    
+
     if (label) {
         label.textContent = msg;
         label.style.color = "var(--color4)";
@@ -97,10 +97,10 @@ function limparErroCampo(input) {
     if (!input || !input.parentElement) return;
     const parent = input.parentElement;
     const label = parent.querySelector("label");
-    
+
     // ✅ Remove classe de erro da DIV (parent)
     parent.classList.remove("error");
-    
+
     if (label) {
         label.textContent = originalLabels[input.id] || originalLabels[input.name] || label.textContent;
         label.style.color = "";
@@ -219,7 +219,7 @@ function eyePassword(inputId, icon) {
     }
 }
 
-// --- LOGIN ---
+//--LOGIN--//
 if (botaoLogin) {
     botaoLogin.addEventListener("click", (e) => {
         if (e) e.preventDefault();
@@ -252,13 +252,22 @@ if (botaoLogin) {
                     errorMessage.style.display = "none";
                     erroAtivo = false;
 
+                    // ✅ LIMPAR O CACHE DO USUÁRIO ANTERIOR ANTES DE SALVAR O NOVO
+                    localStorage.removeItem("instituicoesBody");
+                    localStorage.removeItem("cursosBody");
+                    localStorage.removeItem("diciplinasBody");
+                    localStorage.removeItem("turmasBody");
+                    console.log("🗑️ Cache do usuário anterior limpo");
+
+                    // Agora salva o novo usuário
                     localStorage.setItem("usuarioLogado", JSON.stringify({
+                        id: data.id,
                         nome: data.nome,
                         email: data.email
                     }));
 
                     const salvou = localStorage.getItem("usuarioLogado");
-                    console.log("💾 Salvou no localStorage:", salvou);
+                    console.log("💾 Novo usuário salvo no localStorage:", salvou);
                     setTimeout(() => {
                         window.location.href = "../pages/mainPage.html";
                     }, 6000);
@@ -313,7 +322,7 @@ if (botaoCadastro) {
             marcarErroCampo(inputSenha, senhaCheck.mensagem);
             algumErro = true;
         }
-        
+
         if (algumErro) {
             errorMessage.style.display = "block";
             erroAtivo = true;
@@ -369,6 +378,7 @@ if (botaoCadastro) {
                     mostrarLoader('esconder');
                     mostrarAlerta("Código enviado! Verifique seu e-mail. Você será redirecionado para a página de verificação.", "sucesso");
                     console.log("✅ Código enviado para:", emailDigitado);
+
                     // Redireciona após 5 segundos
                     setTimeout(() => {
                         window.location.href = "/verificacao";
@@ -532,7 +542,15 @@ if (botaoVerify) {
                 if (!data) return;
                 console.log("6. Dados do cadastro:", data);
                 if (data.sucesso) {
+                    // ✅ LIMPAR O CACHE ANTES DE SALVAR O NOVO USUÁRIO
+                    localStorage.removeItem("instituicoesBody");
+                    localStorage.removeItem("cursosBody");
+                    localStorage.removeItem("diciplinasBody");
+                    localStorage.removeItem("turmasBody");
+                    console.log("🗑️ Cache limpo para novo usuário");
+                    
                     localStorage.setItem("usuarioLogado", JSON.stringify({
+                        id: data.id,
                         nome: cadastroTemp.nome,
                         email: cadastroTemp.email
                     }));
