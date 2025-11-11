@@ -230,7 +230,7 @@ if (botaoLogin) {
         const senhaDigitada = inputSenha.value.trim();
 
         mostrarLoader('mostrar');
-        console.log("📤 Enviando login para:", emailDigitado);
+        console.log("📤 Verificando email:", emailDigitado);
 
         fetch("/verificar-docente", {
             method: "POST",
@@ -263,7 +263,8 @@ if (botaoLogin) {
                     localStorage.setItem("usuarioLogado", JSON.stringify({
                         id: data.id,
                         nome: data.nome,
-                        email: data.email
+                        email: data.email,
+                        telefone: data.telefone
                     }));
 
                     const salvou = localStorage.getItem("usuarioLogado");
@@ -552,7 +553,8 @@ if (botaoVerify) {
                     localStorage.setItem("usuarioLogado", JSON.stringify({
                         id: data.id,
                         nome: cadastroTemp.nome,
-                        email: cadastroTemp.email
+                        email: cadastroTemp.email,
+                        telefone: cadastroTemp.telefone
                     }));
                     console.log("✅ Docente cadastrado e logado:", cadastroTemp.email);
                     localStorage.removeItem("cadastroTemp");

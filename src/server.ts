@@ -95,7 +95,7 @@ app.get('/verificacao', (req, res) => {
 });
 
 app.get('/userSettings', (req, res) => {
-    res.sendFile(path.join(__dirname, '../pages/userSettings.html'));
+    res.sendFile(path.join(__dirname, '../pages/pageUserSettings.html'));
 });
 
 /*=============*/
@@ -668,7 +668,8 @@ app.post('/verificar-docente', async (req: Request, res: Response) => {
                 sucesso: true,
                 id: docente.id,
                 nome: docente.nome,
-                email: docente.email
+                email: docente.email,
+                telefone: docente.telefone
             });
         } else {
             res.status(401).json({ sucesso: false, mensagem: "Credenciais inválidas" });

@@ -221,7 +221,6 @@ function forcarReRenderizacao() {
 
 // Carrega instituições ao iniciar e configura interceptadores
 document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
         console.log("🔧 Configurando integração com banco de dados...");
 
         // Carrega instituições ao iniciar
@@ -242,8 +241,6 @@ document.addEventListener('DOMContentLoaded', () => {
             childList: true,
             subtree: true
         });
-
-    }, 500);
 });
 
 console.log("✅ Sistema de integração com banco de dados carregado!");

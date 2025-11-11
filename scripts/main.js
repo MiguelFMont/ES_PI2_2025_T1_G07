@@ -135,6 +135,14 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("🗑️ Cache do usuário limpo");
         window.location.href = "/";
     });
+
+    // -- userSettings --
+    const userButton = document.querySelector("#userSettings");
+    if (userButton) {
+        userButton.addEventListener("click", () => {
+            window.location.href = "/userSettings"
+        });
+    }
 }
 
     // --- VARIÁVEIS GERAIS ---
