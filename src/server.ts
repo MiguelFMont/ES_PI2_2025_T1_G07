@@ -50,6 +50,24 @@ import {
 } from "./db/disciplina"
 
 import {
+    addTurma,
+    deleteTurma,
+    updateTurma,
+    verificarTurmaExistente,
+    getTurmaById,
+    getAllTurmas
+} from "./db/turma"
+
+import {
+    addEstudante,
+    deleteEstudante,
+    updateEstudante,
+    verificarEstudanteExistente,
+    getEstudanteByRA,
+    getAllEstudantes
+} from "./db/estudante"
+
+import {
     gerarCodigoVericacao,
     enviarCodigoVerificacao,
     enviarLinkAlterarSenha
@@ -166,6 +184,7 @@ app.post("/instituicao/cadastro", async (req, res) => {
         });
     }
 });
+
 app.post('/instituicao/atualizar', async (req: Request, res: Response) => {
     try {
         const { id, novo_nome } = req.body;
@@ -611,6 +630,300 @@ app.get('/disciplina/all', async (req: Request, res: Response) => {
         console.error("❌ Erro ao buscar disciplinas:", error);
         res.status(500).json({
             error: "Erro ao buscar as disciplinas."
+        });
+    }
+});
+
+/*=======*/
+/* TURMA */
+/*=======*/
+// Verificar se turma já existe
+app.post('/turma/verificar', async (req: Request, res: Response) => {
+    try {
+        const { fk_disciplina_codigo, nome } = req.body;
+        console.log("🔍 Verificando turma:", { fk_disciplina_codigo, nome });
+
+        const turma = await verificarTurmaExistente(fk_disciplina_codigo, nome);
+        if (turma) {
+            console.log("❌ Turma já cadastrada:", turma.nome);
+            res.json({
+                sucesso: false,
+                message: "A Turma já está cadastrada.",
+                turma: turma
+            });
+        } else {
+            console.log("✅ Turma ainda não cadastrada!")
+            res.status(200).json({ 
+                sucesso: true, 
+                message: "Turma disponível para cadastro!" 
+            });
+        }
+    } catch (error) {
+        console.error("❌ Erro ao verificar a turma:", error);
+        res.status(500).json({ 
+            sucesso: false, 
+            message: "Erro no servidor ao verificar turma" 
+        });
+    }
+});
+
+// Cadastrar nova turma
+app.post('/turma/cadastro', async (req: Request, res: Response) => {
+    try {
+        const { fk_disciplina_codigo, nome, local_aula, dia_semana, hora } = req.body;
+        
+        if (!fk_disciplina_codigo || !nome) {
+            console.log("❌ Campos obrigatórios faltando:", { fk_disciplina_codigo, nome });
+            return res.status(400).json({ 
+                error: "Os campos disciplina e nome são obrigatórios!" 
+            });
+        }
+
+        const id = await addTurma(fk_disciplina_codigo, nome, local_aula, dia_semana, hora);
+        console.log("✅ Turma registrada com sucesso! ID:", id);
+        res.status(201).json({ 
+            message: "Turma registrada com sucesso", 
+            id: id 
+        });
+    } catch (error) {
+        console.error("❌ Erro ao registrar a turma:", error);
+        res.status(500).json({ 
+            error: "Erro ao registrar a turma." 
+        });
+    }
+});
+
+// Atualizar turma existente
+app.post('/turma/atualizar', async (req: Request, res: Response) => {
+    try {
+        const { id, fk_disciplina_codigo, nome, local_aula, dia_semana, hora } = req.body;
+        
+        if (!id || !fk_disciplina_codigo || !nome) {
+            console.log("❌ Campos obrigatórios faltando:", { id, fk_disciplina_codigo, nome });
+            return res.status(400).json({ 
+                error: "Os campos id, disciplina e nome são obrigatórios!" 
+            });
+        }
+
+        await updateTurma(id, fk_disciplina_codigo, nome, local_aula, dia_semana, hora);
+        console.log("✅ Turma atualizada com sucesso! ID:", id);
+        res.status(200).json({ 
+            message: "Turma atualizada com sucesso" 
+        });
+    } catch (error) {
+        console.error("❌ Erro ao atualizar a turma:", error);
+        res.status(500).json({ 
+            error: "Erro ao atualizar a turma." 
+        });
+    }
+});
+
+// Deletar turma
+app.post('/turma/deletar', async (req: Request, res: Response) => {
+    try {
+        const { id } = req.body;
+        if (!id) {
+            console.log("❌ O campo ID é obrigatório!");
+            return res.status(400).json({ 
+                error: "O campo ID é obrigatório!" 
+            });   
+        }
+
+        await deleteTurma(id);
+        console.log("✅ Turma deletada com sucesso! ID:", id);
+        res.status(200).json({ 
+            message: "Turma deletada com sucesso" 
+        });
+    } catch (error) {
+        console.error("❌ Erro ao deletar a turma:", error);
+        res.status(500).json({ 
+            error: "Erro ao deletar a turma." 
+        });
+    }
+});
+
+// Obter turma por ID
+app.get('/turma/id/:id', async (req: Request, res: Response) => {
+    try {
+        const id = Number(req.params.id);
+        const turma = await getTurmaById(id);
+        if (turma) {
+            res.json(turma);
+        } else {
+            res.status(404).json({ 
+                message: "Turma não encontrada com o ID fornecido" 
+            });
+        }
+    } catch (error) {
+        console.error("❌ Erro ao buscar turma por ID:", error);
+        res.status(500).json({ 
+            error: "Erro ao buscar a turma pelo ID fornecido." 
+        });
+    }
+});
+
+// Obter todas as turmas
+app.get('/turma/all', async (req: Request, res: Response) => {
+    try {
+        const turmas = await getAllTurmas();
+        if (turmas && turmas.length > 0) {
+            res.json(turmas);
+        } else {
+            res.status(404).json({ 
+                message: "Não há turmas cadastradas." 
+            });
+        }
+    } catch (error) {
+        console.error("❌ Erro ao buscar todas as turmas:", error);
+        res.status(500).json({ 
+            error: "Erro ao buscar as turmas." 
+        });
+    }
+});
+
+/*==========*/
+/* ESTUDANTE */
+/*==========*/
+// Verificar se estudante já existe
+app.post('/estudante/verificar', async (req: Request, res: Response) => {
+    try {
+        const { ra } = req.body;
+        console.log("🔍 Verificando estudante:", { ra });
+
+        const estudante = await verificarEstudanteExistente(ra);
+        if (estudante) {
+            console.log("❌ Estudante já cadastrado:", estudante.nome);
+            res.json({
+                sucesso: false,
+                message: "O Estudante já está cadastrado.",
+                estudante: estudante
+            });
+        } else {
+            console.log("✅ Estudante ainda não cadastrado!")
+            res.status(200).json({ 
+                sucesso: true, 
+                message: "Estudante disponível para cadastro!" 
+            });
+        }
+    } catch (error) {
+        console.error("❌ Erro ao verificar o estudante:", error);
+        res.status(500).json({ 
+            sucesso: false, 
+            message: "Erro no servidor ao verificar estudante" 
+        });
+    }
+});
+
+// Cadastrar novo estudante
+app.post('/estudante/cadastro', async (req: Request, res: Response) => {
+    try {
+        const { ra, nome } = req.body;
+        
+        if (!ra || !nome) {
+            console.log("❌ Campos obrigatórios faltando:", { ra, nome });
+            return res.status(400).json({ 
+                error: "Os campos RA e nome são obrigatórios!" 
+            });
+        }
+
+        const id = await addEstudante(ra, nome);
+        console.log("✅ Estudante registrado com sucesso! RA:", id);
+        res.status(201).json({ 
+            message: "Estudante registrado com sucesso", 
+            ra: id 
+        });
+    } catch (error) {
+        console.error("❌ Erro ao registrar o estudante:", error);
+        res.status(500).json({ 
+            error: "Erro ao registrar o estudante." 
+        });
+    }
+});
+
+// Atualizar estudante existente
+app.post('/estudante/atualizar', async (req: Request, res: Response) => {
+    try {
+        const { ra, nome } = req.body;
+        
+        if (!ra || !nome) {
+            console.log("❌ Campos obrigatórios faltando:", { ra, nome });
+            return res.status(400).json({ 
+                error: "Os campos RA e nome são obrigatórios!" 
+            });
+        }
+
+        await updateEstudante(ra, nome);
+        console.log("✅ Estudante atualizado com sucesso! RA:", ra);
+        res.status(200).json({ 
+            message: "Estudante atualizado com sucesso" 
+        });
+    } catch (error) {
+        console.error("❌ Erro ao atualizar o estudante:", error);
+        res.status(500).json({ 
+            error: "Erro ao atualizar o estudante." 
+        });
+    }
+});
+
+// Deletar estudante
+app.post('/estudante/deletar', async (req: Request, res: Response) => {
+    try {
+        const { ra } = req.body;
+        if (!ra) {
+            console.log("❌ O campo RA é obrigatório!");
+            return res.status(400).json({ 
+                error: "O campo RA é obrigatório!" 
+            });   
+        }
+
+        await deleteEstudante(ra);
+        console.log("✅ Estudante deletado com sucesso! RA:", ra);
+        res.status(200).json({ 
+            message: "Estudante deletado com sucesso" 
+        });
+    } catch (error) {
+        console.error("❌ Erro ao deletar o estudante:", error);
+        res.status(500).json({ 
+            error: "Erro ao deletar o estudante." 
+        });
+    }
+});
+
+// Obter estudante por RA
+app.get('/estudante/ra/:ra', async (req: Request, res: Response) => {
+    try {
+        const ra = Number(req.params.ra);
+        const estudante = await getEstudanteByRA(ra);
+        if (estudante) {
+            res.json(estudante);
+        } else {
+            res.status(404).json({ 
+                message: "Estudante não encontrado com o RA fornecido" 
+            });
+        }
+    } catch (error) {
+        console.error("❌ Erro ao buscar estudante por RA:", error);
+        res.status(500).json({ 
+            error: "Erro ao buscar o estudante pelo RA fornecido." 
+        });
+    }
+});
+
+// Obter todos os estudantes
+app.get('/estudante/all', async (req: Request, res: Response) => {
+    try {
+        const estudantes = await getAllEstudantes();
+        if (estudantes && estudantes.length > 0) {
+            res.json(estudantes);
+        } else {
+            res.status(404).json({ 
+                message: "Não há estudantes cadastrados." 
+            });
+        }
+    } catch (error) {
+        console.error("❌ Erro ao buscar todos os estudantes:", error);
+        res.status(500).json({ 
+            error: "Erro ao buscar os estudantes." 
         });
     }
 });
