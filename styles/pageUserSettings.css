@@ -1,20 +1,17 @@
 /* ================================================
-    RESET GERAL E VARIÁVEIS DE CORES
-   ================================================ */
+            RESET GERAL E VARIÁVEIS DE CORES
+        ================================================ */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-/* Paleta de cores principal usada no projeto */
 :root {
     --black: #000000;
     --white: #ffffff;
     --grey: #808080;
-
     --shadow: rgba(0, 0, 0, 0.2);
-
     --color1: #ebe8e8;
     --color2: #e8e8e8;
     --color3: #e30075;
@@ -22,82 +19,143 @@
     --color5: #ffb319;
     --color6: #615c5c;
     --color7: #25e475;
-
     --lightgrey: #d3d3d3;
 }
 
 /* ================================================
-    CONFIGURAÇÃO DO BODY
-   ================================================ */
+            CONFIGURAÇÃO DO BODY
+        ================================================ */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--color1);
+    font-family: "Roboto", sans-serif;
+    height: 100vh;
+    overflow: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    padding: 20px;
+    background: var(--color1);
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 200px;
+    background: linear-gradient(135deg, var(--color5) 0%, var(--color5) 100%);
+    z-index: 0;
+    clip-path: polygon(0 0, 100% 0, 100% 70%, 0 100%);
 }
 
 .container {
     width: 100%;
-    max-width: 480px;
+    max-width: 900px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: relative;
+    z-index: 1;
 }
 
-
-.container h1 {
-    color: #333;
-    font-size: 30px;
-    margin-bottom: 25px;
-    font-weight: 500;
-}
-
+/* ================================================
+            LOGO E TÍTULO
+        ================================================ */
 .title {
     display: flex;
-    justify-content: center;
-    align-items: center;
+    justify-content: left;
+    margin-bottom: 20px;
+    /* animation: fadeInDown 0.6s ease-out; */
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .logo {
-    max-width: 50%;
+    max-width: 180px;
     height: auto;
+    transition: transform 0.3s ease;
 }
 
+.logo:hover {
+    transform: scale(1.05);
+}
+
+/* ================================================
+            MODAL (CARD PRINCIPAL)
+        ================================================ */
 .modal {
-    text-align: center;
+    margin-top: 60px;
     border: none;
-    padding: 40px 30px;
     width: 100%;
     display: flex;
     flex-direction: column;
     gap: 30px;
-    align-items: center;
+    padding: 40px;
+    border-radius: 24px;
 }
 
-/* Container dos inputs em colunas */
-.modal-columns {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    width: 100%;
+.container h1 {
+    color: #333;
+    font-size: 32px;
+    margin: 0;
+    margin-bottom: 10px;
+    font-weight: 600;
+    text-align: center;
+    background-clip: text;
 }
 
-/* Email alinhado à esquerda */
+/* ================================================
+            EMAIL SECTION
+        ================================================ */
 .email {
-    width: 100%;
     text-align: left;
+    width: 100%;
+    padding: 20px 24px;
+    border-radius: 16px;
+    border-left: 4px solid var(--color5);
+    position: relative;
+    overflow: hidden;
+}
+
+.email::before {
+    content: 'E-MAIL CADASTRADO';
+    display: block;
+    font-size: 0.7rem;
+    color: var(--color5);
+    margin-bottom: 6px;
+    font-weight: 700;
+    letter-spacing: 1px;
 }
 
 .email p {
-    font-size: 1rem;
-    color: var(--grey);
+    font-size: 1.1rem;
+    color: #333;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ================================================
+            INPUTS
+        ================================================ */
+.modal-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
 }
 
 .name,
-.password,
 .tel {
     display: flex;
     align-items: center;
@@ -106,16 +164,16 @@ body {
     width: 100%;
     padding: 0 20px;
     height: 45px;
-    background: var(--color1);
 }
 
 .name input,
-.password input,
 .tel input {
     border: none;
+    border-radius: 8px;
     outline: none;
     width: 100%;
     font-size: 1rem;
+    padding-left: 5px;
     background: var(--color1);
     height: 100%;
 }
@@ -125,75 +183,177 @@ input {
 }
 
 .name label,
-.password label,
 .tel label {
     position: absolute;
     z-index: 100;
     margin-left: 8px;
     transition: all 0.3s ease;
     background: var(--color1);
-    font-size: 1rem;
+    font-size: 15px;
     color: var(--grey);
     pointer-events: none;
-    padding: 0 0 5px 0;
+}
+
+
+.name input:focus+label,
+.name input:not(:placeholder-shown)+label,
+.tel input:focus+label,
+.tel input:not(:placeholder-shown)+label {
+    position: absolute;
+    z-index: 100;
+    margin-bottom: 50px;
+    margin-left: 20px;
+    background: var(--color1);
+    font-size: 0.875rem;
+    padding: 0 4px;
+    color: var(--color5);
 }
 
 
 .name:has(input:focus),
 .name:has(input:not(:placeholder-shown)),
-.password:has(input:focus),
-.password:has(input:not(:placeholder-shown)),
 .tel:has(input:focus),
 .tel:has(input:not(:placeholder-shown)) {
     border: 1px solid var(--color5);
 }
 
-.name input:focus+label,
-.name input:not(:placeholder-shown)+label,
-.password input:focus+label,
-.password input:not(:placeholder-shown)+label,
-.tel input:focus+label,
-.tel input:not(:placeholder-shown)+label
- {
-    margin-bottom: 47px;
-    margin-left: 20px;
-    font-size: 0.875rem;
-    padding: 0px 4px;
-    color: var(--color5);
+/* ================================================
+            BOX DE SENHA
+        ================================================ */
+.boxTextPassword {
+    text-align: left;
+    width: 100%;
+    padding: 20px 24px;
+    border-radius: 16px;
+    border-left: 4px solid var(--color5);
+    position: relative;
+    overflow: hidden;
 }
 
+.boxTextPassword:hover {
+    transform: translateY(-2px);
+}
+
+.boxTextPassword .header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 18px;
+}
+
+.boxTextPassword .header h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.boxTextPassword .header h2::before {
+    font-family: "Phosphor";
+    content: "\e573";
+    font-size: 1.4rem;
+    font-weight: 400;
+}
+
+.boxTextPassword .description {
+    font-size: 1rem;
+    color: #666;
+    line-height: 1.7;
+    margin-bottom: 24px;
+}
+
+.boxTextPassword .solicitar-btn-interno {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--black) 0%, #333 100%);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.boxTextPassword .solicitar-btn-interno::before {
+    font-family: "Phosphor";
+    content: "\e67d";
+    font-size: 1.2rem;
+    font-weight: 400;
+}
+
+.boxTextPassword .solicitar-btn-interno:hover::before,
+.boxTextPassword .solicitar-btn-interno:focus::before {
+    font-family: "Phosphor";
+    content: "\e67d";
+}
+
+.boxTextPassword .solicitar-btn-interno:hover,
+.boxTextPassword .solicitar-btn-interno:focus {
+    background: linear-gradient(135deg, var(--color5) 0%, #ffa500 100%);
+    color: var(--black);
+    outline: none;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(255, 179, 25, 0.4);
+}
+
+.boxTextPassword .solicitar-btn-interno:active {
+    transform: translateY(-1px);
+}
+
+/* ================================================
+            BOTÃO ATUALIZAR
+        ================================================ */
 .update-btn {
-    padding: 10px 40px;
-    background: var(--black);
+    margin-top: 30px;
+    padding: 16px 60px;
+    background: linear-gradient(135deg, var(--black) 0%, #333 100%);
     color: var(--white);
     border: none;
     border-radius: 50px;
-    font-size: 1.2rem;
-    font-weight: bold;
+    font-size: 1.3rem;
+    font-weight: 700;
     cursor: pointer;
-    box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.5s ease;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    transition: all 0.4s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    animation: fadeInUp 0.6s ease-out 0.4s backwards;
 }
-
 
 .update-btn:hover,
 .update-btn:focus {
-    background-color: var(--color5);
+    background: linear-gradient(135deg, var(--color5) 0%, #ffa500 100%);
     color: var(--black);
     outline: none;
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 10px 30px rgba(255, 179, 25, 0.5);
 }
 
 .update-btn:active {
-    transform: translateY(1px);
+    transform: translateY(-2px) scale(1);
 }
 
-/* Divs com erro - Borda vermelha */
-.name.error {
+/* ================================================
+            ERROS
+        ================================================ */
+.name.error,
+.tel.error {
     border: 1px solid var(--color4) !important;
-    animation: shake 0.3s ease-in-out;
+    animation: shake 0.4s ease-in-out;
+    background: var(--color1);
 }
 
-/* Animação de tremer */
 @keyframes shake {
 
     0%,
@@ -206,24 +366,25 @@ input {
     50%,
     70%,
     90% {
-        transform: translateX(-3px);
+        transform: translateX(-8px);
     }
 
     20%,
     40%,
     60%,
     80% {
-        transform: translateX(3px);
+        transform: translateX(8px);
     }
 }
 
-/* Label com erro dentro das divs */
-.name.error label {
+.name.error label,
+.tel.error label {
     color: var(--color4) !important;
     font-weight: 600;
+    background: var(--color1);
 }
 
-/* Remove o erro ao focar no input */
-.name.error input:focus {
+.name.error input:focus,
+.tel.error input:focus {
     outline: none;
 }

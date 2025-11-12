@@ -1,44 +1,44 @@
-// Início do seu primeiro script (userSettings.js)
-document.addEventListener("DOMContentLoaded", () => {
-    // --- LOGIN ---
-    const buttonSettings = document.querySelector("#userSettings");
-    const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+// // Início do seu primeiro script (userSettings.js)
+// document.addEventListener("DOMContentLoaded", () => {
+//     // --- LOGIN ---
+//     const buttonSettings = document.querySelector("#userSettings");
+//     const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
 
-    console.log(usuario)
+//     console.log(usuario)
 
-    if (buttonSettings) {
-        buttonSettings.addEventListener("click", (e) => {
-            if (e) e.preventDefault();
-            window.location.href = "/userSettings"
-        });
-    }
-    if (!usuario) { // <<< Adicione esta verificação
-        window.location.href = "/"; // Redireciona para a página de login
-        return; // Para a execução do script
-    } if (usuario) {
-        const nomeInput = document.querySelector("#name");
-        const nomeLabel = document.querySelector(".name label");
-        const telefoneInput = document.querySelector("#telenofe");
-        const telefoneLabel = document.querySelector(".tel label");
-        const senhaLabel = document.querySelector(".password label");
-        const emailEl = document.querySelector(".email p");
+//     if (buttonSettings) {
+//         buttonSettings.addEventListener("click", (e) => {
+//             if (e) e.preventDefault();
+//             window.location.href = "/userSettings"
+//         });
+//     }
+//     if (!usuario) { // <<< Adicione esta verificação
+//         window.location.href = "/"; // Redireciona para a página de login
+//         return; // Para a execução do script
+//     } if (usuario) {
+//         const nomeInput = document.querySelector("#name");
+//         const nomeLabel = document.querySelector(".name label");
+//         const telefoneInput = document.querySelector("#telenofe");
+//         const telefoneLabel = document.querySelector(".tel label");
+//         const senhaLabel = document.querySelector(".password label");
+//         const emailEl = document.querySelector(".email p");
         
-        if(telefoneLabel) {
-            telefoneLabel.textContent = usuario.telefone;
-        }
+//         if(telefoneLabel) {
+//             telefoneLabel.textContent = usuario.telefone;
+//         }
 
-        if(nomeLabel){
-            nomeLabel.textContent = usuario.nome;   
-        }
+//         if(nomeLabel){
+//             nomeLabel.textContent = usuario.nome;   
+//         }
 
-        // Definir label da senha
-        if (senhaLabel) {
-            senhaLabel.textContent = "Nova Senha";
-        }
+//         // Definir label da senha
+//         if (senhaLabel) {
+//             senhaLabel.textContent = "";
+//         }
 
-        // Preencher email
-        if (emailEl) {
-            emailEl.textContent = usuario.email;
-        }
-    }
-});
+//         // Preencher email
+//         if (emailEl) {
+//             emailEl.textContent = usuario.email;
+//         }
+//     }
+// });

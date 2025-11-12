@@ -59,7 +59,7 @@ function carregarInstituicoesFromDB() {
             // Atualiza o contador no dashboard
             atualizarContadorInstituicoes(instituicoesFormatadas.length);
             
-            forcarReRenderizacao();
+            forcarRenderizacao();
 
             mostrarLoader('esconder');
         })
@@ -233,8 +233,8 @@ document.addEventListener('instituicoesAtualizadas', (e) => {
 });
 
 // Função para forçar re-renderização na página atual
-function forcarReRenderizacao() {
-    console.log("🔄 Forçando re-renderização...");
+function forcarRenderizacao() {
+    console.log("🔄 Forçando renderização...");
 
     // Verifica se está na página de instituições
     const instituicoesContainer = document.querySelector('.instituições');

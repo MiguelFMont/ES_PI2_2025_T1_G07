@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,24 +17,23 @@
         href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css" />
     <title>Informações de Usuário</title>
 </head>
-
 <body>
-    
     <div class="load" style="display: none;">
         <div class="loadCircle"></div>
     </div>
-
+    
     <div class="container">
-        <div class="title">
-            <img class="logo" src="../assets/logoComIcone.png" alt="">
-        </div>
-
         <div class="modal">
+            <div class="title">
+                <img class="logo" src="../assets/logoComIcone.png" alt="">
+            </div>
             
             <h1>Informações de Cadastro</h1>
+            
             <div class="email">
                 <p>email</p>
             </div>
+            
             <div class="modal-columns">
                 <div class="name">
                     <input type="text" id="name" placeholder=" ">
@@ -45,19 +43,27 @@
                     <input type="text" id="telenofe" placeholder=" ">
                     <label></label>
                 </div>
-                <div class="password">
-                    <input type="password" id="senha" placeholder=" ">
-                    <label></label>
-                </div>
             </div>
-
+            
+            <div class="boxTextPassword">
+                <div class="header">
+                    <h2>Alterar Senha</h2>
+                </div>
+                <p class="description">
+                    Clique no botão abaixo para receber um link de alteração de senha no seu e-mail cadastrado.
+                </p>
+                <button class="solicitar-btn-interno">
+                    Solicitar Link de Alteração
+                </button>
+            </div>
         </div>
+        
         <button class="update-btn">Atualizar</button>
     </div>
+    
     <script src="../scripts/userSettings.js"></script>
     <script src="../scripts/main.js"></script>
     <script src="../scripts/alert.js"></script>
     <script src="../scripts/loader.js"></script>
 </body>
-
 </html>

@@ -264,7 +264,8 @@ if (botaoLogin) {
                         id: data.id,
                         nome: data.nome,
                         email: data.email,
-                        telefone: data.telefone
+                        telefone: data.telefone,
+                        senha: senhaDigitada
                     }));
 
                     const salvou = localStorage.getItem("usuarioLogado");
@@ -334,8 +335,7 @@ if (botaoCadastro) {
         localStorage.setItem("cadastroTemp", JSON.stringify({
             nome: nomeDigitado,
             email: emailDigitado,
-            telefone: telefoneDigitado,
-            senha: senhaDigitada
+            telefone: telefoneDigitado
         }));
         fetch("/verificar-docente/cadastro", {
             method: "POST",
