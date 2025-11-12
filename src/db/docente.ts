@@ -40,6 +40,33 @@ export async function addDocente(
     }
 }
 
+export async function modifyDocente(
+  id: number,
+  nome: string,
+  telefone: string
+): Promise<string> {
+  const conn = await open();
+  try {
+    const result = await conn.execute(
+      `
+      UPDATE Docente
+      SET Nome = :nome, Telefone = :telefone
+      WHERE ID_Docente = :id
+      `,
+      { id, nome, telefone },
+      { autoCommit: true }
+    );
+
+    if (result.rowsAffected && result.rowsAffected > 0) {
+      return `Docente com ID ${id} atualizado com sucesso.`;
+    } else {
+      return `Nenhum docente encontrado com ID ${id}.`;
+    }
+  } finally {
+    await close(conn);
+  }
+}
+
 export async function verificarCadastroDocente(email: string): Promise<{ nome: string, email: string } | null> {
     const conn = await open();
     try{

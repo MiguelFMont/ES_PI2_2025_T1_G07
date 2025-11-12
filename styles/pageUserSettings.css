@@ -35,26 +35,30 @@ body {
     background: var(--color1);
 }
 
-body::before {
-    content: '';
+.diagonalLine {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    height: 200px;
+    height: 300px;
     background: linear-gradient(135deg, var(--color5) 0%, var(--color5) 100%);
+    clip-path: polygon(0 25%, 0 0, 100% 0, 100% 40%);
     z-index: 0;
-    clip-path: polygon(0 0, 100% 0, 100% 70%, 0 100%);
 }
 
 .container {
-    width: 100%;
-    max-width: 900px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 18px;
     display: flex;
     flex-direction: column;
     align-items: center;
     position: relative;
     z-index: 1;
+    width: 100%;
+    max-width: 850px;
+    padding: 0 20px;
+    height: 500px;
+    justify-content: center;
 }
 
 /* ================================================
@@ -62,25 +66,12 @@ body::before {
         ================================================ */
 .title {
     display: flex;
-    justify-content: left;
-    margin-bottom: 20px;
-    /* animation: fadeInDown 0.6s ease-out; */
-}
-
-@keyframes fadeInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-30px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    justify-content: flex-start;
+    width: 100%;
 }
 
 .logo {
-    max-width: 180px;
+    max-width: 120px;
     height: auto;
     transition: transform 0.3s ease;
 }
@@ -93,34 +84,32 @@ body::before {
             MODAL (CARD PRINCIPAL)
         ================================================ */
 .modal {
-    margin-top: 60px;
+    align-items: center;
     border: none;
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 30px;
-    padding: 40px;
-    border-radius: 24px;
+    gap: 15px;
+    padding: 25px;
 }
 
-.container h1 {
+h1 {
     color: #333;
-    font-size: 32px;
-    margin: 0;
-    margin-bottom: 10px;
+    font-size: 1.5rem;
     font-weight: 600;
     text-align: center;
-    background-clip: text;
+    margin-top: -40px;
 }
 
 /* ================================================
             EMAIL SECTION
         ================================================ */
 .email {
+    box-shadow: 1px  1px 2px 0 rgba(0, 0, 0, 0.2);
     text-align: left;
     width: 100%;
-    padding: 20px 24px;
-    border-radius: 16px;
+    padding: 12px 18px;
+    border-radius: 12px;
     border-left: 4px solid var(--color5);
     position: relative;
     overflow: hidden;
@@ -129,20 +118,21 @@ body::before {
 .email::before {
     content: 'E-MAIL CADASTRADO';
     display: block;
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     color: var(--color5);
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     font-weight: 700;
     letter-spacing: 1px;
 }
 
 .email p {
-    font-size: 1.1rem;
+    font-size: 0.9rem;
     color: #333;
     font-weight: 500;
     display: flex;
     align-items: center;
     gap: 8px;
+    word-break: break-word;
 }
 
 /* ================================================
@@ -151,7 +141,7 @@ body::before {
 .modal-columns {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: 12px;
     width: 100%;
 }
 
@@ -162,8 +152,8 @@ body::before {
     border: 1px solid var(--black);
     border-radius: 50px;
     width: 100%;
-    padding: 0 20px;
-    height: 45px;
+    padding: 0 16px;
+    height: 38px;
 }
 
 .name input,
@@ -172,7 +162,7 @@ body::before {
     border-radius: 8px;
     outline: none;
     width: 100%;
-    font-size: 1rem;
+    font-size: 0.85rem;
     padding-left: 5px;
     background: var(--color1);
     height: 100%;
@@ -189,11 +179,10 @@ input {
     margin-left: 8px;
     transition: all 0.3s ease;
     background: var(--color1);
-    font-size: 15px;
+    font-size: 13px;
     color: var(--grey);
     pointer-events: none;
 }
-
 
 .name input:focus+label,
 .name input:not(:placeholder-shown)+label,
@@ -201,14 +190,13 @@ input {
 .tel input:not(:placeholder-shown)+label {
     position: absolute;
     z-index: 100;
-    margin-bottom: 50px;
-    margin-left: 20px;
+    margin-bottom: 45px;
+    margin-left: 18px;
     background: var(--color1);
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     padding: 0 4px;
     color: var(--color5);
 }
-
 
 .name:has(input:focus),
 .name:has(input:not(:placeholder-shown)),
@@ -223,11 +211,13 @@ input {
 .boxTextPassword {
     text-align: left;
     width: 100%;
-    padding: 20px 24px;
-    border-radius: 16px;
+    padding: 14px 18px;
+    border-radius: 12px;
     border-left: 4px solid var(--color5);
     position: relative;
     overflow: hidden;
+    transition: transform 0.2s ease;
+    box-shadow: 1px  1px 2px 0 rgba(0, 0, 0, 0.2);
 }
 
 .boxTextPassword:hover {
@@ -237,65 +227,58 @@ input {
 .boxTextPassword .header {
     display: flex;
     align-items: center;
-    gap: 15px;
-    margin-bottom: 18px;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.boxTextPassword .password {
+    border: none;
+    background-color: #e2e1e1e3;
+    color: #333;
+    display: flex;
+    align-items: center;
+    width: 20%;
+    border-radius: 50px;
+    padding: 0 16px;
+    height: 38px;
+    box-shadow: 0.5px  0.5px 2px 0 rgba(0, 0, 0, 0.2);
 }
 
 .boxTextPassword .header h2 {
-    font-size: 1.5rem;
+    font-size: 1.1rem;
     font-weight: 600;
     color: #333;
     margin: 0;
     display: flex;
     align-items: center;
-    gap: 10px;
-}
-
-.boxTextPassword .header h2::before {
-    font-family: "Phosphor";
-    content: "\e573";
-    font-size: 1.4rem;
-    font-weight: 400;
+    gap: 8px;
 }
 
 .boxTextPassword .description {
-    font-size: 1rem;
+    font-size: 0.85rem;
     color: #666;
-    line-height: 1.7;
-    margin-bottom: 24px;
+    line-height: 1.5;
+    margin-bottom: 12px;
 }
 
 .boxTextPassword .solicitar-btn-interno {
     width: 100%;
-    padding: 16px;
+    padding: 12px;
     background: linear-gradient(135deg, var(--black) 0%, #333 100%);
     color: white;
     border: none;
-    border-radius: 14px;
-    font-size: 1.1rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.4s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-}
-
-.boxTextPassword .solicitar-btn-interno::before {
-    font-family: "Phosphor";
-    content: "\e67d";
-    font-size: 1.2rem;
-    font-weight: 400;
-}
-
-.boxTextPassword .solicitar-btn-interno:hover::before,
-.boxTextPassword .solicitar-btn-interno:focus::before {
-    font-family: "Phosphor";
-    content: "\e67d";
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.2);
 }
 
 .boxTextPassword .solicitar-btn-interno:hover,
@@ -303,32 +286,30 @@ input {
     background: linear-gradient(135deg, var(--color5) 0%, #ffa500 100%);
     color: var(--black);
     outline: none;
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(255, 179, 25, 0.4);
 }
 
 .boxTextPassword .solicitar-btn-interno:active {
-    transform: translateY(-1px);
+    transform: scale(0.98);
 }
 
 /* ================================================
             BOTÃO ATUALIZAR
         ================================================ */
 .update-btn {
-    margin-top: 30px;
-    padding: 16px 60px;
+    text-align: center;
+    margin-top: 0px;
+    padding: 12px 45px;
     background: linear-gradient(135deg, var(--black) 0%, #333 100%);
     color: var(--white);
     border: none;
     border-radius: 50px;
-    font-size: 1.3rem;
+    font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.25);
     transition: all 0.4s ease;
     text-transform: uppercase;
     letter-spacing: 1px;
-    animation: fadeInUp 0.6s ease-out 0.4s backwards;
 }
 
 .update-btn:hover,
@@ -336,12 +317,10 @@ input {
     background: linear-gradient(135deg, var(--color5) 0%, #ffa500 100%);
     color: var(--black);
     outline: none;
-    transform: translateY(-4px) scale(1.02);
-    box-shadow: 0 10px 30px rgba(255, 179, 25, 0.5);
 }
 
 .update-btn:active {
-    transform: translateY(-2px) scale(1);
+    transform: scale(0.98);
 }
 
 /* ================================================
@@ -351,7 +330,6 @@ input {
 .tel.error {
     border: 1px solid var(--color4) !important;
     animation: shake 0.4s ease-in-out;
-    background: var(--color1);
 }
 
 @keyframes shake {
@@ -381,7 +359,6 @@ input {
 .tel.error label {
     color: var(--color4) !important;
     font-weight: 600;
-    background: var(--color1);
 }
 
 .name.error input:focus,

@@ -27,7 +27,8 @@ import {
     addDocente,
     verificarLoginDocente,
     verificarCadastroDocente,
-    modificarSenhaDocente
+    modificarSenhaDocente,
+    modifyDocente
 } from "./db/docente";
 
 import {
@@ -626,7 +627,17 @@ app.post('/docente', async (req: Request, res: Response) => {
         console.error(error);
         res.status(500).json({ sucesso: false, error: "Erro ao inserir docente." })
     }
+});
 
+app.post('/atualizar/docente', async(req: Request, res: Response) => {
+    try{
+        const { id, nome, telefone } = req.body;
+        const result = await modifyDocente(id, nome, telefone);
+        res.status(201).json({ sucesso: true, message: `Informações de ${nome} foram atualizadas com sucesso!`});
+    
+
+
+    }
 });
 
 app.post('/verificar-docente/cadastro', async (req: Request, res: Response) => {

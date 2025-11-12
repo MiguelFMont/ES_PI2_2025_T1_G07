@@ -335,7 +335,8 @@ if (botaoCadastro) {
         localStorage.setItem("cadastroTemp", JSON.stringify({
             nome: nomeDigitado,
             email: emailDigitado,
-            telefone: telefoneDigitado
+            telefone: telefoneDigitado,
+            senha: senhaDigitada
         }));
         fetch("/verificar-docente/cadastro", {
             method: "POST",
@@ -554,7 +555,8 @@ if (botaoVerify) {
                         id: data.id,
                         nome: cadastroTemp.nome,
                         email: cadastroTemp.email,
-                        telefone: cadastroTemp.telefone
+                        telefone: cadastroTemp.telefone,
+                        senha: cadastroTemp.senha
                     }));
                     console.log("✅ Docente cadastrado e logado:", cadastroTemp.email);
                     localStorage.removeItem("cadastroTemp");
