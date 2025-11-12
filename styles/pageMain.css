@@ -218,7 +218,8 @@ body {
     gap: 5px;
 }
 
-#logoutBtn {
+#logoutBtn,
+#userSettings {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -228,7 +229,8 @@ body {
     width: 25px;
 }
 
-#logoutBtn i {
+#logoutBtn i,
+#userSettings i {
     background: none;
     font-size: 1rem;
     font-weight: 600;
@@ -236,7 +238,8 @@ body {
     color: var(--black);
 }
 
-#logoutBtn:hover{
+#logoutBtn:hover,
+#userSettings:hover{
     background: var(--color2);
     border-radius: 50%;
 }
@@ -754,6 +757,7 @@ body {
 }
 
 .contentCardIdt {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1006,6 +1010,7 @@ body {
 .viewDetailsIC::-webkit-scrollbar-thumb {
     background: var(--lightgrey);
     border-radius: 50px;
+    cursor: pointer;
 }
 
 #addCursoEdit {
@@ -1036,6 +1041,7 @@ body {
 .cursosEdidCamp::-webkit-scrollbar-thumb {
     background: var(--lightgrey);
     border-radius: 50px;
+    cursor: pointer;
 }
 
 .linkDatailsIdt .cursoAddinIcon,
@@ -1074,4 +1080,73 @@ body {
     background: var(--red) !important;
     color: var(--white) !important;
     cursor: pointer;
+}
+
+.checkInstituicao {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    width: max-content;
+    gap: 5px;
+    padding: 5px;
+}
+
+.checkInstituicao label {
+    font-size: 0.9rem;
+    color: var(--grey);
+}
+
+.checkInstituicao input {
+    height: 15px;
+    width: 15px;
+}
+
+.checkInstituicao input:checked {
+    accent-color: var(--black);
+}
+
+.checkInstituicao input:checked + label {
+    color: var(--black);
+    font-weight: 500;
+}
+
+.checkInstituicao input:hover {
+    cursor: pointer;
+}
+
+#turmasIcon {
+    background: var(--color9Shadow);
+    color: var(--color9);
+}
+
+.notas {
+    border-top: 1px solid var(--lightgrey); 
+    margin-top: 5px; 
+    color: var(--grey); 
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50px;
+    padding-top: 10px;
+}
+
+.notas #manageNotesBtn {
+    font-size: 1rem;
+    text-decoration: none;
+    color: var(--white);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    background: linear-gradient(145deg, var(--color9), var(--color3));
+    transition: all 0.1s ease;
+}
+
+.notas #manageNotesBtn:hover {
+    cursor: pointer;
+    transform: scale(1.01);
+    box-shadow: 5px 5px 10px var(--shadow);
 }

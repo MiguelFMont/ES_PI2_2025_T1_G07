@@ -1,47 +1,149 @@
+/**
+ * =================================================================
+ * MAPA DE FUNÇÕES E BOTÕES (main.js)
+ * =================================================================
+ *
+ * Este guia localiza os principais eventos de clique (botões) no código.
+ *
+ *
+ * --- Funções Principais (Globais e Modais) ---
+ *
+ * * @linha 40: logoutBtn.addEventListener("click", ...)
+ * - @Botão: Ícone "Sair" (Logout)
+ * - @Ação: Desconecta o usuário (limpa localStorage) e redireciona para a home.
+ *
+ * * @linha 482: btn.addEventListener("click", ...)
+ * - @Botão: Botões ".newIdt" (Ex: "Nova instituição", "Novo curso", "Nova diciplina")
+ * - @Ação: Abre o modal principal no modo "Criar", limpando todos os campos.
+ *
+ * * @linha 667: closeBtn.addEventListener("click", ...)
+ * - @Botão: Ícone "X" no modal principal (#xClosedCreate)
+ * - @Ação: Fecha o modal de criação/edição.
+ *
+ * * @linha 672: cancelBtn.addEventListener("click", ...)
+ * - @Botão: "Cancelar" no modal principal (#cancelBtnIdt)
+ * - @Ação: Fecha o modal de criação/edição.
+ *
+ * * @linha 677: createBtn.addEventListener("click", ...)
+ * - @Botão: "Criar" / "Salvar" no modal principal (#createBtnIdt)
+ * - @Ação: Valida os campos e decide se deve CRIAR um novo item ou SALVAR um item existente.
+ *
+ *
+ * --- Funções nos Cards (Instituição, Curso, Disciplina) ---
+ *
+ * * @linha 516: listContainer.addEventListener('click', ...)
+ * - @Contexto: Gerencia cliques nos botões *dentro* dos cards já criados.
+ *
+ * - @Botão: ".editCard" (Lápis de Edição) - (Linha 528)
+ * - @Ação: Abre o modal em modo "Editar", preenchendo os campos com os dados do card.
+ *
+ * - @Botão: ".deletCard" (Lixeira) - (Linha 590)
+ * - @Ação: Pede confirmação e remove o item.
+ *
+ * - @Botão: ".addCurso" (Adicionar Curso) - (Linha 649)
+ * - @Ação: (Específico de Instituições) Abre o segundo modal ("Linkar Curso").
+ *
+ *
+ * --- Funções Dentro do Modal de Edição (Específico de Instituições) ---
+ *
+ * * @linha 864: createIdt.addEventListener('click', ...)
+ * - @Contexto: Gerencia cliques *dentro* do modal de edição de Instituição.
+ *
+ * - @Botão: ".cursoDeletinIcon" (Lixeira ao lado do curso) - (Linha 878)
+ * - @Ação: Desvincula um curso da instituição (durante a edição).
+ *
+ * - @Botão: ".cursoAddinIcon" (Ícone '+' ao lado do curso) - (Linha 904)
+ * - @Ação: Vincula um curso disponível à instituição (durante a edição).
+ *
+ *
+ * --- Funções do Modal "Linkar Curso" ---
+ *
+ * * @linha 947: closeLinkBtn.addEventListener('click', ...)
+ * - @Botão: "X" do modal "Linkar Curso" (#closedAdd)
+ * - @Ação: Fecha o modal "Linkar Curso".
+ *
+ * * @linha 948: cancelLinkBtn.addEventListener('click', ...)
+ * - @Botão: "Cancelar" do modal "Linkar Curso" (#cancelAddIdt)
+ * - @Ação: Fecha o modal "Linkar Curso".
+ *
+ * * @linha 952: saveLinkBtn.addEventListener('click', ...)
+ * - @Botão: "Salvar" do modal "Linkar Curso" (#saveAddIdt)
+ * - @Ação: Valida e salva o vínculo do curso com a instituição.
+ *
+ *
+ * --- Funções de Navegação ---
+ *
+ * * @linha 1011: link.addEventListener("click", ...)
+ * - @Botão: Links da barra lateral (Dashboard, Instituições, etc.)
+ * - @Ação: Carrega a página correspondente via `carregarPagina`.
+ *
+ * * @linha 1020: document.addEventListener("click", ...)
+ * - @Botão: Links globais (Ex: Cards do Dashboard)
+ * - @Ação: Carrega a página correspondente via `carregarPagina`.
+ *
+ */
+
 // main.js
 document.addEventListener("DOMContentLoaded", () => {
     // --- LOGIN ---
-    const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
-    if (usuario) {
-        const nomeEl = document.querySelector(".titleUser h1");
-        const emailEl = document.querySelector(".titleUser p");
+    // const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+    // if (usuario) {
+    //     const nomeEl = document.querySelector(".titleUser h1");
+    //     const emailEl = document.querySelector(".titleUser p");
 
-        if (nomeEl) {
-            const partesNome = usuario.nome.trim().split(/\s+/);
-            let primeiro = partesNome[0];
-            let segundoMenor = "";
-            if (partesNome.length > 1) {
-                const restantes = partesNome.slice(1);
-                const nomesValidos = restantes.filter(n => n.length >= 4);
-                if (nomesValidos.length > 0) {
-                    segundoMenor = nomesValidos.reduce((menor, atual) =>
-                        atual.length < menor.length ? atual : menor
-                    );
-                } else {
-                    segundoMenor = partesNome[partesNome.length - 1];
-                }
-            }
-            const formatarNome = (nome) =>
-                nome.charAt(0).toUpperCase() + nome.slice(1).toLowerCase();
-            const nomeFormatado = segundoMenor
-                ? `${formatarNome(primeiro)} ${formatarNome(segundoMenor)}`
-                : formatarNome(primeiro);
-            nomeEl.textContent = nomeFormatado;
-            nomeEl.style.whiteSpace = "nowrap";
-        }
-        if (emailEl) emailEl.textContent = usuario.email;
-    } else {
-        window.location.href = "/";
-        return;
-    }
+    //     if (nomeEl) {
+    //         const partesNome = usuario.nome.trim().split(/\s+/);
+    //         let primeiro = partesNome[0];
+    //         let segundoMenor = "";
+    //         if (partesNome.length > 1) {
+    //             const restantes = partesNome.slice(1);
+    //             const nomesValidos = restantes.filter(n => n.length >= 4);
+    //             if (nomesValidos.length > 0) {
+    //                 segundoMenor = nomesValidos.reduce((menor, atual) =>
+    //                     atual.length < menor.length ? atual : menor
+    //                 );
+    //             } else {
+    //                 segundoMenor = partesNome[partesNome.length - 1];
+    //             }
+    //         }
+    //         const formatarNome = (nome) =>
+    //             nome.charAt(0).toUpperCase() + nome.slice(1).toLowerCase();
+    //         const nomeFormatado = segundoMenor
+    //             ? `${formatarNome(primeiro)} ${formatarNome(segundoMenor)}`
+    //             : formatarNome(primeiro);
+    //         nomeEl.textContent = nomeFormatado;
+    //         nomeEl.style.whiteSpace = "nowrap";
+    //     }
+    //     if (emailEl) emailEl.textContent = usuario.email;
+    // } else {
+    //     window.location.href = "/";
+    //     return;
+    // }
     // --- LOGOUT ---
     const logoutBtn = document.querySelector("#logoutBtn");
     if (logoutBtn) {
-        logoutBtn.addEventListener("click", () => {
-            localStorage.removeItem("usuarioLogado");
-            window.location.href = "/";
+    logoutBtn.addEventListener("click", () => {
+        // ✅ LIMPAR TODO O CACHE DO USUÁRIO ANTERIOR
+        localStorage.removeItem("usuarioLogado");
+        localStorage.removeItem("instituicoesBody");
+        localStorage.removeItem("cursosBody");
+        localStorage.removeItem("diciplinasBody");
+        localStorage.removeItem("turmasBody");
+        localStorage.removeItem("cadastroTemp");
+        localStorage.removeItem("emailParaRecuperacao");
+        
+        console.log("🗑️ Cache do usuário limpo");
+        window.location.href = "/";
+    });
+
+    // -- userSettings --
+    const userButton = document.querySelector("#userSettings");
+    if (userButton) {
+        userButton.addEventListener("click", () => {
+            window.location.href = "/userSettings"
         });
     }
+}
 
     // --- VARIÁVEIS GERAIS ---
     const links = document.querySelectorAll(".content ul li a");
@@ -91,7 +193,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 if (nome === "dashboard") {
                     atualizarContadoresDashboard();
-                } else if (paginas[nome].includes("components/")) {
+                }
+                else if (nome === "turmas") {
+                // Chama a função que está no arquivo separado turma.js
+                    if (typeof iniciarPageTurmas === "function") {
+                        iniciarPageTurmas(); 
+                    } else {
+                        console.error("Erro: Função iniciarPageTurmas não encontrada.");
+                    }
+                }
+                else if (paginas[nome].includes("components/")) {
                     ativarCreateIdt();
                 }
 
@@ -125,9 +236,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const closeBtn = createIdt.querySelector("#xClosedCreate");
             const cancelBtn = createIdt.querySelector("#cancelBtnIdt");
             const createBtn = createIdt.querySelector("#createBtnIdt");
-            const inputs = createIdt.querySelectorAll(".campIdt input");
-            const inputInstituicao = inputs[0]; // Genérico, pode ser Instituição ou Curso
-            const inputCurso = inputs[1]; // Genérico, pode ser Nome do Curso
+
+            // [REMOVIDO DAQUI] const inputs = createIdt.querySelectorAll(".campIdt input");
+            // [REMOVIDO DAQUI] const inputInstituicao = inputs[0]; 
+            // [REMOVIDO DAQUI] const inputCurso = inputs[1]; 
 
             // NOVO: Adicionar referência aos campos de adicionar/editar
             const addCursoEdit = container.querySelector('#addCursoEdit');
@@ -135,7 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const linkCursoContainer = container.querySelector(".containerAddIdt");
 
             // (Usando :nth-child(3) para pegar o "Cursos Adicionados" do HTML)
-            const cursosAdicionadosCamp = createIdt.querySelector('.campIdt:nth-child(3)');
+            const cursosAdicionadosCamp = createIdt.querySelector('#cursosAdicionadosCamp');
 
             // NOVO: Container para "Adicionar Curso"
             const addCursoContainer = addCursoEdit ? addCursoEdit.querySelector('.cursosEdidCamp') : null;
@@ -175,13 +287,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (pIdt) pIdt.style.display = display;
             }
 
-            // NOVO: Função para popular os cursos no modal de edição
+            // --- Função para popular os cursos no modal de edição ---
+            // (código de popularCursosParaEdicao omitido para brevidade)
             function popularCursosParaEdicao(item) {
                 if (!cursosAdicionadosCamp || !deletCursoContainer || !addCursoContainer) return;
 
-                // ======================================================
-                //  MUDANÇA AQUI: Definindo a paleta de cores
-                // ======================================================
                 const bgColors = ['--color4Shadow', '--color3Shadow', '--color9Shadow', '--color8Shadow'];
                 const textColors = ['--color4', '--color3', '--color9', '--color8'];
 
@@ -219,9 +329,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         divAdicionado.className = 'linkDatailsIdt';
                         divAdicionado.textContent = cursoNome;
 
-                        // ======================================================
-                        //  MUDANÇA AQUI: Aplicando cores (Adicionados)
-                        // ======================================================
                         const colorIndex = index % bgColors.length;
                         divAdicionado.style.background = `var(${bgColors[colorIndex]})`;
                         divAdicionado.style.color = `var(${textColors[colorIndex]})`;
@@ -237,9 +344,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         const trashIcon = document.createElement('i');
                         trashIcon.className = 'ph ph-trash cursoDeletinIcon'; // Usando classe
 
-                        // ======================================================
-                        //  MUDANÇA AQUI: Aplicando cores (Deletar)
-                        // ======================================================
                         divDeletar.style.background = `var(${bgColors[colorIndex]})`;
                         divDeletar.style.color = `var(${textColors[colorIndex]})`;
 
@@ -262,9 +366,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         const addIcon = document.createElement('i');
                         addIcon.className = 'ph ph-plus cursoAddinIcon'; // NOVO: Classe para adicionar
 
-                        // ======================================================
-                        //  MUDANÇA AQUI: Aplicando cores (Adicionar)
-                        // ======================================================
                         const colorIndex = index % bgColors.length;
                         divAdicionar.style.background = `var(${bgColors[colorIndex]})`;
                         divAdicionar.style.color = `var(${textColors[colorIndex]})`;
@@ -277,6 +378,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
             // --- Função para Renderizar ---
+            // (código de loadAndRender omitido para brevidade)
             function loadAndRender() {
                 const itens = getItens();
 
@@ -323,9 +425,10 @@ document.addEventListener("DOMContentLoaded", () => {
                                 }
                             }
                         }
-                        else {
-                            if (cardTitleEl) cardTitleEl.textContent = item.curso;
-                            if (cardSubtitleEl) cardSubtitleEl.textContent = item.nome;
+                        else { // Assumindo cursosBody
+                            if (cardTitleEl) cardTitleEl.textContent = item.curso; // Nome do Curso
+                            // Se 'item.nome' (Instituição) for "", não mostra nada
+                            if (cardSubtitleEl) cardSubtitleEl.textContent = item.nome || "Sem instituição";
                             if (viewDetailsContainer) viewDetailsContainer.style.display = 'none';
                         }
 
@@ -382,17 +485,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 // Restante da função
                 createIdt.classList.remove("show");
-                if (inputInstituicao) inputInstituicao.value = "";
-                if (inputCurso) inputCurso.value = "";
+
+                // [NOVO] Limpa os inputs de forma segura
+                const allInputsInModal = createIdt.querySelectorAll(".campIdt input");
+                allInputsInModal.forEach(input => {
+                    input.value = "";
+                    input.disabled = false;
+                });
+
+                // Reseta placeholders específicos
+                if (STORAGE_KEY === 'cursosBody') {
+                    const inputInstituicao = allInputsInModal[0];
+                    if (inputInstituicao) inputInstituicao.placeholder = "Selecione a instituição";
+                }
+                if (STORAGE_KEY === 'instituicoesBody') {
+                    const inputInstituicao = allInputsInModal[0];
+                    if (inputInstituicao) inputInstituicao.placeholder = "Ex: PUC-Campinas";
+                }
 
                 if (STORAGE_KEY === 'diciplinasBody') {
                     const inputCursoSelect = createIdt.querySelector("#cursoSelect");
                     if (inputCursoSelect) inputCursoSelect.value = "";
-
-                    const allInputs = createIdt.querySelectorAll(".campIdt input, .campIdtToggle .campIdt input");
-                    if (allInputs[1]) allInputs[1].value = ""; // Nome Disciplina
-                    if (allInputs[2]) allInputs[2].value = ""; // Sigla
-                    if (allInputs[3]) allInputs[3].value = ""; // Código
 
                     const inputPeriodoSelect = createIdt.querySelector("#periodoSelect");
                     if (inputPeriodoSelect) inputPeriodoSelect.value = "";
@@ -405,7 +518,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     deletCursoEdit.style.display = 'none';
                 }
 
+                if (cursosAdicionadosCamp) {
+                    cursosAdicionadosCamp.style.display = 'none';
+                }
+
                 // Limpa os containers de cursos do modal
+                // (código de limpeza de modal omitido para brevidade)
                 if (cursosAdicionadosCamp) {
                     const dynamicContainer = cursosAdicionadosCamp.querySelector('.cursosEdidCamp');
                     if (dynamicContainer) dynamicContainer.remove(); // Remove o container dinâmico
@@ -418,7 +536,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         cursosAdicionadosCamp.appendChild(placeholder);
                     }
                 }
-                // Restaura placeholders de Adicionar e Deletar
                 if (addCursoContainer) {
                     addCursoContainer.innerHTML = `
                         <div class="linkDatailsIdt">
@@ -455,8 +572,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 if (createBtn) createBtn.textContent = "Criar";
 
-                if (inputInstituicao) inputInstituicao.value = "";
-                if (inputCurso) inputCurso.value = "";
+                // [NOVO] Limpa os inputs de forma segura
+                const allInputsInModal = createIdt.querySelectorAll(".campIdt input");
+                allInputsInModal.forEach(input => {
+                    input.value = "";
+                    input.disabled = false;
+                });
+
+                // Reseta placeholders específicos
+                if (STORAGE_KEY === 'cursosBody') {
+                    const inputInstituicao = allInputsInModal[0];
+                    if (inputInstituicao) inputInstituicao.placeholder = "Selecione a instituição";
+                }
+                if (STORAGE_KEY === 'instituicoesBody') {
+                    const inputInstituicao = allInputsInModal[0];
+                    if (inputInstituicao) inputInstituicao.placeholder = "Ex: PUC-Campinas";
+                }
+
 
                 if (addCursoEdit) {
                     addCursoEdit.style.display = 'none';
@@ -464,15 +596,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (deletCursoEdit) {
                     deletCursoEdit.style.display = 'none';
                 }
+                if (cursosAdicionadosCamp) {
+                    cursosAdicionadosCamp.style.display = 'none';
+                }
 
                 if (STORAGE_KEY === 'diciplinasBody') {
                     const inputCursoSelect = createIdt.querySelector("#cursoSelect");
                     if (inputCursoSelect) inputCursoSelect.value = "";
-
-                    const allInputs = createIdt.querySelectorAll(".campIdt input, .campIdtToggle .campIdt input");
-                    if (allInputs[1]) allInputs[1].value = "";
-                    if (allInputs[2]) allInputs[2].value = "";
-                    if (allInputs[3]) allInputs[3].value = "";
 
                     const inputPeriodoSelect = createIdt.querySelector("#periodoSelect");
                     if (inputPeriodoSelect) inputPeriodoSelect.value = "";
@@ -523,13 +653,22 @@ document.addEventListener("DOMContentLoaded", () => {
                                 deletCursoEdit.style.display = 'none';
                             }
                         }
+                        if (cursosAdicionadosCamp) {
+                            if (STORAGE_KEY === 'instituicoesBody') {
+                                cursosAdicionadosCamp.style.display = 'block';
+                            } else {
+                                cursosAdicionadosCamp.style.display = 'none';
+                            }
+                        }
+
+                        // [NOVO] Pega os inputs no momento do clique
+                        const allInputsInModal = createIdt.querySelectorAll(".campIdt input");
 
                         if (STORAGE_KEY === 'diciplinasBody') {
                             const inputCursoSelect = createIdt.querySelector("#cursoSelect");
-                            const allInputs = createIdt.querySelectorAll(".campIdt input, .campIdtToggle .campIdt input");
-                            const inputNomeDisciplina = allInputs[1];
-                            const inputSigla = allInputs[2];
-                            const inputCodigo = allInputs[3];
+                            const inputNomeDisciplina = allInputsInModal[1];
+                            const inputSigla = allInputsInModal[2];
+                            const inputCodigo = allInputsInModal[3];
                             const inputPeriodoSelect = createIdt.querySelector("#periodoSelect");
 
                             if (inputCursoSelect) inputCursoSelect.value = item.nome;
@@ -537,7 +676,15 @@ document.addEventListener("DOMContentLoaded", () => {
                             if (inputSigla) inputSigla.value = item.sigla || "";
                             if (inputCodigo) inputCodigo.value = item.codigo || "";
                             if (inputPeriodoSelect) inputPeriodoSelect.value = item.periodo || "";
-                        } else {
+
+                        } else if (STORAGE_KEY === 'cursosBody') {
+                            const inputInstituicao = allInputsInModal[0];
+                            const inputCurso = allInputsInModal[1];
+                            if (inputInstituicao) inputInstituicao.value = item.nome; // Campo Instituição
+                            if (inputCurso) inputCurso.value = item.curso; // Campo Nome do Curso
+
+                        } else { // instituicoesBody
+                            const inputInstituicao = allInputsInModal[0];
                             if (inputInstituicao) inputInstituicao.value = item.nome;
                         }
 
@@ -554,14 +701,55 @@ document.addEventListener("DOMContentLoaded", () => {
                         if (createBtn) createBtn.textContent = "Salvar";
                     }
 
+                    // (código de deleteBtn omitido para brevidade)
                     if (deleteBtn) {
                         const nomeItem = (STORAGE_KEY === 'diciplinasBody') ? item.curso : (item.curso || item.nome);
                         if (confirm(`Tem certeza que deseja excluir "${nomeItem}"?`)) {
-                            // ✅ SE FOR INSTITUIÇÃO, USA O BANCO
+
                             if (STORAGE_KEY === 'instituicoesBody') {
                                 deletarInstituicaoDB(id);
+                                return;
+
+                                // LÓGICA DE DELETAR INSTITUIÇÃO: Limpa todos os cursos vinculados a ela
+                                let cursos = JSON.parse(localStorage.getItem("cursosBody")) || [];
+                                const instituicoes = getItens();
+                                const instParaDeletar = instituicoes.find(i => i.id == id);
+
+                                if (instParaDeletar) {
+                                    // Remove a referência à instituição de todos os cursos que estavam vinculados
+                                    const nomeInst = instParaDeletar.nome.toLowerCase();
+                                    cursos.forEach(curso => {
+                                        if (curso.nome && curso.nome.toLowerCase() === nomeInst) {
+                                            curso.nome = ""; // Desvincula o curso
+                                        }
+                                    });
+                                    localStorage.setItem("cursosBody", JSON.stringify(cursos));
+
+                                    // Deleta a instituição
+                                    let novosItens = instituicoes.filter(i => i.id != id);
+                                    saveItens(novosItens);
+                                    loadAndRender();
+                                }
+
+
                             } else {
-                                // Outros casos continuam usando localStorage
+
+                                // LÓGICA NOVA: Desvincular curso da instituição
+                                if (STORAGE_KEY === 'cursosBody' && item.nome) {
+                                    try {
+                                        let instituicoes = JSON.parse(localStorage.getItem("instituicoesBody")) || [];
+                                        const instituicaoAlvo = instituicoes.find(inst => inst.nome.toLowerCase() === item.nome.toLowerCase());
+                                        if (instituicaoAlvo && Array.isArray(instituicaoAlvo.cursos)) {
+                                            instituicaoAlvo.cursos = instituicaoAlvo.cursos.filter(c => c.toLowerCase() !== item.curso.toLowerCase());
+                                            localStorage.setItem("instituicoesBody", JSON.stringify(instituicoes));
+                                        }
+                                    } catch (error) {
+                                        console.error("Erro ao desvincular curso da instituição:", error);
+                                    }
+                                }
+                                // FIM DA LÓGICA NOVA
+
+                                // Lógica original: Deleta o item (curso, disciplina, etc.)
                                 let novosItens = itens.filter(i => i.id != id);
                                 saveItens(novosItens);
                                 loadAndRender();
@@ -577,6 +765,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 });
 
+                // (código de wheel event omitido)
                 listContainer.addEventListener('wheel', (e) => {
                     const viewDetails = e.target.closest('.viewDetailsIC');
                     if (!viewDetails) return;
@@ -599,19 +788,22 @@ document.addEventListener("DOMContentLoaded", () => {
             if (createBtn) {
                 createBtn.addEventListener("click", () => {
 
+                    //NÃO TIRAR, essa função serve para salvar a instituição no banco
                     if (STORAGE_KEY === 'instituicoesBody') {
-                        return; // Sai da função, deixa o functionMain.js tratar
+                        salvarInstituicao(); // Chama a função do backend
+                        return;
                     }
 
                     let novoNome, novoCurso, novoSigla, novoCodigo, novoPeriodo;
 
+                    // [NOVO] Pega os inputs no momento do clique
+                    const allInputsInModal = createIdt.querySelectorAll(".campIdt input");
+
                     if (STORAGE_KEY === 'diciplinasBody') {
                         const inputCursoSelect = createIdt.querySelector("#cursoSelect");
-                        const allInputs = createIdt.querySelectorAll(".campIdt input, .campIdtToggle .campIdt input");
-
-                        const inputNomeDisciplina = allInputs[1];
-                        const inputSigla = allInputs[2];
-                        const inputCodigo = allInputs[3];
+                        const inputNomeDisciplina = allInputsInModal[1];
+                        const inputSigla = allInputsInModal[2];
+                        const inputCodigo = allInputsInModal[3];
                         const inputPeriodoSelect = createIdt.querySelector("#periodoSelect");
 
                         novoNome = inputCursoSelect ? inputCursoSelect.value.trim() : "";
@@ -621,11 +813,15 @@ document.addEventListener("DOMContentLoaded", () => {
                         novoPeriodo = inputPeriodoSelect ? inputPeriodoSelect.value : "";
 
                     } else {
+                        // `inputs[0]` é "Nome da Instituição" (em instituicoes) ou "Instituição" (em cursos)
+                        const inputInstituicao = allInputsInModal[0];
                         novoNome = inputInstituicao ? inputInstituicao.value.trim() : "";
 
                         if (STORAGE_KEY === 'instituicoesBody') {
                             novoCurso = "";
                         } else {
+                            // `inputs[1]` é "Nome do curso" (em cursos)
+                            const inputCurso = allInputsInModal[1];
                             novoCurso = inputCurso ? inputCurso.value.trim() : "";
                         }
                     }
@@ -643,10 +839,11 @@ document.addEventListener("DOMContentLoaded", () => {
                             return;
                         }
                     } else { // 'cursosBody'
-                        if (!novoNome || !novoCurso) {
-                            alert("Por favor, preencha todos os campos.");
+                        if (!novoCurso) {
+                            alert("Por favor, preencha o Nome do curso.");
                             return;
                         }
+                        // novoNome (instituição) é opcional. Se preenchido, será linkado.
                     }
                     // --- Fim da Validação ---
 
@@ -655,23 +852,111 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     if (currentEditingCard) {
                         // --- MODO SALVAR (Edição) ---
+                        // (código de edição omitido para brevidade)
                         const item = itens.find(i => i.id == currentEditingCard.id);
                         if (item) {
-                            item.nome = novoNome;
-                            if (STORAGE_KEY === 'diciplinasBody') {
+
+                            // ======================================================
+                            //  INÍCIO DA MUDANÇA: LÓGICA DE EDIÇÃO DE CURSO
+                            // ======================================================
+                            if (STORAGE_KEY === 'cursosBody') {
+                                // Pega os valores antes e depois da edição
+                                const instituicaoAntiga = originalItemBeforeEdit.nome || "";
+                                const instituicaoNova = novoNome || "";
+                                const nomeAntigoDoCurso = originalItemBeforeEdit.curso;
+                                const nomeNovoDoCurso = novoCurso;
+
+                                // 1. Se a instituição MUDOU
+                                if (instituicaoAntiga.toLowerCase() !== instituicaoNova.toLowerCase()) {
+                                    let instituicoes = JSON.parse(localStorage.getItem("instituicoesBody")) || [];
+
+                                    // 1a. REMOVE da instituição ANTIGA (se ela existia)
+                                    if (instituicaoAntiga) {
+                                        const instAntiga = instituicoes.find(i => i.nome.toLowerCase() === instituicaoAntiga.toLowerCase());
+                                        if (instAntiga && Array.isArray(instAntiga.cursos)) {
+                                            instAntiga.cursos = instAntiga.cursos.filter(c => c.toLowerCase() !== nomeAntigoDoCurso.toLowerCase());
+                                        }
+                                    }
+
+                                    // 1b. ADICIONA à instituição NOVA (se ela existe)
+                                    if (instituicaoNova) {
+                                        const instNova = instituicoes.find(i => i.nome.toLowerCase() === instituicaoNova.toLowerCase());
+                                        if (instNova) {
+                                            if (!Array.isArray(instNova.cursos)) instNova.cursos = [];
+                                            // Adiciona se não existir
+                                            if (!instNova.cursos.find(c => c.toLowerCase() === nomeNovoDoCurso.toLowerCase())) {
+                                                instNova.cursos.push(nomeNovoDoCurso);
+                                            }
+                                        }
+                                    }
+                                    // Salva as mudanças nas instituições
+                                    localStorage.setItem("instituicoesBody", JSON.stringify(instituicoes));
+                                }
+                                // 2. Se a instituição é a MESMA, mas o NOME DO CURSO mudou
+                                else if (instituicaoNova && (nomeAntigoDoCurso.toLowerCase() !== nomeNovoDoCurso.toLowerCase())) {
+                                    let instituicoes = JSON.parse(localStorage.getItem("instituicoesBody")) || [];
+                                    const inst = instituicoes.find(i => i.nome.toLowerCase() === instituicaoNova.toLowerCase());
+
+                                    if (inst && Array.isArray(inst.cursos)) {
+                                        // Encontra o índice do nome antigo
+                                        const index = inst.cursos.findIndex(c => c.toLowerCase() === nomeAntigoDoCurso.toLowerCase());
+                                        if (index !== -1) {
+                                            // Atualiza para o nome novo
+                                            inst.cursos[index] = nomeNovoDoCurso;
+                                            localStorage.setItem("instituicoesBody", JSON.stringify(instituicoes));
+                                        }
+                                    }
+                                }
+
+                                // Atualiza o próprio item do curso
+                                item.nome = novoNome;
+                                item.curso = novoCurso;
+
+                            }
+                            // ======================================================
+                            //  FIM DA MUDANÇA
+                            // ======================================================
+
+                            // Lógica original para outros tipos
+                            else if (STORAGE_KEY === 'diciplinasBody') {
+                                item.nome = novoNome;
                                 item.curso = novoCurso;
                                 item.sigla = novoSigla;
                                 item.codigo = novoCodigo;
                                 item.periodo = novoPeriodo;
-                            }
-                            if (STORAGE_KEY === 'cursosBody') {
-                                item.curso = novoCurso;
+                            } else {
+                                // Assumindo instituicoesBody (ou outros)
+                                item.nome = novoNome;
+
+                                // LÓGICA DE EDIÇÃO DE INSTITUIÇÃO: Atualiza o nome da instituição nos cursos
+                                if (STORAGE_KEY === 'instituicoesBody' && originalItemBeforeEdit.nome.toLowerCase() !== novoNome.toLowerCase()) {
+                                    let cursos = JSON.parse(localStorage.getItem("cursosBody")) || [];
+                                    let instituicoes = JSON.parse(localStorage.getItem("instituicoesBody")) || [];
+                                    const cursosRelacionados = cursos.filter(c => c.nome.toLowerCase() === originalItemBeforeEdit.nome.toLowerCase());
+
+                                    // Atualiza o nome da instituição nos objetos de cursos
+                                    cursosRelacionados.forEach(curso => {
+                                        curso.nome = novoNome;
+                                    });
+                                    localStorage.setItem("cursosBody", JSON.stringify(cursos));
+
+                                    // Atualiza o nome da instituição na lista de cursos dentro da própria instituição (para o caso de linkar cursos posteriormente)
+                                    // A lista de cursos (item.cursos) já está sendo atualizada pelo fluxo de edição (item.nome = novoNome) pois 'item' é a referência.
+                                    // Mas é bom garantir a persistência:
+                                    const instEditada = instituicoes.find(i => i.id == item.id);
+                                    if (instEditada) {
+                                        instEditada.nome = novoNome;
+                                        saveItens(instituicoes);
+                                    }
+                                }
                             }
                         }
                         // Limpa o backup, pois as mudanças foram salvas
                         originalItemBeforeEdit = null;
+
                     } else {
                         // --- MODO CRIAR (Novo) ---
+                        // (código de criação omitido para brevidade)
                         if (!listContainer || !cardTemplate) {
                             console.warn(`Tentativa de CRIAR item em uma página sem .cardsCreateIdt ou template. Operação cancelada.`);
                             closeAndResetModal();
@@ -680,9 +965,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         const novoItem = {
                             id: Date.now().toString(),
-                            nome: novoNome,
-                            curso: novoCurso
+                            nome: novoNome,  // Nome da Instituição (em cursosBody) ou Curso (em diciplinasBody)
+                            curso: novoCurso // Nome do Curso (em cursosBody) ou Nome da Disciplina (em diciplinasBody)
                         };
+
+                        // LÓGICA: Linkar curso à instituição (ao criar um novo curso)
+                        if (STORAGE_KEY === 'cursosBody' && novoItem.nome) {
+                            let instituicoes = JSON.parse(localStorage.getItem("instituicoesBody")) || [];
+                            const instituicaoAlvo = instituicoes.find(inst => inst.nome.toLowerCase() === novoItem.nome.toLowerCase());
+                            if (instituicaoAlvo) {
+                                if (!Array.isArray(instituicaoAlvo.cursos)) {
+                                    instituicaoAlvo.cursos = [];
+                                }
+                                const cursoJaExiste = instituicaoAlvo.cursos.find(c => c.toLowerCase() === novoItem.curso.toLowerCase());
+                                if (!cursoJaExiste) {
+                                    instituicaoAlvo.cursos.push(novoItem.curso);
+                                    localStorage.setItem("instituicoesBody", JSON.stringify(instituicoes));
+                                }
+                            }
+                        }
+
 
                         if (STORAGE_KEY === 'diciplinasBody') {
                             novoItem.sigla = novoSigla;
@@ -703,18 +1005,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
             }
 
-            // Event listener para DELETAR e ADICIONAR Cursos
+            // Event listener para DELETAR e ADICIONAR Cursos (dentro do modal de edição de Instituições)
+            // (código de add/deletar cursos no modal omitido para brevidade)
             if (createIdt) {
                 createIdt.addEventListener('click', (e) => {
                     const trashIcon = e.target.closest('.cursoDeletinIcon');
                     const addIcon = e.target.closest('.cursoAddinIcon'); // NOVO
 
                     if (!currentEditingCard) return;
+                    if (STORAGE_KEY !== 'instituicoesBody') return;
 
                     // Pega a instituição (que está sendo modificada em tempo real)
                     let instituicoes = getItens();
                     const instituicao = instituicoes.find(i => i.id == currentEditingCard.id);
                     if (!instituicao) return;
+
+                    const nomeInst = instituicao.nome;
 
                     // --- Lógica de DELETAR ---
                     if (trashIcon) {
@@ -724,8 +1030,19 @@ document.addEventListener("DOMContentLoaded", () => {
                         if (!nomeDoCurso) return;
 
                         if (instituicao.cursos) {
+                            // 1. Remove da lista de cursos da Instituição
                             instituicao.cursos = instituicao.cursos.filter(c => c.toLowerCase() !== nomeDoCurso.toLowerCase());
                             saveItens(instituicoes);
+
+                            // 2. Remove o nome da Instituição do objeto Curso no localStorage
+                            let cursos = JSON.parse(localStorage.getItem("cursosBody")) || [];
+                            const cursoAlvo = cursos.find(c => c.curso.toLowerCase() === nomeDoCurso.toLowerCase());
+
+                            if (cursoAlvo && cursoAlvo.nome.toLowerCase() === nomeInst.toLowerCase()) {
+                                cursoAlvo.nome = ""; // Desvincula o curso da instituição
+                                localStorage.setItem("cursosBody", JSON.stringify(cursos));
+                            }
+
                             popularCursosParaEdicao(instituicao); // Recarrega as 3 listas
                         }
                     }
@@ -741,8 +1058,19 @@ document.addEventListener("DOMContentLoaded", () => {
                             instituicao.cursos = [];
                         }
 
+                        // 1. Adiciona na lista de cursos da Instituição
                         instituicao.cursos.push(nomeDoCurso); // Adiciona o curso
                         saveItens(instituicoes);
+
+                        // 2. Adiciona o nome da Instituição ao objeto Curso no localStorage
+                        let cursos = JSON.parse(localStorage.getItem("cursosBody")) || [];
+                        const cursoAlvo = cursos.find(c => c.curso.toLowerCase() === nomeDoCurso.toLowerCase());
+
+                        if (cursoAlvo) {
+                            cursoAlvo.nome = nomeInst; // Vincula o curso à instituição
+                            localStorage.setItem("cursosBody", JSON.stringify(cursos));
+                        }
+
                         popularCursosParaEdicao(instituicao); // Recarrega as 3 listas
                     }
                 });
@@ -750,6 +1078,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
             // --- Lógica para o Modal "Linkar Curso" ---
+            // (código do modal Linkar Curso omitido para brevidade)
             if (linkCursoContainer) {
                 const closeLinkBtn = linkCursoContainer.querySelector("#closedAdd");
                 const cancelLinkBtn = linkCursoContainer.querySelector("#cancelAddIdt");
@@ -794,7 +1123,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         const cursoValido = todosCursos.find(c => c.curso.toLowerCase() === cursoSelecionado.toLowerCase());
 
                         if (!cursoValido) {
-                            mostrarAlerta(`Curso "${cursoSelecionado}" não encontrado.\n\nPor favor, selecione um curso que já foi criado na aba "Cursos".`, "aviso")
+                            // A função mostrarAlerta não está definida aqui, usando alert
+                            alert(`Curso "${cursoSelecionado}" não encontrado.\nPor favor, selecione um curso que já foi criado na aba "Cursos".`)
                             return;
                         }
 
@@ -807,15 +1137,31 @@ document.addEventListener("DOMContentLoaded", () => {
                         if (!Array.isArray(instituicao.cursos)) {
                             instituicao.cursos = [];
                         }
+                        const nomeInst = instituicao.nome;
 
                         if (instituicao.cursos.find(c => c.toLowerCase() === cursoSelecionado.toLowerCase())) {
-                            alert(`"${cursoSelecionado}" já foi adicionado a esta instituição.`);
+                            alert(`"${cursoSelecionado}" já está vinculado a esta instituição.`);
                             return;
                         }
 
+                        // Validação 3: Curso já pertence a OUTRA instituição?
+                        if (cursoValido.nome && cursoValido.nome.toLowerCase() !== nomeInst.toLowerCase()) {
+                            alert(`O curso "${cursoSelecionado}" já está vinculado à instituição "${cursoValido.nome}". Desvincule-o primeiro na aba "Cursos" ou edite a instituição lá.`);
+                            return;
+                        }
+
+
                         // SALVAR
+                        // 1. Adiciona o curso à lista de cursos da instituição
                         instituicao.cursos.push(cursoValido.curso);
                         saveItens(instituicoes);
+
+                        // 2. Atualiza o objeto do curso no cursosBody para vincular à instituição
+                        const cursoAlvo = todosCursos.find(c => c.curso.toLowerCase() === cursoSelecionado.toLowerCase());
+                        if (cursoAlvo) {
+                            cursoAlvo.nome = nomeInst;
+                            localStorage.setItem("cursosBody", JSON.stringify(todosCursos));
+                        }
 
                         closeLinkModal();
                         loadAndRender(); // Atualiza a tela
@@ -855,6 +1201,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 listContainer.style.display = "none";
             }
             loadAndRender();
+
+            //NOVO: Listener para recarregar quando instituições forem atualizadas
+            // carrega na pagina atual ao inves de voltar para o dashboard
+            // funciona tanto para deletar quanto para adicionar
+            // NÃO MEXER
+            if (STORAGE_KEY === 'instituicoesBody') {
+                document.addEventListener('recarregarInstituicoes', () => {
+                    console.log("🔄 Recarregando instituições na tela...");
+                    loadAndRender();
+                });
+            }
         });
     }
 

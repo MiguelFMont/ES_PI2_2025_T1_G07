@@ -2,6 +2,11 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+const BASE_URL = process.env.NODE_ENV === "production"
+  ? "https://notadez.cfd"
+  : "http://localhost:3000";
+
+
 export function gerarCodigoVericacao(): string {
   const codigo: string = Math.floor(100000 + Math.random() * 900000).toString();
   return codigo;
@@ -24,16 +29,18 @@ export async function enviarCodigoVerificacao(email: string, nome: string, codig
   }
 }
 
-export async function enviarLinkAlterarSenha(email: string): Promise<void>{
-  try{
+export async function enviarLinkAlterarSenha(email: string): Promise<void> {
+  try {
     const data = await resend.emails.send({
       from: "NotaDez <alterarsenha@notadez.cfd>",
       to: email,
       subject: "Link para alteração de senha - NotaDez",
-      html: `<p>Olá!</p>
-             <p>Clique <a href="/redefinir-senha">aqui</a> para alterar sua senha!</p>`
+      html: `
+  <p>Olá!</p>
+  <p>Clique <a href="${BASE_URL}/redefinir-senha">aqui</a> para alterar sua senha!</p>
+`
     });
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("❌ Erro ao enviar email:", error);
     throw new Error(`Erro ao enviar email: ${error.message}`);
   }

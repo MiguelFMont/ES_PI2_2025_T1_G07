@@ -6,17 +6,19 @@ export interface Instituicao {
     nome: string
 };
 
-// Adicionar uma instituição
-export async function addInstituicao(nome: string): Promise<number> {
+// ✅ ADICIONAR EM DUAS TABELAS: INSTITUICAO + DOCENTE_INSTITUICAO
+export async function addInstituicao(nome: string, id_docente: number): Promise<{id: number; nome: string}> {
     const conn = await open();
     try {
+        // 1️⃣ INSERE NA TABELA INSTITUICAO
         const result = await conn.execute<{outBinds : {id: number}}>(
-            `
-            INSERT INTO Instituicao (Nome)
+            `INSERT INTO INSTITUICAO (NOME)
             VALUES (:nome)
-            RETURNING ID_Instituicao INTO :id
-            `,
-            {nome, id: {dir: OracleDB.BIND_OUT, type: OracleDB.NUMBER}},
+            RETURNING ID_INSTITUICAO INTO :id`,
+            {
+                nome, 
+                id: {dir: OracleDB.BIND_OUT, type: OracleDB.NUMBER}
+            },
             {autoCommit: true}
         );
 
@@ -26,23 +28,55 @@ export async function addInstituicao(nome: string): Promise<number> {
             throw new Error("Erro ao obter um ID retornado na inserção da Instituição.");
         }
 
-        return outBinds.id[0];
+        const id_instituicao = outBinds.id[0];
+
+        // 2️⃣ INSERE NA TABELA DOCENTE_INSTITUICAO (vincula docente à instituição)
+        await conn.execute(
+            `INSERT INTO DOCENTE_INSTITUICAO (FK_ID_DOCENTE, FK_ID_INSTITUICAO)
+            VALUES (:id_docente, :id_instituicao)`,
+            { id_docente, id_instituicao },
+            { autoCommit: true }
+        );
+
+        console.log(`✅ Instituição ${id_instituicao} criada e vinculada ao docente ${id_docente}`);
+        
+        // ✅ RETORNA ID E NOME
+        return {
+            id: id_instituicao,
+            nome: nome
+        };
+    } catch (error) {
+        console.error("❌ Erro ao adicionar instituição:", error);
+        throw error;
     } finally {
         await close(conn);
     }
 }
 
-// Deletar uma instituição da tabela
+// ✅ DELETAR DAS DUAS TABELAS: DOCENTE_INSTITUICAO + INSTITUICAO
 export async function deleteInstituicao(id: number): Promise<boolean> {
     const conn = await open();
     try {
+        // 1️⃣ DELETA DA TABELA DOCENTE_INSTITUICAO (remove o vínculo)
+        await conn.execute(
+            `DELETE FROM DOCENTE_INSTITUICAO WHERE FK_ID_INSTITUICAO = :id`,
+            { id },
+            { autoCommit: true }
+        );
+        console.log(`🗑️ Vínculo removido de DOCENTE_INSTITUICAO para instituição ${id}`);
+
+        // 2️⃣ DELETA DA TABELA INSTITUICAO (remove a instituição)
         const result = await conn.execute(
-            `DELETE FROM Instituicao WHERE ID_Instituicao = :id`,
+            `DELETE FROM INSTITUICAO WHERE ID_INSTITUICAO = :id`,
             { id },
             { autoCommit: true }
         );
         
+        console.log(`🗑️ Instituição ${id} deletada de INSTITUICAO`);
         return result.rowsAffected !== undefined && result.rowsAffected > 0;
+    } catch (error) {
+        console.error("❌ Erro ao deletar instituição:", error);
+        throw error;
     } finally {
         await close(conn);
     }
@@ -52,16 +86,18 @@ export async function updateInstituicao(id: number, novo_nome: string): Promise<
     const conn = await open();
     try {
         const result = await conn.execute(
-            `
-            UPDATE Instituicao
-            SET Nome = :novo_nome
-            WHERE ID_Instituicao = :id
-            `,
+            `UPDATE INSTITUICAO
+            SET NOME = :novo_nome
+            WHERE ID_INSTITUICAO = :id`,
             { novo_nome, id },
             { autoCommit: true }
         );
         
+        console.log(`✏️ Instituição ${id} atualizada para "${novo_nome}"`);
         return result.rowsAffected !== undefined && result.rowsAffected > 0;
+    } catch (error) {
+        console.error("❌ Erro ao atualizar instituição:", error);
+        throw error;
     } finally {
         await close(conn);
     }
@@ -72,8 +108,8 @@ export async function verificarCadastroInstituicao(nome: string): Promise<Instit
     const conn = await open();
     try {
         const result = await conn.execute(
-            `SELECT ID_Instituicao as "id", Nome as "nome" FROM Instituicao  
-            WHERE UPPER(Nome) = UPPER(:nome)
+            `SELECT ID_INSTITUICAO as "id", NOME as "nome" FROM INSTITUICAO  
+            WHERE UPPER(NOME) = UPPER(:nome)
             FETCH FIRST 1 ROWS ONLY`,
             { nome },
             { outFormat: OracleDB.OUT_FORMAT_OBJECT }
@@ -84,6 +120,9 @@ export async function verificarCadastroInstituicao(nome: string): Promise<Instit
         }
         
         return null;
+    } catch (error) {
+        console.error("❌ Erro ao verificar cadastro de instituição:", error);
+        throw error;
     } finally {
         if (conn) {
             await close(conn);
@@ -91,13 +130,13 @@ export async function verificarCadastroInstituicao(nome: string): Promise<Instit
     }
 }
 
-// Obter a instituição pelo ID.
+// Obter a instituição pelo ID
 export async function getInstituicaoById(id: number): Promise<Instituicao | null> {
     const conn = await open();
     try {
         const result = await conn.execute(
-            `SELECT ID_Instituicao as "id", Nome as "nome" FROM Instituicao
-            WHERE ID_Instituicao = :id`,
+            `SELECT ID_INSTITUICAO as "id", NOME as "nome" FROM INSTITUICAO
+            WHERE ID_INSTITUICAO = :id`,
             { id },
             { outFormat: OracleDB.OUT_FORMAT_OBJECT }
         );
@@ -107,23 +146,33 @@ export async function getInstituicaoById(id: number): Promise<Instituicao | null
         }
         
         return null;
+    } catch (error) {
+        console.error("❌ Erro ao obter instituição por ID:", error);
+        throw error;
     } finally {
         await close(conn);
     }
 }
 
-// Obter todas as instituições da tabela INSTITUICAO do Oracle
-export async function getAllInstituicao(): Promise<Instituicao[]> {
+// ✅ CORRIGIDO: BUSCAR COM JOIN PARA TRAZER ID E NOME
+export async function getAllInstituicao(id_docente: number): Promise<Instituicao[]> {
     const conn = await open();
     try {
         const result = await conn.execute(
-            `SELECT ID_Instituicao as "id", Nome as "nome" FROM Instituicao
-            ORDER BY Nome`,
-            {},
+            `SELECT I.ID_INSTITUICAO as "id", I.NOME as "nome"
+            FROM DOCENTE_INSTITUICAO DI
+            INNER JOIN INSTITUICAO I ON DI.FK_ID_INSTITUICAO = I.ID_INSTITUICAO
+            WHERE DI.FK_ID_DOCENTE = :id_docente`,
+            { id_docente },
             { outFormat: OracleDB.OUT_FORMAT_OBJECT }
         );
         
+        console.log(`📚 ${result.rows?.length || 0} instituição(ões) encontrada(s) para docente ${id_docente}`);
+        
         return result.rows ? result.rows as Instituicao[] : [];
+    } catch (error) {
+        console.error("❌ Erro ao buscar instituições do docente:", error);
+        throw error;
     } finally {
         await close(conn);
     }

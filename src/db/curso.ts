@@ -3,8 +3,6 @@ import OracleDB from "oracledb";
 
 export interface Curso {
     id: number;
-    fk_id_docente: number;
-    fk_id_instituicao: number;
     nome: string;
 }
 
