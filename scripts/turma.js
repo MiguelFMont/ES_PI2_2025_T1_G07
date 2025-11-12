@@ -66,7 +66,7 @@ function iniciarPageTurmas() {
             const periodoShow = turma.periodo || "-";
 
             card.innerHTML = `
-                <div class="contentCardIdt" style="box-shadow: none; padding: 0;">
+                <div class="contentCardIdt" style="box-shadow: none; padding: 0; transform: none;">
                     <i class="ph ph-users" id="turmasIcon" style="background: var(--color9Shadow); color: var(--color9)"></i>
                     <div class="textContentCardIdt">
                         <h2>${turma.nome}</h2>

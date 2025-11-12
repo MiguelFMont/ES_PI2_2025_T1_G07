@@ -63,8 +63,7 @@ body {
 }
 
 .container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    display: flex;
     height: 100%;
     padding: 20px;
     width: 100%;
@@ -82,7 +81,7 @@ body {
 
 .itemOne,
 .itemTwo {
-    height: 50%;
+    height: 100%;
     width: 100%;
     border-radius: 20px;
 }
@@ -97,8 +96,7 @@ body {
 
 .itemThree {
     border-radius: 20px;
-    width: 50%;
+    width: 40%;
     height: 100%;
-    justify-self: center;
     background: var(--color9);
 }
