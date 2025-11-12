@@ -1,0 +1,104 @@
+/* ================================================
+    RESET GERAL E VARIÁVEIS DE CORES
+   ================================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Paleta de cores principal usada no projeto */
+:root {
+    --black: #000000;
+    --white: #ffffff;
+    --white2: #f5f8fa;
+    --grey: #808080;
+    --red: #e20000;
+    --greyBorder: #c3c3c3;
+    --placeholder: #5a5a5a;
+    
+    --shadow: rgba(0, 0, 0, 0.1);
+    --shadow2: rgba(0, 0, 0, 0.2);
+    --redShadow: rgba(255, 0, 0, 0.1);
+    --color3Shadow: rgb(227, 0, 117, 0.2);
+    --color4Shadow: rgb(255, 74, 74, 0.2);
+    --color5shadow: rgba(255, 178, 25, 0.2);
+    --color6Shadow: rgba(97, 92, 92, 0.5);
+    --color8Shadow: rgba(37, 228, 117, 0.2);
+    --color9Shadow: rgb(183, 6, 228, 0.2);
+
+    --color1: #ebe8e8;   /* Fundo principal (claro) */
+    --color2: #e8e8e8;   /* Fundo secundário */
+    --color3: #e30075;   /* Cor escura para textos */
+    --color4: #ff4a4a;   /* Vermelho (erros ou alertas) */
+    --color5: #ffb319;   /* Amarelo (hover de botões) */
+    --color5Hover: #e39e13; /* Amarelo escuro (hover de botões) */
+    --color6: #615c5c;   /* cinza (hover alternativo de botões) */
+    --color9: #b706e4;
+    --color8: #25e475;   /* Verde (sucesso) */
+
+    --lightgrey: #d3d3d3; /* Bordas e separadores suaves */
+
+}
+
+body {
+    font-family: "Roboto", sans-serif;
+    height: 100vh;
+    display: flex;
+    background: var(--color5);
+}
+
+.navigationBar {
+    height: 100%;
+    width: 100px;
+    background: var(--white);
+    border-top-right-radius: 50px;
+    border-bottom-right-radius: 50px;
+    box-shadow: 10px 0 20px var(--shadow2);
+    transition: all 0.5s ease-in-out;
+}
+
+.navigationBar:hover {
+    width: 250px;
+}
+
+.container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    height: 100%;
+    padding: 20px;
+    width: 100%;
+    gap: 20px;
+    border: 1px solid red;
+}
+
+.boxItems {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: 1px solid black;
+}
+
+.itemOne,
+.itemTwo {
+    height: 50%;
+    width: 100%;
+    border-radius: 20px;
+}
+
+.itemOne {
+    background: var(--color1);
+}
+
+.itemTwo {
+    background: var(--red);
+}
+
+.itemThree {
+    border-radius: 20px;
+    width: 50%;
+    height: 100%;
+    justify-self: center;
+    background: var(--color9);
+}

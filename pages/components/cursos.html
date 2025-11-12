@@ -44,6 +44,30 @@
                 <input type="text" placeholder="Ex: Engenharia de Software">
                 <label for="text"></label>
             </div>
+            <div class="campIdt" id="disciplinasAdicionadosCamp">
+                <p>Disciplinas Adicionadas</p>
+                <div class="cursosEdidCamp">
+                    <div class="linkDatailsIdt">Projeto Integrador</div>
+                </div>
+            </div>
+            <div class="campIdt" id="addCursoEdit">
+                <p>Adicionar Disciplina</p>
+                <div class="cursosEdidCamp">
+                    <div class="linkDatailsIdt">
+                        Banco de Dados
+                        <i class="ph ph-plus" id="cursoAddinIntituicoes"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="campIdt" id="deletCursoEdit">
+                <p>Deletar Disciplina</p>
+                <div class="cursosEdidCamp">
+                    <div class="linkDatailsIdt">
+                        Cálculo I
+                        <i class="ph ph-trash" id="cursoDeletinIntituicoes"></i>
+                    </div>
+                </div>
+            </div>
             <div class="buttonsCheck">
                 <button id="cancelBtnIdt">Cancelar</button>
                 <button id="createBtnIdt">Criar</button>
@@ -68,6 +92,23 @@
                     <i class="ph ph-trash"></i>
                 </button>
             </div>
+        </div>
+    </div>
+    <div class="containerAddIdt">
+        <div class="headerAddIdt">
+            <i class="ph ph-link-simple"></i>
+            <h3>Linkar Disciplinas</h3>
+            <i class="ph ph-x" id="closedAdd"></i>
+        </div>
+        <div class="campIdt">
+            <p>Selecione a Disciplina</p>
+            <input type="text" list="listDisciplinasLink" placeholder="Ex: Projeto Integrador">
+            <datalist id="listDisciplinasLink"></datalist>
+            <label for="text"></label>
+        </div>
+        <div class="buttonsCheckAddIdt">
+            <button id="cancelAddIdt">Cancelar</button>
+            <button id="saveAddIdt">Adicionar</button>
         </div>
     </div>
 </div>
