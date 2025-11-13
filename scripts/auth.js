@@ -600,12 +600,17 @@ document.addEventListener("DOMContentLoaded", () => {
 //        PAGE EMAIL TO MODIFY
 // ======================================
 
-let solicitadoByUserSettings = true;
+const solicitacao = JSON.parse(localStorage.getItem("solicitacao"));
 
 if (botaoSolicitarLink) {
     botaoSolicitarLink.addEventListener("click", (e) => {
         if (e) e.preventDefault();
-        solicitadoByUserSettings = false;
+
+        localStorage.setItem("solicitacao", JSON.stringify({
+            byUserSettings: false 
+        }));
+
+
         const emailDigitado = inputEmail.value.trim();
         localStorage.setItem("emailParaRecuperacao", emailDigitado);
         if (emailDigitado === "") {
@@ -680,7 +685,7 @@ if (botaoModificar) {
         }
 
         if (typeof mostrarLoader === "function") mostrarLoader('mostrar');
-        console.log("📤 Enviando nova senha para o servidor");  
+        console.log("📤 Enviando nova senha para o servidor");
 
         fetch("/modificar-senha", {
             method: "POST",
@@ -696,7 +701,7 @@ if (botaoModificar) {
                 if (typeof mostrarLoader === "function") mostrarLoader('esconder');
 
                 if (data.sucesso) {
-                    if (solicitadoByUserSettings) {
+                    if (solicitacao.byUserSettings) {
                         const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
                         if (usuarioLogado && usuarioLogado.email === emailRecuperacao) {
                             usuarioLogado.senha = novaSenha;
@@ -706,10 +711,12 @@ if (botaoModificar) {
                         localStorage.setItem("senhaAlteradaSucesso", "true");
                         mostrarAlerta("Senha modificada com sucesso! Esta aba será fechada.", "sucesso");
                         localStorage.removeItem("emailParaRecuperacao");
+                        localStorage.removeItem("solicitacao");
                         setTimeout(() => window.close(), 6000);
                     } else {
                         mostrarAlerta("Senha modificada com sucesso! Você será redirecionado para o login.", "sucesso");
                         localStorage.removeItem("emailParaRecuperacao");
+                        localStorage.removeItem("solicitacao");
                         setTimeout(() => window.location.href = "/", 6000);
                     }
                 } else {

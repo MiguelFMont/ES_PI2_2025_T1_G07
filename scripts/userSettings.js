@@ -261,6 +261,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
             localStorage.setItem("emailParaRecuperacao", usuario.email);
 
+            localStorage.setItem("solicitacao", JSON.stringify({
+                byUserSettings: true
+            }));
+
 
             if (typeof mostrarLoader === 'function') {
                 mostrarLoader('mostrar');
@@ -383,9 +387,9 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    if(botaoVoltar){
-        botaoVoltar.addEventListener("click", () =>{
-            window.location.href="/pages/mainPage.html"
+    if (botaoVoltar) {
+        botaoVoltar.addEventListener("click", () => {
+            window.location.href = "/pages/mainPage.html"
         });
     }
 

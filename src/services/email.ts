@@ -3,8 +3,8 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const BASE_URL = process.env.NODE_ENV === "production"
-  ? "https://notadez.cfd"
-  : "http://localhost:3000";
+? "http://localhost:3000"
+: "https://notadez.cfd";
 
 
 export function gerarCodigoVericacao(): string {
