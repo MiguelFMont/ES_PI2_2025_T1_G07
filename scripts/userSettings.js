@@ -16,6 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const updateBtn = document.querySelector("#upInformacoes");
     const solicitarLinkBtn = document.querySelector(".solicitar-btn-interno");
     const botaoModificar = document.querySelector(".modify-btn-user");
+    const botaoVoltar = document.querySelector(".voltar");
 
     const nomeContainer = document.querySelector(".name");
     const telefoneContainer = document.querySelector(".tel");
@@ -379,6 +380,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
             console.log("📤 Enviando nova senha para o servidor");
 
+        });
+    }
+
+    if(botaoVoltar){
+        botaoVoltar.addEventListener("click", () =>{
+            window.location.href="/pages/mainPage.html"
         });
     }
 

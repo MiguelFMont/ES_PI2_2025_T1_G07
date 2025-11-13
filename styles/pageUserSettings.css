@@ -28,6 +28,7 @@
 body {
     font-family: "Roboto", sans-serif;
     height: 100vh;
+    width: 100%;
     overflow: hidden;
     display: flex;
     justify-content: center;
@@ -65,10 +66,43 @@ body {
             LOGO E TÍTULO
         ================================================ */
 .title {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     justify-content: flex-start;
     width: 100%;
 }
+.title .buttonVoltar{
+    text-align: right;
+    padding-top: 20px;
+}
+.title .buttonVoltar .voltar{
+    padding: 12px 35px;
+    background: var(--color1);
+    color: rgb(212, 209, 209);
+    border: none;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    transition: all 0.4s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+
+.title .buttonVoltar .voltar:hover,
+.title .buttonVoltar .voltar:focus{
+    outline: none;
+    color: var(--black);
+    background-color: var(--color5);
+}
+
+.title .buttonVoltar .voltar:active{
+    transform: scale(0.98);
+}
+
 
 .logo {
     max-width: 120px;

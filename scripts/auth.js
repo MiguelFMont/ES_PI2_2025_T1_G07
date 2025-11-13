@@ -354,7 +354,6 @@ if (botaoCadastro) {
                     // Se falhar (ex: email duplicado), joga um erro para o .catch
                     console.log("❌ Email já cadastrado:", emailDigitado);
                     mostrarAlerta("Email já cadastrado. Tente fazer login.", "aviso");
-                    throw new Error("Email já cadastrado");
                 } else {
                     // Se tiver sucesso, faz o segundo fetch
                     console.log("✅ Email disponível para cadastro:", emailDigitado);
@@ -555,7 +554,8 @@ if (botaoVerify) {
                         id: data.id,
                         nome: cadastroTemp.nome,
                         email: cadastroTemp.email,
-                        telefone: cadastroTemp.telefone
+                        telefone: cadastroTemp.telefone,
+                        senha: senha
                     }));
                     console.log("✅ Docente cadastrado e logado:", cadastroTemp.email);
                     localStorage.removeItem("cadastroTemp");
@@ -600,12 +600,12 @@ document.addEventListener("DOMContentLoaded", () => {
 //        PAGE EMAIL TO MODIFY
 // ======================================
 
-let solicitadoByUser;
+let solicitadoByUserSettings = true;
 
 if (botaoSolicitarLink) {
     botaoSolicitarLink.addEventListener("click", (e) => {
         if (e) e.preventDefault();
-        solicitadoByUser = false;
+        solicitadoByUserSettings = false;
         const emailDigitado = inputEmail.value.trim();
         localStorage.setItem("emailParaRecuperacao", emailDigitado);
         if (emailDigitado === "") {
@@ -680,16 +680,12 @@ if (botaoModificar) {
         }
 
         if (typeof mostrarLoader === "function") mostrarLoader('mostrar');
-        console.log("📤 Enviando nova senha para o servidor");
-
-        const solicitadoByUser = window.location.pathname.includes("redefinir-senha");
-
-        const body = JSON.stringify({ email: emailRecuperacao, novaSenha });
+        console.log("📤 Enviando nova senha para o servidor");  
 
         fetch("/modificar-senha", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body
+            body: JSON.stringify({ email: emailRecuperacao, novaSenha: novaSenha })
         })
             .then(res => {
                 console.log("📥 Resposta do servidor:", res.status, res.ok);
@@ -700,13 +696,14 @@ if (botaoModificar) {
                 if (typeof mostrarLoader === "function") mostrarLoader('esconder');
 
                 if (data.sucesso) {
-                    if (solicitadoByUser) {
+                    if (solicitadoByUserSettings) {
                         const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
                         if (usuarioLogado && usuarioLogado.email === emailRecuperacao) {
                             usuarioLogado.senha = novaSenha;
                             localStorage.setItem("usuarioLogado", JSON.stringify(usuarioLogado));
                             console.log("🔑 Senha atualizada no localStorage");
                         }
+                        localStorage.setItem("senhaAlteradaSucesso", "true");
                         mostrarAlerta("Senha modificada com sucesso! Esta aba será fechada.", "sucesso");
                         localStorage.removeItem("emailParaRecuperacao");
                         setTimeout(() => window.close(), 6000);
