@@ -6,7 +6,35 @@ export interface Instituicao {
     nome: string
 };
 
-// ✅ ADICIONAR EM DUAS TABELAS: INSTITUICAO + DOCENTE_INSTITUICAO
+// ✅ VERIFICA SE O DOCENTE JÁ TEM UMA INSTITUIÇÃO COM ESTE NOME
+export async function verificarCadastroInstituicao(nome: string, id_docente: number): Promise<Instituicao | null> {
+    const conn = await open();
+    try {
+        const result = await conn.execute<Instituicao>(
+            `SELECT I.ID_INSTITUICAO as "id", I.NOME as "nome" 
+            FROM INSTITUICAO I
+            INNER JOIN DOCENTE_INSTITUICAO DI ON I.ID_INSTITUICAO = DI.FK_ID_INSTITUICAO
+            WHERE UPPER(I.NOME) = UPPER(:nome)
+            AND DI.FK_ID_DOCENTE = :id_docente
+            FETCH FIRST 1 ROWS ONLY`,
+            { nome, id_docente },
+            { outFormat: OracleDB.OUT_FORMAT_OBJECT }
+        );
+        
+        if (result.rows && result.rows.length > 0) {
+            return result.rows[0];
+        }
+        
+        return null;
+    } catch (error) {
+        console.error("❌ Erro ao verificar instituição:", error);
+        throw error;
+    } finally {
+        await close(conn);
+    }
+}
+
+// ✅ ADICIONAR INSTITUIÇÃO (sempre cria e vincula)
 export async function addInstituicao(nome: string, id_docente: number): Promise<{id: number; nome: string}> {
     const conn = await open();
     try {
@@ -19,7 +47,7 @@ export async function addInstituicao(nome: string, id_docente: number): Promise<
                 nome, 
                 id: {dir: OracleDB.BIND_OUT, type: OracleDB.NUMBER}
             },
-            {autoCommit: true}
+            {autoCommit: false}
         );
 
         const outBinds = result.outBinds as {id?: number[]} | undefined;
@@ -35,17 +63,20 @@ export async function addInstituicao(nome: string, id_docente: number): Promise<
             `INSERT INTO DOCENTE_INSTITUICAO (FK_ID_DOCENTE, FK_ID_INSTITUICAO)
             VALUES (:id_docente, :id_instituicao)`,
             { id_docente, id_instituicao },
-            { autoCommit: true }
+            { autoCommit: false }
         );
+
+        // 3️⃣ COMMIT
+        await conn.commit();
 
         console.log(`✅ Instituição ${id_instituicao} criada e vinculada ao docente ${id_docente}`);
         
-        // ✅ RETORNA ID E NOME
         return {
             id: id_instituicao,
             nome: nome
         };
     } catch (error) {
+        await conn.rollback();
         console.error("❌ Erro ao adicionar instituição:", error);
         throw error;
     } finally {
@@ -53,7 +84,7 @@ export async function addInstituicao(nome: string, id_docente: number): Promise<
     }
 }
 
-// ✅ DELETAR DAS DUAS TABELAS: DOCENTE_INSTITUICAO + INSTITUICAO
+// ✅ DELETAR INSTITUIÇÃO (remove da INSTITUICAO e DOCENTE_INSTITUICAO)
 export async function deleteInstituicao(id: number): Promise<boolean> {
     const conn = await open();
     try {
@@ -61,7 +92,7 @@ export async function deleteInstituicao(id: number): Promise<boolean> {
         await conn.execute(
             `DELETE FROM DOCENTE_INSTITUICAO WHERE FK_ID_INSTITUICAO = :id`,
             { id },
-            { autoCommit: true }
+            { autoCommit: false }
         );
         console.log(`🗑️ Vínculo removido de DOCENTE_INSTITUICAO para instituição ${id}`);
 
@@ -69,12 +100,16 @@ export async function deleteInstituicao(id: number): Promise<boolean> {
         const result = await conn.execute(
             `DELETE FROM INSTITUICAO WHERE ID_INSTITUICAO = :id`,
             { id },
-            { autoCommit: true }
+            { autoCommit: false }
         );
+        
+        // 3️⃣ COMMIT
+        await conn.commit();
         
         console.log(`🗑️ Instituição ${id} deletada de INSTITUICAO`);
         return result.rowsAffected !== undefined && result.rowsAffected > 0;
     } catch (error) {
+        await conn.rollback();
         console.error("❌ Erro ao deletar instituição:", error);
         throw error;
     } finally {
@@ -82,6 +117,7 @@ export async function deleteInstituicao(id: number): Promise<boolean> {
     }
 }
 
+// ✅ ATUALIZAR INSTITUIÇÃO
 export async function updateInstituicao(id: number, novo_nome: string): Promise<boolean> {
     const conn = await open();
     try {
@@ -103,34 +139,7 @@ export async function updateInstituicao(id: number, novo_nome: string): Promise<
     }
 }
 
-// Verifica se a instituição já não está cadastrada
-export async function verificarCadastroInstituicao(nome: string): Promise<Instituicao | null> {
-    const conn = await open();
-    try {
-        const result = await conn.execute(
-            `SELECT ID_INSTITUICAO as "id", NOME as "nome" FROM INSTITUICAO  
-            WHERE UPPER(NOME) = UPPER(:nome)
-            FETCH FIRST 1 ROWS ONLY`,
-            { nome },
-            { outFormat: OracleDB.OUT_FORMAT_OBJECT }
-        );
-        
-        if (result.rows && result.rows.length > 0) {
-            return result.rows[0] as Instituicao;
-        }
-        
-        return null;
-    } catch (error) {
-        console.error("❌ Erro ao verificar cadastro de instituição:", error);
-        throw error;
-    } finally {
-        if (conn) {
-            await close(conn);
-        }
-    }
-}
-
-// Obter a instituição pelo ID
+// ✅ Obter a instituição pelo ID
 export async function getInstituicaoById(id: number): Promise<Instituicao | null> {
     const conn = await open();
     try {
@@ -154,7 +163,7 @@ export async function getInstituicaoById(id: number): Promise<Instituicao | null
     }
 }
 
-// ✅ CORRIGIDO: BUSCAR COM JOIN PARA TRAZER ID E NOME
+// ✅ Buscar todas as instituições do docente
 export async function getAllInstituicao(id_docente: number): Promise<Instituicao[]> {
     const conn = await open();
     try {

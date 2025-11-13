@@ -550,13 +550,12 @@ if (botaoVerify) {
                     localStorage.removeItem("diciplinasBody");
                     localStorage.removeItem("turmasBody");
                     console.log("🗑️ Cache limpo para novo usuário");
-                    
+
                     localStorage.setItem("usuarioLogado", JSON.stringify({
                         id: data.id,
                         nome: cadastroTemp.nome,
                         email: cadastroTemp.email,
-                        telefone: cadastroTemp.telefone,
-                        senha: cadastroTemp.senha
+                        telefone: cadastroTemp.telefone
                     }));
                     console.log("✅ Docente cadastrado e logado:", cadastroTemp.email);
                     localStorage.removeItem("cadastroTemp");
@@ -601,9 +600,12 @@ document.addEventListener("DOMContentLoaded", () => {
 //        PAGE EMAIL TO MODIFY
 // ======================================
 
+let solicitadoByUser;
+
 if (botaoSolicitarLink) {
     botaoSolicitarLink.addEventListener("click", (e) => {
         if (e) e.preventDefault();
+        solicitadoByUser = false;
         const emailDigitado = inputEmail.value.trim();
         localStorage.setItem("emailParaRecuperacao", emailDigitado);
         if (emailDigitado === "") {
@@ -644,39 +646,50 @@ if (botaoSolicitarLink) {
     });
 }
 
-
 if (botaoModificar) {
     botaoModificar.addEventListener("click", (e) => {
         if (e) e.preventDefault();
         const inputNewPassword = document.getElementById("newPassword");
         const inputConfirmPassword = document.getElementById("confirmPassword");
+        const errorMessage = document.getElementById("errorMessage");
         let algumErro = false;
+        let erroAtivo = false;
 
-        // limpa erros anteriores
         [inputNewPassword, inputConfirmPassword].forEach(limparErroCampo);
         if (validarCamposVazios([inputNewPassword, inputConfirmPassword])) return;
 
         const novaSenha = inputNewPassword.value.trim();
         const confirmarSenha = inputConfirmPassword.value.trim();
         const emailRecuperacao = localStorage.getItem("emailParaRecuperacao");
-        // validações individuais
-        const senhaValida = novaSenha.length >= 8;
-        if (!senhaValida) { marcarErroCampo(inputNewPassword, "Senha deve ter 8+ caracteres"); algumErro = true; }
-        if (novaSenha !== confirmarSenha) {
-            marcarErroCampo(inputConfirmPassword, "Senhas não coincidem"); algumErro = true;
+
+        const senhaCheck = validarSenha(novaSenha);
+        if (!senhaCheck.valida) {
+            marcarErroCampo(inputNewPassword, senhaCheck.mensagem);
+            algumErro = true;
         }
+
+        if (novaSenha !== confirmarSenha) {
+            marcarErroCampo(inputConfirmPassword, "Senha de confirmação diferente!");
+            algumErro = true;
+        }
+
         if (algumErro) {
             errorMessage.style.display = "block";
             erroAtivo = true;
             return;
         }
-        mostrarLoader('mostrar');
-        // 🟢 Enviar nova senha para o servidor
-        console.log("📤 Enviando nova senha para o servidor")
+
+        if (typeof mostrarLoader === "function") mostrarLoader('mostrar');
+        console.log("📤 Enviando nova senha para o servidor");
+
+        const solicitadoByUser = window.location.pathname.includes("redefinir-senha");
+
+        const body = JSON.stringify({ email: emailRecuperacao, novaSenha });
+
         fetch("/modificar-senha", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: emailRecuperacao, novaSenha: novaSenha })
+            body
         })
             .then(res => {
                 console.log("📥 Resposta do servidor:", res.status, res.ok);
@@ -684,30 +697,36 @@ if (botaoModificar) {
             })
             .then(data => {
                 console.log("📥 Dados recebidos:", data);
-                if (data.sucesso) {
+                if (typeof mostrarLoader === "function") mostrarLoader('esconder');
 
-                    mostrarLoader('esconder');
-                    mostrarAlerta("Senha modificada com sucesso! Você será redirecionado para o login.", "sucesso");
-                    console.log("🟢 Senha modificada com sucesso");
-                    localStorage.removeItem("emailParaRecuperacao");
-                    setTimeout(() => {
-                        window.location.href = "/";
-                    }, 6000);
+                if (data.sucesso) {
+                    if (solicitadoByUser) {
+                        const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
+                        if (usuarioLogado && usuarioLogado.email === emailRecuperacao) {
+                            usuarioLogado.senha = novaSenha;
+                            localStorage.setItem("usuarioLogado", JSON.stringify(usuarioLogado));
+                            console.log("🔑 Senha atualizada no localStorage");
+                        }
+                        mostrarAlerta("Senha modificada com sucesso! Esta aba será fechada.", "sucesso");
+                        localStorage.removeItem("emailParaRecuperacao");
+                        setTimeout(() => window.close(), 6000);
+                    } else {
+                        mostrarAlerta("Senha modificada com sucesso! Você será redirecionado para o login.", "sucesso");
+                        localStorage.removeItem("emailParaRecuperacao");
+                        setTimeout(() => window.location.href = "/", 6000);
+                    }
                 } else {
-                    mostrarLoader('esconder');
                     mostrarAlerta("Erro ao modificar a senha. Tente novamente.", "erro");
-                    console.warn("⚠️ Falha ao modificar a senha");
                 }
-            }
-            );
-    })
-        .catch(err => {
-            console.error("❌ ERRO CAPTURADO:", err);
-            console.error("❌ Detalhes do erro:", err.message, err.stack);
-            mostrarLoader('esconder');
-            mostrarAlerta("Ocorreu um erro. Verifique o console para mais detalhes.", "erro");
-        });
+            })
+            .catch(err => {
+                console.error("❌ ERRO CAPTURADO:", err);
+                if (typeof mostrarLoader === "function") mostrarLoader('esconder');
+                mostrarAlerta("Ocorreu um erro. Verifique o console para mais detalhes.", "erro");
+            });
+    });
 }
+
 
 
 // --- Reenviar código de verificação ---

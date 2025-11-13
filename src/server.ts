@@ -120,9 +120,10 @@ app.get('/userSettings', (req, res) => {
 /*=============*/
 /* INSTITUIÇÃO */
 /*=============*/
+// ✅ Verificar se docente já tem instituição com este nome
 app.post('/instituicao/verificar', async (req: Request, res: Response) => {
     try {
-        const { nome, id_docente } = req.body;  // ✅ ADICIONE id_docente
+        const { nome, id_docente } = req.body;
         console.log("🔍 Verificando instituição:", nome, "para docente:", id_docente);
 
         if (!nome || !id_docente) {
@@ -132,8 +133,8 @@ app.post('/instituicao/verificar', async (req: Request, res: Response) => {
             });
         }
 
-        // Verificar se já existe para ESTE docente
-        const instituicao = await verificarCadastroInstituicao(nome);
+        const instituicao = await verificarCadastroInstituicao(nome, id_docente);
+        
         if (instituicao) {
             console.log("❌ Instituição já cadastrada:", instituicao.nome);
             res.json({
@@ -142,7 +143,7 @@ app.post('/instituicao/verificar', async (req: Request, res: Response) => {
                 instituicao: instituicao
             });
         } else {
-            console.log("✅ Instituição ainda não cadastrada!")
+            console.log("✅ Instituição disponível para cadastro!")
             res.json({
                 sucesso: true,
                 message: "Instituição disponível para cadastro"
@@ -157,6 +158,7 @@ app.post('/instituicao/verificar', async (req: Request, res: Response) => {
     }
 });
 
+// ✅ Cadastrar instituição
 app.post("/instituicao/cadastro", async (req, res) => {
     const { nome, id_docente } = req.body;
 
@@ -205,15 +207,6 @@ app.post('/instituicao/atualizar', async (req: Request, res: Response) => {
             });
         }
 
-        // Verificar se o novo nome já existe em outra instituição
-        const instituicaoComMesmoNome = await verificarCadastroInstituicao(novo_nome);
-        if (instituicaoComMesmoNome && instituicaoComMesmoNome.id !== id) {
-            console.log("❌ Já existe uma instituição com este nome:", novo_nome);
-            return res.status(409).json({
-                error: "Já existe uma instituição cadastrada com este nome"
-            });
-        }
-
         await updateInstituicao(id, novo_nome);
         console.log("✅ Instituição atualizada com sucesso!");
         res.status(200).json({
@@ -227,6 +220,7 @@ app.post('/instituicao/atualizar', async (req: Request, res: Response) => {
     }
 });
 
+// ✅ Deletar instituição (não precisa mais do id_docente)
 app.post('/instituicao/deletar', async (req: Request, res: Response) => {
     try {
         const { id } = req.body;
@@ -942,16 +936,54 @@ app.post('/docente', async (req: Request, res: Response) => {
     }
 });
 
-// app.post('/atualizar/docente', async(req: Request, res: Response) => {
-//     try{
-//         const { id, nome, telefone } = req.body;
-//         const result = await modifyDocente(id, nome, telefone);
-//         res.status(201).json({ sucesso: true, message: `Informações de ${nome} foram atualizadas com sucesso!`});
-    
+// SUBSTITUA A ROTA /atualizar/docente EXISTENTE POR ESTA:
 
+app.post('/atualizar/docente', async (req: Request, res: Response) => {
+    try {
+        const { id, nome, telefone } = req.body;
+        
+        if (!id) {
+            console.log("❌ ID do docente é obrigatório");
+            return res.status(400).json({
+                sucesso: false,
+                error: "O campo ID é obrigatório!"
+            });
+        }
 
-//     }
-// });
+        if (!nome && !telefone) {
+            console.log("❌ Nenhum campo para atualizar");
+            return res.status(400).json({
+                sucesso: false,
+                error: "Forneça pelo menos um campo para atualizar (nome ou telefone)!"
+            });
+        }
+        
+        console.log("📤 Recebido para atualização:", { id, nome, telefone });
+        
+        const resultado = await modifyDocente(id, nome, telefone);
+        
+        if (!resultado) {
+            console.log("⚠️ Nenhuma linha foi atualizada");
+            return res.status(404).json({
+                sucesso: false,
+                error: "Docente não encontrado ou nenhuma alteração realizada"
+            });
+        }
+        
+        console.log(`✅ Informações do docente ${id} atualizadas com sucesso!`);
+        res.status(200).json({
+            sucesso: true,
+            message: "Informações atualizadas com sucesso!"
+        });
+        
+    } catch (error) {
+        console.error("❌ Erro ao atualizar docente:", error);
+        res.status(500).json({
+            sucesso: false,
+            error: "Erro ao atualizar informações do docente"
+        });
+    }
+});
 
 app.post('/verificar-docente/cadastro', async (req: Request, res: Response) => {
     try {
