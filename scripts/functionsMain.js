@@ -173,14 +173,6 @@ function salvarInstituicao() {
 function deletarInstituicaoDB(id) {
     console.log(`🗑️ Deletando instituição ID: ${id}`);
 
-    const nomeInstituicao = obterNomeInstituicao(id);
-    const confirmacao = confirm(`Tem certeza que deseja excluir "${nomeInstituicao}"?`);
-
-    if (!confirmacao) {
-        console.log("❌ Deleção cancelada pelo usuário");
-        return;
-    }
-
     mostrarLoader('mostrar');
 
     fetch("/instituicao/deletar", {

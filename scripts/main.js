@@ -810,12 +810,6 @@ document.addEventListener("DOMContentLoaded", () => {
                             alert("Por favor, preencha todos os campos da disciplina (Curso, Nome, Sigla, Código, Período).");
                             return;
                         }
-                    }
-                    else if (STORAGE_KEY === 'instituicoesBody') {
-                        if (!novoNome) {
-                            alert("Por favor, preencha o nome da instituição.");
-                            return;
-                        }
                     } else { // 'cursosBody'
                         if (!novoCurso) {
                             alert("Por favor, preencha o Nome do curso.");
