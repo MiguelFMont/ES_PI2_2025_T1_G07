@@ -24,9 +24,9 @@ function carregarInstituicoesFromDB() {
         })
         .then(dados => {
             console.log("📦 Dados recebidos do servidor:", dados);
-            
+
             let instituicoes;
-            
+
             if (Array.isArray(dados)) {
                 // Se for array direto
                 instituicoes = dados;
@@ -38,11 +38,16 @@ function carregarInstituicoesFromDB() {
             } else {
                 // Nenhum dos dois
                 console.log("⚠️ Nenhuma instituição foi cadastrada para o usuário atual");
+
+                // ✅ CORREÇÃO: Limpa localStorage e atualiza contador para 0
+                localStorage.setItem("instituicoesBody", JSON.stringify([]));
+                atualizarContadorInstituicoes(0);
+
                 mostrarAlerta("Cadastre uma instituição!", "aviso");
                 mostrarLoader('esconder');
                 return;
             }
-            
+
             // Formata os dados para o formato esperado pelo main.js
             let instituicoesFormatadas = instituicoes.map(inst => ({
                 id: inst.id.toString(),
@@ -58,7 +63,7 @@ function carregarInstituicoesFromDB() {
 
             // Atualiza o contador no dashboard
             atualizarContadorInstituicoes(instituicoesFormatadas.length);
-            
+
             forcarRenderizacao();
 
             mostrarLoader('esconder');
@@ -139,7 +144,7 @@ function salvarInstituicao() {
         })
         .then(dados => {
             if (!dados) return; // Se chegou aqui por erro
-            
+
             if (dados.sucesso) {
                 mostrarLoader('esconder');
                 mostrarAlerta("Cadastro realizado com sucesso", "sucesso");
@@ -147,8 +152,8 @@ function salvarInstituicao() {
                 // Limpa o input e fecha o modal
                 inputNome.value = "";
                 modal.classList.remove("show");
-                
-                // Recarrega as instituições do banco
+
+                // Recarrega as instituições do banco (já atualiza o contador)
                 carregarInstituicoesFromDB();
             } else {
                 mostrarLoader('esconder');
@@ -167,15 +172,15 @@ function salvarInstituicao() {
 // Função para deletar instituição do banco
 function deletarInstituicaoDB(id) {
     console.log(`🗑️ Deletando instituição ID: ${id}`);
-    
+
     const nomeInstituicao = obterNomeInstituicao(id);
     const confirmacao = confirm(`Tem certeza que deseja excluir "${nomeInstituicao}"?`);
-    
+
     if (!confirmacao) {
         console.log("❌ Deleção cancelada pelo usuário");
         return;
     }
-    
+
     mostrarLoader('mostrar');
 
     fetch("/instituicao/deletar", {
@@ -191,9 +196,19 @@ function deletarInstituicaoDB(id) {
             console.log("✅ Resposta do servidor:", dados);
 
             if (dados.sucesso || dados.message) {
+                // ✅ REMOVE DO LOCALSTORAGE IMEDIATAMENTE
+                let instituicoes = JSON.parse(localStorage.getItem("instituicoesBody")) || [];
+                instituicoes = instituicoes.filter(inst => inst.id != id);
+                localStorage.setItem("instituicoesBody", JSON.stringify(instituicoes));
+
+                // ✅ ATUALIZA O CONTADOR
+                atualizarContadorInstituicoes(instituicoes.length);
+
+                // ✅ FORÇA RENDERIZAÇÃO IMEDIATA
+                forcarRenderizacao();
+
                 mostrarLoader('esconder');
                 mostrarAlerta("Instituição deletada com sucesso!", "sucesso");
-                carregarInstituicoesFromDB();
             } else {
                 throw new Error(dados.error || "Erro ao deletar");
             }

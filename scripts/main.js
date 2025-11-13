@@ -710,28 +710,6 @@ document.addEventListener("DOMContentLoaded", () => {
                                 deletarInstituicaoDB(id);
                                 return;
 
-                                // LÓGICA DE DELETAR INSTITUIÇÃO: Limpa todos os cursos vinculados a ela
-                                let cursos = JSON.parse(localStorage.getItem("cursosBody")) || [];
-                                const instituicoes = getItens();
-                                const instParaDeletar = instituicoes.find(i => i.id == id);
-
-                                if (instParaDeletar) {
-                                    // Remove a referência à instituição de todos os cursos que estavam vinculados
-                                    const nomeInst = instParaDeletar.nome.toLowerCase();
-                                    cursos.forEach(curso => {
-                                        if (curso.nome && curso.nome.toLowerCase() === nomeInst) {
-                                            curso.nome = ""; // Desvincula o curso
-                                        }
-                                    });
-                                    localStorage.setItem("cursosBody", JSON.stringify(cursos));
-
-                                    // Deleta a instituição
-                                    let novosItens = instituicoes.filter(i => i.id != id);
-                                    saveItens(novosItens);
-                                    loadAndRender();
-                                }
-
-
                             } else {
 
                                 // LÓGICA NOVA: Desvincular curso da instituição

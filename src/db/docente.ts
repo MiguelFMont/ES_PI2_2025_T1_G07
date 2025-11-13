@@ -40,33 +40,65 @@ export async function addDocente(
     }
 }
 
+// SUBSTITUA A FUNÇÃO modifyDocente EXISTENTE POR ESTA:
+
 export async function modifyDocente(
-  id: number,
-  nome: string,
-  telefone: string
-): Promise<string> {
-  const conn = await open();
-  try {
-    const result = await conn.execute(
-      `
-      UPDATE Docente
-      SET Nome = :nome, Telefone = :telefone
-      WHERE ID_Docente = :id
-      `,
-      { id, nome, telefone },
-      { autoCommit: true }
-    );
-
-    if (result.rowsAffected && result.rowsAffected > 0) {
-      return `Docente com ID ${id} atualizado com sucesso.`;
-    } else {
-      return `Nenhum docente encontrado com ID ${id}.`;
+    id: number,
+    nome?: string,
+    telefone?: string
+): Promise<boolean> {
+    const conn = await open();
+    try {
+        // Se ambos os campos foram fornecidos
+        if (nome && telefone) {
+            const result = await conn.execute(
+                `UPDATE DOCENTE
+                SET NOME = :nome, TELEFONE = :telefone
+                WHERE ID_DOCENTE = :id`,
+                { id, nome, telefone },
+                { autoCommit: true }
+            );
+            console.log(`✏️ Docente ${id} atualizado - Nome: "${nome}", Telefone: "${telefone}"`);
+            return result.rowsAffected !== undefined && result.rowsAffected > 0;
+        }
+        
+        // Se apenas o nome foi fornecido
+        if (nome && !telefone) {
+            const result = await conn.execute(
+                `UPDATE DOCENTE
+                SET NOME = :nome
+                WHERE ID_DOCENTE = :id`,
+                { id, nome },
+                { autoCommit: true }
+            );
+            console.log(`✏️ Docente ${id} atualizado - Nome: "${nome}"`);
+            return result.rowsAffected !== undefined && result.rowsAffected > 0;
+        }
+        
+        // Se apenas o telefone foi fornecido
+        if (!nome && telefone) {
+            const result = await conn.execute(
+                `UPDATE DOCENTE
+                SET TELEFONE = :telefone
+                WHERE ID_DOCENTE = :id`,
+                { id, telefone },
+                { autoCommit: true }
+            );
+            console.log(`✏️ Docente ${id} atualizado - Telefone: "${telefone}"`);
+            return result.rowsAffected !== undefined && result.rowsAffected > 0;
+        }
+        
+        // Se nenhum campo foi fornecido
+        console.log("⚠️ Nenhum campo para atualizar");
+        return false;
+        
+    } catch (error) {
+        console.error("❌ Erro ao atualizar docente:", error);
+        throw error;
+    } finally {
+        await close(conn);
     }
-  } finally {
-    await close(conn);
-  }
 }
-
 export async function verificarCadastroDocente(email: string): Promise<{ nome: string, email: string } | null> {
     const conn = await open();
     try{
