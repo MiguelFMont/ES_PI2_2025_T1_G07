@@ -68,6 +68,15 @@ import {
 } from "./db/estudante"
 
 import {
+    addComponenteNota,
+    deleteComponenteNota,
+    updateComponenteNota,
+    verificarComponenteNotaExistente,
+    getComponenteNotaById,
+    getAllComponentesNota
+} from "./db/componente_nota"
+
+import {
     gerarCodigoVericacao,
     enviarCodigoVerificacao,
     enviarLinkAlterarSenha
@@ -918,6 +927,153 @@ app.get('/estudante/all', async (req: Request, res: Response) => {
         console.error("❌ Erro ao buscar todos os estudantes:", error);
         res.status(500).json({ 
             error: "Erro ao buscar os estudantes." 
+        });
+    }
+});
+
+/*==================*/
+/* COMPONENTE_NOTA */
+/*==================*/
+// Verificar se componente de nota já existe
+app.post('/componente-nota/verificar', async (req: Request, res: Response) => {
+    try {
+        const { fk_disciplina_codigo, nome } = req.body;
+        console.log("🔍 Verificando componente de nota:", { fk_disciplina_codigo, nome });
+
+        const componente = await verificarComponenteNotaExistente(fk_disciplina_codigo, nome);
+        if (componente) {
+            console.log("❌ Componente de nota já cadastrado:", componente.nome);
+            res.json({
+                sucesso: false,
+                message: "O Componente de nota já está cadastrado.",
+                componente: componente
+            });
+        } else {
+            console.log("✅ Componente de nota ainda não cadastrado!")
+            res.status(200).json({ 
+                sucesso: true, 
+                message: "Componente de nota disponível para cadastro!" 
+            });
+        }
+    } catch (error) {
+        console.error("❌ Erro ao verificar o componente de nota:", error);
+        res.status(500).json({ 
+            sucesso: false, 
+            message: "Erro no servidor ao verificar componente de nota" 
+        });
+    }
+});
+
+// Cadastrar novo componente de nota
+app.post('/componente-nota/cadastro', async (req: Request, res: Response) => {
+    try {
+        const { fk_disciplina_codigo, nome } = req.body;
+        
+        if (!fk_disciplina_codigo || !nome) {
+            console.log("❌ Campos obrigatórios faltando:", { fk_disciplina_codigo, nome });
+            return res.status(400).json({ 
+                error: "Os campos fk_disciplina_codigo e nome são obrigatórios!" 
+            });
+        }
+
+        const id = await addComponenteNota(fk_disciplina_codigo, nome);
+        console.log("✅ Componente de nota registrado com sucesso! ID:", id);
+        res.status(201).json({ 
+            message: "Componente de nota registrado com sucesso", 
+            id_componente: id 
+        });
+    } catch (error) {
+        console.error("❌ Erro ao registrar o componente de nota:", error);
+        res.status(500).json({ 
+            error: "Erro ao registrar o componente de nota." 
+        });
+    }
+});
+
+// Atualizar componente de nota existente
+app.post('/componente-nota/atualizar', async (req: Request, res: Response) => {
+    try {
+        const { id_componente, fk_disciplina_codigo, nome } = req.body;
+        
+        if (!id_componente || !fk_disciplina_codigo || !nome) {
+            console.log("❌ Campos obrigatórios faltando:", { id_componente, fk_disciplina_codigo, nome });
+            return res.status(400).json({ 
+                error: "Os campos id_componente, fk_disciplina_codigo e nome são obrigatórios!" 
+            });
+        }
+
+        await updateComponenteNota(id_componente, fk_disciplina_codigo, nome);
+        console.log("✅ Componente de nota atualizado com sucesso! ID:", id_componente);
+        res.status(200).json({ 
+            message: "Componente de nota atualizado com sucesso" 
+        });
+    } catch (error) {
+        console.error("❌ Erro ao atualizar o componente de nota:", error);
+        res.status(500).json({ 
+            error: "Erro ao atualizar o componente de nota." 
+        });
+    }
+});
+
+// Deletar componente de nota
+app.post('/componente-nota/deletar', async (req: Request, res: Response) => {
+    try {
+        const { id_componente } = req.body;
+        if (!id_componente) {
+            console.log("❌ O campo id_componente é obrigatório!");
+            return res.status(400).json({ 
+                error: "O campo id_componente é obrigatório!" 
+            });   
+        }
+
+        await deleteComponenteNota(id_componente);
+        console.log("✅ Componente de nota deletado com sucesso! ID:", id_componente);
+        res.status(200).json({ 
+            message: "Componente de nota deletado com sucesso" 
+        });
+    } catch (error) {
+        console.error("❌ Erro ao deletar o componente de nota:", error);
+        res.status(500).json({ 
+            error: "Erro ao deletar o componente de nota." 
+        });
+    }
+});
+
+// Obter componente de nota por ID
+app.get('/componente-nota/id/:id_componente', async (req: Request, res: Response) => {
+    try {
+        const id_componente = Number(req.params.id_componente);
+        const componente = await getComponenteNotaById(id_componente);
+        if (componente) {
+            res.json(componente);
+        } else {
+            res.status(404).json({ 
+                message: "Componente de nota não encontrado com o ID fornecido" 
+            });
+        }
+    } catch (error) {
+        console.error("❌ Erro ao buscar componente de nota por ID:", error);
+        res.status(500).json({ 
+            error: "Erro ao buscar o componente de nota pelo ID fornecido." 
+        });
+    }
+});
+
+// Obter todos os componentes de nota
+app.get('/componente-nota/all', async (req: Request, res: Response) => {
+    try {
+        const componentes = await getAllComponentesNota();
+        if (componentes && componentes.length > 0) {
+            res.json(componentes);
+        } else {
+            res.status(404).json({ 
+                message: "Não há componentes de nota cadastrados." 
+            });
+        }
+    } catch (error) {
+        console.error("❌ Erro ao buscar todos os componentes de nota:", error);
+        res.status(500).json({ 
+            error: "Erro ao buscar os componentes de nota." 
         });
     }
 });
