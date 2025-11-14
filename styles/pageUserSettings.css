@@ -81,17 +81,17 @@ body {
 .title .buttonVoltar .voltar {
     padding: 12px 35px;
     background: var(--color1);
-    color: rgb(212, 209, 209);
+    color: var(--color5);
     border: none;
     border-radius: 50px;
     font-size: 0.8rem;
-    font-weight: 800;
+    font-weight: 1000;
     cursor: pointer;
     display: inline-flex;
     transition: all 0.4s ease;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 7px rgba(0, 0, 0, 0.4);
 }
 
 

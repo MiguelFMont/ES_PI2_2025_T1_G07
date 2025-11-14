@@ -122,28 +122,28 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- LOGOUT ---
     const logoutBtn = document.querySelector("#logoutBtn");
     if (logoutBtn) {
-    logoutBtn.addEventListener("click", () => {
-        // ✅ LIMPAR TODO O CACHE DO USUÁRIO ANTERIOR
-        localStorage.removeItem("usuarioLogado");
-        localStorage.removeItem("instituicoesBody");
-        localStorage.removeItem("cursosBody");
-        localStorage.removeItem("diciplinasBody");
-        localStorage.removeItem("turmasBody");
-        localStorage.removeItem("cadastroTemp");
-        localStorage.removeItem("emailParaRecuperacao");
-        
-        console.log("🗑️ Cache do usuário limpo");
-        window.location.href = "/";
-    });
+        logoutBtn.addEventListener("click", () => {
+            // ✅ LIMPAR TODO O CACHE DO USUÁRIO ANTERIOR
+            localStorage.removeItem("usuarioLogado");
+            localStorage.removeItem("instituicoesBody");
+            localStorage.removeItem("cursosBody");
+            localStorage.removeItem("diciplinasBody");
+            localStorage.removeItem("turmasBody");
+            localStorage.removeItem("cadastroTemp");
+            localStorage.removeItem("emailParaRecuperacao");
 
-    // -- userSettings --
-    const userButton = document.querySelector("#userSettings");
-    if (userButton) {
-        userButton.addEventListener("click", () => {
-            window.location.href = "/userSettings"
+            console.log("🗑️ Cache do usuário limpo");
+            window.location.href = "/";
         });
+
+        // -- userSettings --
+        const userButton = document.querySelector("#userSettings");
+        if (userButton) {
+            userButton.addEventListener("click", () => {
+                window.location.href = "/userSettings"
+            });
+        }
     }
-}
 
     // --- VARIÁVEIS GERAIS ---
     const links = document.querySelectorAll(".content ul li a");
@@ -195,9 +195,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     atualizarContadoresDashboard();
                 }
                 else if (nome === "turmas") {
-                // Chama a função que está no arquivo separado turma.js
+                    // Chama a função que está no arquivo separado turma.js
                     if (typeof iniciarPageTurmas === "function") {
-                        iniciarPageTurmas(); 
+                        iniciarPageTurmas();
                     } else {
                         console.error("Erro: Função iniciarPageTurmas não encontrada.");
                     }
@@ -710,28 +710,13 @@ document.addEventListener("DOMContentLoaded", () => {
                                 deletarInstituicaoDB(id);
                                 return;
 
-                            } else {
-
-                                // LÓGICA NOVA: Desvincular curso da instituição
-                                if (STORAGE_KEY === 'cursosBody' && item.nome) {
-                                    try {
-                                        let instituicoes = JSON.parse(localStorage.getItem("instituicoesBody")) || [];
-                                        const instituicaoAlvo = instituicoes.find(inst => inst.nome.toLowerCase() === item.nome.toLowerCase());
-                                        if (instituicaoAlvo && Array.isArray(instituicaoAlvo.cursos)) {
-                                            instituicaoAlvo.cursos = instituicaoAlvo.cursos.filter(c => c.toLowerCase() !== item.curso.toLowerCase());
-                                            localStorage.setItem("instituicoesBody", JSON.stringify(instituicoes));
-                                        }
-                                    } catch (error) {
-                                        console.error("Erro ao desvincular curso da instituição:", error);
-                                    }
-                                }
-                                // FIM DA LÓGICA NOVA
-
-                                // Lógica original: Deleta o item (curso, disciplina, etc.)
-                                let novosItens = itens.filter(i => i.id != id);
-                                saveItens(novosItens);
-                                loadAndRender();
                             }
+                            if (STORAGE_KEY === 'cursosBody') {
+                                deletarCursoDB(id);
+                                return;
+
+                            }
+
                         }
                     }
 
@@ -769,6 +754,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     //NÃO TIRAR, essa função serve para salvar a instituição no banco
                     if (STORAGE_KEY === 'instituicoesBody') {
                         salvarInstituicao(); // Chama a função do backend
+                        return;
+                    }
+
+                    if (STORAGE_KEY === 'cursosBody') {
+                        salvarCurso(); // Chama a função do backend
                         return;
                     }
 

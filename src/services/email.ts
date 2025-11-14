@@ -2,9 +2,8 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const BASE_URL = process.env.NODE_ENV === "production"
-? "https://notadez.cfd"      
-: "http://localhost:3000"; // URL de desenvolvimento
+const BASE_URL = "https://notadez.cfd"; // se testar algo mude o BASE_URL para localhost
+
 
 export function gerarCodigoVericacao(): string {
   const codigo: string = Math.floor(100000 + Math.random() * 900000).toString();

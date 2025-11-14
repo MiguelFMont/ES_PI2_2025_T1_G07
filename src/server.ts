@@ -35,9 +35,9 @@ import {
     addCurso,
     deleteCurso,
     updateCurso,
-    verificarCursoExistente,
+    verificarCadastroCurso,
     getCursoById,
-    getAllCursos
+    getAllCurso
 } from "./db/curso"
 
 import {
@@ -321,10 +321,10 @@ app.get('/instituicao/all/:id_docente', async (req: Request, res: Response) => {
 // Verificar se curso já existe
 app.post('/curso/verificar', async (req: Request, res: Response) => {
     try {
-        const { fk_id_docente, fk_id_instituicao, nome } = req.body;
-        console.log("🔍 Verificando curso:", { fk_id_docente, fk_id_instituicao, nome });
+        const { fk_id_instituicao, nome } = req.body;
+        console.log("🔍 Verificando curso:", { fk_id_instituicao, nome });
 
-        const curso = await verificarCursoExistente(fk_id_docente, fk_id_instituicao, nome);
+        const curso = await verificarCadastroCurso( nome, fk_id_instituicao );
         if (curso) {
             console.log("❌ Curso já cadastrado:", curso.nome);
             res.json({
@@ -351,25 +351,27 @@ app.post('/curso/verificar', async (req: Request, res: Response) => {
 // Cadastrar novo curso
 app.post('/curso/cadastro', async (req: Request, res: Response) => {
     try {
-        const { fk_id_docente, fk_id_instituicao, nome } = req.body;
+        const { fk_id_instituicao, nome } = req.body;
 
-        if (!fk_id_docente || !fk_id_instituicao || !nome) {
-            console.log("❌ Campos obrigatórios faltando:", { fk_id_docente, fk_id_instituicao, nome });
+        if ( !fk_id_instituicao || !nome) {
+            console.log("❌ Campos obrigatórios faltando:", { fk_id_instituicao, nome });
             return res.status(400).json({
                 error: "Todos os campos são obrigatórios: docente, instituição e nome!"
             });
         }
 
-        const id = await addCurso(fk_id_docente, fk_id_instituicao, nome);
+        const id = await addCurso( fk_id_instituicao, nome );
         console.log("✅ Curso registrado com sucesso! ID:", id);
         res.status(201).json({
+            sucesso: true,
             message: "Curso registrado com sucesso",
             id: id
         });
     } catch (error) {
         console.error("❌ Erro ao registrar o curso:", error);
         res.status(500).json({
-            error: "Erro ao registrar o curso."
+            error: "Erro ao registrar o curso.",
+            sucesso: false
         });
     }
 });
@@ -413,11 +415,13 @@ app.post('/curso/deletar', async (req: Request, res: Response) => {
         await deleteCurso(id);
         console.log("✅ Curso deletado com sucesso! ID:", id);
         res.status(200).json({
+            sucesso: true,
             message: "Curso deletado com sucesso"
         });
     } catch (error) {
         console.error("❌ Erro ao deletar o curso:", error);
         res.status(500).json({
+            sucesso: false,
             error: "Erro ao deletar o curso."
         });
     }
@@ -444,23 +448,43 @@ app.get('/curso/id/:id', async (req: Request, res: Response) => {
 });
 
 // Obter todos os cursos
-app.get('/curso/all', async (req: Request, res: Response) => {
+app.get('/curso/all/:id_instituicao', async (req: Request, res: Response) => {
     try {
-        const cursos = await getAllCursos();
+        const id_instituicao = Number(req.params.id_instituicao);
+        console.log("🔍 Buscando cursos da instituição ID:", id_instituicao);
+
+        if (!id_instituicao || isNaN(id_instituicao)) {
+            console.log("❌ ID da instituição inválido:", req.params.id_instituicao);
+            return res.status(400).json({
+                sucesso: false,
+                error: "ID da instituição é obrigatório e deve ser um número válido"
+            });
+        }
+
+        const cursos = await getAllCurso(id_instituicao);
+
         if (cursos && cursos.length > 0) {
-            res.json(cursos);
+            console.log(`✅ ${cursos.length} curso(s) encontrado(s) para a instituição ID: ${id_instituicao}`);
+            res.json({
+                sucesso: true,
+                cursos: cursos
+            });
         } else {
+            console.log("⚠️ Nenhum curso encontrado para a instituição ID:", id_instituicao);
             res.status(404).json({
-                message: "Não há cursos cadastrados."
+                sucesso: false,
+                message: "Não há cursos cadastrados para esta instituição."
             });
         }
     } catch (error) {
-        console.error("❌ Erro ao buscar todos os cursos:", error);
+        console.error("❌ Erro ao buscar cursos da instituição:", error);
         res.status(500).json({
+            sucesso: false,
             error: "Erro ao buscar os cursos."
         });
     }
 });
+
 
 /*=============*/
 /*  DISCIPLINA */
