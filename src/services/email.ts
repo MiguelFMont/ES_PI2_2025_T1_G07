@@ -29,14 +29,13 @@ export async function enviarCodigoVerificacao(email: string, nome: string, codig
 
 export async function enviarLinkAlterarSenha(email: string): Promise<void> {
   try {
-    const link = `${BASE_URL}/redefinir-senha`
     const data = await resend.emails.send({
       from: "NotaDez <alterarsenha@notadez.cfd>",
       to: email,
       subject: "Link para alteração de senha - NotaDez",
       html: `
   <p>Olá!</p>
-  <p>Clique <a href="${link}">aqui</a> para alterar sua senha!</p>
+  <p>Clique <a href="https://notadez.cfd/redefinir-senha">aqui</a> para alterar sua senha!</p>
 `
     });
   } catch (error: any) {
