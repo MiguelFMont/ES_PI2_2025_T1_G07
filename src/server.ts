@@ -529,20 +529,28 @@ app.post('/disciplina/verificar', async (req: Request, res: Response) => {
 // Cadastrar nova disciplina
 app.post('/disciplina/cadastro', async (req: Request, res: Response) => {
     try {
-        const { id_curso, nome, periodo, sigla } = req.body;
+        const { codigo, id_curso, nome, periodo, sigla } = req.body; // ADICIONADO codigo
 
-        if (!id_curso || !nome) {
+        if (!codigo || !id_curso || !nome) { // VALIDAÇÃO DO CÓDIGO
             console.log("❌ Campos obrigatórios faltando!");
             return res.status(400).json({
-                error: "Campos id_curso e nome são obrigatórios!"
+                error: "Campos codigo, id_curso e nome são obrigatórios!"
             });
         }
 
-        const codigo = await addDisciplina(id_curso, nome, periodo, sigla);
+        // Verificar se o código já existe
+        const disciplinaExistente = await getDisciplinaByCodigo(codigo);
+        if (disciplinaExistente) {
+            return res.status(400).json({
+                error: "Já existe uma disciplina com este código!"
+            });
+        }
+
+        const codigoInserido = await addDisciplina(codigo, id_curso, nome, periodo, sigla);
         console.log("✅ Disciplina registrada com sucesso!")
         res.status(201).json({
             message: "Disciplina registrada com sucesso",
-            codigo
+            codigo: codigoInserido
         });
     } catch (error) {
         console.error("❌ Erro ao registrar a disciplina:", error);
