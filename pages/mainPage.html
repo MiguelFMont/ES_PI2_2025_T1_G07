@@ -303,9 +303,9 @@
                         </div>
                         <div class="campIdt">
                             <p>Instituição</p>
-                            <input list="listInstituicao" type="text" placeholder="Selecione a instituição"
-                                id="instituicao">
-                            <datalist id="listInstituicao"></datalist>
+                            <select id="instituicao" required>
+                                <option value="" disabled selected>Selecione a instituição</option>
+                            </select>
                             <label for="text"></label>
                         </div>
                         <div class="campIdt">
@@ -339,7 +339,7 @@
                         </div>
                         <div class="buttonsCheck">
                             <button id="cancelBtnIdt">Cancelar</button>
-                            <button id="createBtnIdt">Criar</button>
+                            <button class="createBtnIdt" id="createBtnCurso">Criar</button>
                         </div>
                     </div>
                 </div>
@@ -457,7 +457,7 @@
                         </div>
                         <div class="buttonsCheck">
                             <button id="cancelBtnIdt">Cancelar</button>
-                            <button id="createBtnIdt">Criar</button>
+                            <button class="createBtnIdt" id="createBtnDisciplina">Criar</button>
                         </div>
                     </div>
                 </div>
@@ -547,7 +547,7 @@
                         </div>
                         <div class="buttonsCheck">
                             <button id="cancelBtnIdt">Cancelar</button>
-                            <button id="createBtnIdt">Criar</button>
+                            <button class="createBtnIdt" id="createBtnTurma">Criar</button>
                         </div>
                     </div>
                 </div>
