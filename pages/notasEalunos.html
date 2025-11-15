@@ -67,8 +67,66 @@
                     </div>
                 </div>
             </div>
-            <div class="itemTwo" id="Notas">
-                Notas
+            <div class="itemTwo">
+                <div class="componentsNotas">
+                    <div class="components">
+                        <h2>Componentes</h2>
+                        <p id="countComponents">0</p>
+                    </div>
+                    <div class="notas">
+                        <h2>Notas Lançadas</h2>
+                        <p id="countNotas">0</p>
+                    </div>
+                </div>
+                <div class="provasCamp">
+                    <div class="headerComponents">
+                        <h2>Componentes de Nota</h2>
+                        <button class="btnAddComp">
+                            <i class="ph ph-plus"></i>
+                            Adicionar
+                        </button>
+                    </div>
+                    <div class="viewDatailsComp">
+                        <div class="detailP">
+                            <p id="detailNameP">Prova 1</p>
+                            <p id="detailSiglaP">(P1)</p>
+                        </div>
+                        <div class="detailP">
+                            <p id="detailNameP">Prova 2</p>
+                            <p id="detailSiglaP">(P2)</p>
+                        </div>
+                    </div>
+
+                    <div class="addComponents">
+                        <div class="campsPR">
+                            <div class="campPR">
+                                <input type="text" id="provaName" placeholder=" ">
+                                <label for="provaName">Nome (Prova)</label>
+                            </div>
+                            <div class="campPR">
+                                <input type="text" id="siglaPR" placeholder=" ">
+                                <label for="siglaPR">Sigla</label>
+                            </div>
+                        </div>
+                        <div class="campPR">
+                            <textarea name="descricao" id="descricaoPR" placeholder=" "></textarea>
+                            <label for="descricaoPR">Descrição</label>
+                        </div>
+                        <div class="buttonsComp">
+                            <button id="cancelComp">Cancelar</button>
+                            <button id="saveComp">Adicionar</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="notasBody">
+                    <div class="headerNotas">
+                        <h2>Lançamento de Notas</h2>
+                        <div class="btnNotasEdit">
+                            <button id="oneEditComp">Editar por Componente</button>
+                            <button id="allEditComp">Edição Completa</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="itemThree" id="seachBar">
@@ -81,27 +139,6 @@
                         <div class="raAluno">25001</div>
                         <div class="nameAluno">Cezar Augusto Fernandez Rull</div>
                         <div class="iconAluno">NS</div>
-                    </a>
-                </li>
-                <li>
-                    <a href="#">
-                        <div class="raAluno">25002</div>
-                        <div class="nameAluno">Nomedois Sobrenomedois</div>
-                        <div class="iconAluno">ND</div>
-                    </a>
-                </li>
-                <li>
-                    <a href="#">
-                        <div class="raAluno">25003</div>
-                        <div class="nameAluno">Nometres Sobrenometres</div>
-                        <div class="iconAluno">NT</div>
-                    </a>
-                </li>
-                <li>
-                    <a href="#">
-                        <div class="raAluno">25004</div>
-                        <div class="nameAluno">Nomequatro Sobrenomequatro</div>
-                        <div class="iconAluno">NQ</div>
                     </a>
                 </li>
             </ul>

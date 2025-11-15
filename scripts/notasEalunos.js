@@ -58,4 +58,66 @@ document.addEventListener('DOMContentLoaded', () => {
     cancelCABody.addEventListener('click', () => {
         document.querySelector('.cadastrarAlunoBody').style.display = 'none'
     });
+
+    const addComp = document.querySelector('.btnAddComp');
+    const cancelComp = document.getElementById('cancelComp');
+    var countClickAdd = 0;
+
+    addComp.addEventListener('click', () => {
+        document.querySelector('.addComponents').style.display = 'flex'
+        countClickAdd++;
+
+        if(countClickAdd == 2) {
+            document.querySelector('.addComponents').style.display = 'none'
+            countClickAdd = 0;
+        }
+    });
+
+    cancelComp.addEventListener('click', () => {
+        document.querySelector('.addComponents').style.display = 'none'
+        countClickAdd = 0;
+    });
+
+    const oneEditComp = document.getElementById('oneEditComp');
+    const allEditComp = document.getElementById('allEditComp');
+    var countClickEditOne = 0;
+    var countClickEditAll = 0;
+
+    oneEditComp.addEventListener('click', () => {
+        oneEditComp.style.background = 'var(--black)'
+        oneEditComp.style.color = 'var(--white)'
+        oneEditComp.style.border = 'none'
+
+        allEditComp.style.background = 'var(--white)'
+        allEditComp.style.color = 'var(--black)'
+        allEditComp.style.border = '1px solid var(--lightgrey)'
+
+        countClickEditOne++;
+        countClickEditAll = 0;
+        if (countClickEditOne == 2) {
+            oneEditComp.style.background = 'var(--white)'
+            oneEditComp.style.color = 'var(--black)'
+            oneEditComp.style.border = '1px solid var(--lightgrey)'
+            countClickEditOne = 0
+        }
+    });
+
+    allEditComp.addEventListener('click', () => {
+        allEditComp.style.background = 'var(--black)'
+        allEditComp.style.color = 'var(--white)'
+        allEditComp.style.border = 'none'
+
+        oneEditComp.style.background = 'var(--white)'
+        oneEditComp.style.color = 'var(--black)'
+        oneEditComp.style.border = '1px solid var(--lightgrey)'
+
+        countClickEditAll++;
+        countClickEditOne = 0;
+        if (countClickEditAll == 2) {
+            allEditComp.style.background = 'var(--white)'
+            allEditComp.style.color = 'var(--black)'
+            allEditComp.style.border = '1px solid var(--lightgrey)'
+            countClickEditAll = 0
+        }
+    });
 });
