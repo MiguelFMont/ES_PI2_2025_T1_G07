@@ -753,6 +753,134 @@ function atualizarContadorTurmas(quantidade) {
     }
 }
 
+//////////// Disciplinas ///////////
+
+// ============================================
+// DISCIPLINAS - INTEGRAÇÃO COM BANCO
+// ============================================
+
+function salvarDisciplina() {
+    const modal = document.querySelector("#cursosBody .createIdt");
+    if (!modal) {
+        console.error("Modal não encontrado!");
+        return;
+    }
+
+    const inputCodigoDisciplina = modal.querySelector("#inputCodigoDisciplina");
+    const inputNomeCurso = modal.querySelector("#cursoSelect");
+    const inputNomeDisciplina = modal.querySelector("#inputNomeDisciplina");
+    const inputPeriodo = modal.querySelector("periodoSelect");
+    const inputSiglaDisciplina = modal.querySelector("#inputSiglaDisciplina");
+
+    if (!inputCodigoDisciplina || !inputNomeCursoDisciplina || inputNomeDisciplina || inputPeriodo || inputSiglaDisciplina) {
+        console.error("Inputs não encontrados!");
+        return;
+    }
+
+    const codigoDisciplina = inputCodigoDisciplina.value.trim();
+    const nomeCurso = cursoSelect.value.trim()
+    const nomeDisciplina = inputNomeDisciplina.value.trim()
+    const periodo = periodoSelect.value.trim();
+    const sigla = inputSiglaDisciplina.value.trim();
+
+    if (nomeDisciplina === "") {
+        mostrarAlerta("Preencha o campo \"Nome da Disciplina\"", "aviso");
+        return;
+    }
+
+    const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
+    if (!usuarioLogado || !usuarioLogado.id) {
+        mostrarAlerta("Erro: Usuário não autenticado. Faça login novamente.", "erro");
+        return;
+    }
+
+    // Busca o ID da instituição se foi selecionada
+    let fk_id_curso = null;
+    if (nomeCurso) {
+        const curso = JSON.parse(localStorage.getItem("disciplinaBody")) || [];
+        const cursoEncontrada = curso.find(
+            inst => inst.nome.toLowerCase() === NomeCurso.toLowerCase()
+        );
+
+        if (cursoEncontrada) {
+            fk_id_curso = parseInt(cursoEncontrada.id);
+            console.log(fk_id_curso)
+        } else {
+            mostrarAlerta("Curso não encontrado. Selecione um curso válido.", "aviso");
+            return;
+        }
+    }
+
+    mostrarLoader("mostrar");
+
+    // Dados para enviar ao backend
+    // Verifica se já existe
+    fetch("/disciplina/verificar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            nome: nomeDisciplina,
+            id_curso: fk_id_curso
+        })
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.sucesso) {
+                // Pode cadastrar
+                return fetch("/disciplina/cadastro", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        id_curso: fk_id_curso,
+                        nome: nomeDisciplina,
+                        periodo: periodo,
+                        sigla: sigla
+                    })
+                });
+            } else {
+                mostrarLoader('esconder');
+                mostrarAlerta("Este disciplina já está cadastrado neste curso!", "aviso");
+                throw new Error("Disciplina duplicada");
+            }
+        })
+        .then(res => {
+            return res.json();
+        })
+        .then(dados => {
+
+            if (dados.sucesso) {
+                mostrarLoader('esconder');
+                mostrarAlerta("Disciplina cadastrada com sucesso!", "sucesso");
+
+                // Limpa os inputs e fecha o modal
+                inputCodigoDisciplina.value = "";
+                inputNomeCurso.value = "";
+                inputNomeDisciplina.value = "";
+                inputPeriodo.value = "";
+                inputSiglaDisciplina.value = "";
+                modal.classList.remove("show");
+
+                // Recarrega os cursos
+                // Implementar para disciplina
+                carregarCursosFromDB();
+
+                // Se vinculado a uma instituição, atualiza a lista de cursos da instituição
+                if (fk_id_curso) {
+                    carregarCursosFromDB();
+                }
+            } else {
+                mostrarLoader('esconder');
+                mostrarAlerta("Erro ao cadastrar a disciplina!", "erro");
+            }
+        })
+        .catch(err => {
+            if (err.message !== "Disciplina duplicada") {
+                mostrarLoader('esconder');
+                mostrarAlerta("Ocorreu um erro. Verifique o console.", "erro");
+                console.error("Erro:", err);
+            }
+        });
+}
 // ============================================
 // INICIALIZAÇÃO DA APLICAÇÃO
 // ============================================

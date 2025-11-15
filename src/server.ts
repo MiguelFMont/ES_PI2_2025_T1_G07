@@ -77,10 +77,18 @@ import {
 } from "./db/componente_nota"
 
 import {
+    addNota,
+    verificarNotaExistente,
+    getNotaById,
+    getAllNotas
+} from "./db/nota";
+
+import {
     gerarCodigoVericacao,
     enviarCodigoVerificacao,
     enviarLinkAlterarSenha
 } from "./services/email";
+
 import { isNumberObject } from "util/types";
 
 
@@ -529,20 +537,28 @@ app.post('/disciplina/verificar', async (req: Request, res: Response) => {
 // Cadastrar nova disciplina
 app.post('/disciplina/cadastro', async (req: Request, res: Response) => {
     try {
-        const { id_curso, nome, periodo, sigla } = req.body;
+        const { codigo, id_curso, nome, periodo, sigla } = req.body; // ADICIONADO codigo
 
-        if (!id_curso || !nome) {
+        if (!codigo || !id_curso || !nome) { // VALIDAÇÃO DO CÓDIGO
             console.log("❌ Campos obrigatórios faltando!");
             return res.status(400).json({
-                error: "Campos id_curso e nome são obrigatórios!"
+                error: "Campos codigo, id_curso e nome são obrigatórios!"
             });
         }
 
-        const codigo = await addDisciplina(id_curso, nome, periodo, sigla);
+        // Verificar se o código já existe
+        const disciplinaExistente = await getDisciplinaByCodigo(codigo);
+        if (disciplinaExistente) {
+            return res.status(400).json({
+                error: "Já existe uma disciplina com este código!"
+            });
+        }
+
+        const codigoInserido = await addDisciplina(codigo, id_curso, nome, periodo, sigla);
         console.log("✅ Disciplina registrada com sucesso!")
         res.status(201).json({
             message: "Disciplina registrada com sucesso",
-            codigo
+            codigo: codigoInserido
         });
     } catch (error) {
         console.error("❌ Erro ao registrar a disciplina:", error);
@@ -1098,6 +1114,81 @@ app.get('/componente-nota/all', async (req: Request, res: Response) => {
         console.error("❌ Erro ao buscar todos os componentes de nota:", error);
         res.status(500).json({ 
             error: "Erro ao buscar os componentes de nota." 
+        });
+    }
+});
+
+/*==================*/
+/* NOTA */
+/*==================*/
+
+app.post('/nota/cadastro', async (req: Request, res: Response) => {
+    try {
+        const { id_nota, fk_id_componente, fk_id_estudante, fk_id_turma, valor_nota } = req.body;
+        
+        if (!fk_id_componente || !fk_id_estudante || !fk_id_turma || !valor_nota) {
+            console.log("❌ Campos obrigatórios faltando:", { fk_id_componente, fk_id_estudante, fk_id_turma, valor_nota });
+            return res.status(400).json({ 
+                error: "Os campos fk_disciplina_codigo e nome são obrigatórios!" 
+            });
+        }
+
+        const id = await addNota(id_nota, fk_id_componente, fk_id_estudante, fk_id_turma, valor_nota);
+        console.log("✅ Nota registrada com sucesso! ID:", id);
+        res.status(201).json({ 
+            message: "Nota registrada com sucesso", 
+            id_nota: id
+        });
+    } catch (error) {
+        console.error("❌ Erro ao registrar nota:", error);
+        res.status(500).json({ 
+            error: "Erro ao registrar nota."
+        });
+    }
+});
+
+// Obter nota pelo ID
+app.get('/nota/id/:id_nota', async (req: Request, res: Response) => {
+    try {
+        const id_nota = Number(req.params.id_nota);
+        if (!id_nota /*|| isNaN(id_nota)*/) {
+            console.log("❌ ID da nota inválido:", req.params.id_nota);
+            return res.status(400).json({
+                error: "O campo id_nota é obrigatório e deve ser um número válido"
+            });
+        }
+
+        const nota = await getNotaById(id_nota);
+        if (nota) {
+            res.json(nota);
+        } else {
+            res.status(404).json({
+                message: "Nota não encontrada com o ID fornecido"
+            });
+        }
+    } catch (error) {
+        console.error("❌ Erro ao buscar nota por ID:", error);
+        res.status(500).json({
+            error: "Erro ao buscar a nota pelo ID fornecido."
+        });
+    }
+});
+
+// Obter todas as notas
+app.get('/nota/all', async (req: Request, res: Response) => {
+    try {
+        const notas = await getAllNotas();
+        if (notas && notas.length > 0) {
+            res.json(notas);
+        } else {
+            res.status(404).json({
+                message: "Não há notas cadastradas."
+            });
+        }
+    } catch (error) {
+        console.error("❌ Erro ao buscar todas as notas:", error);
+        res.status(500).json({
+            error: "Erro ao buscar as notas."
         });
     }
 });

@@ -10,7 +10,8 @@ export interface Disciplina {
 };
 
 // Adicionar uma disciplina a tabela DISCIPLINA no Oracle
-export async function addDisciplina (
+export async function addDisciplina(
+    codigo: number, // NOVO PARÂMETRO
     id_curso: number,
     nome: string,
     periodo: string,
@@ -18,23 +19,16 @@ export async function addDisciplina (
 ): Promise<number> {
     const conn = await open();
     try {
-        const result = await conn.execute<{outBinds : {codigo: number}}>(
+        const result = await conn.execute(
             `
-            INSERT INTO DISCIPLINA (FK_ID_CURSO, NOME, PERIODO, SIGLA)
-            VALUES (:id_curso, :nome, :periodo, :sigla)
-            RETURNING CODIGO INTO :codigo
+            INSERT INTO DISCIPLINA (CODIGO, FK_ID_CURSO, NOME, PERIODO, SIGLA)
+            VALUES (:codigo, :id_curso, :nome, :periodo, :sigla)
             `,
-            {id_curso, nome, periodo, sigla, codigo: {dir: OracleDB.BIND_OUT, type: OracleDB.NUMBER}},
-            {autoCommit: true}
+            { codigo, id_curso, nome, periodo, sigla }, // INCLUÍDO codigo
+            { autoCommit: true }
         );
 
-        const outBinds = result.outBinds as {codigo?: number[]} | undefined;
-
-        if(!outBinds || !outBinds.codigo || outBinds.codigo.length === 0){
-            throw new Error("Erro ao obter um Codigo retornado na inserção da Disciplina.");
-        }
-
-        return outBinds.codigo[0];
+        return codigo; // RETORNA O CÓDIGO INSERIDO
         
     } finally {
         await close(conn);
@@ -125,16 +119,28 @@ export async function getAllDisciplina(): Promise<Disciplina[]> {
 }
 
 // Obter a disciplina pelo ID.
-export async function getDisciplinaByCodigo(codigo: number): Promise<Disciplina[] | null> {
+// Obter a disciplina pelo CODIGO - CORRIGIDO
+export async function getDisciplinaByCodigo(codigo: number): Promise<Disciplina | null> {
     const conn = await open();
     try {
         const result = await conn.execute(
-            `SELECT CODIGO, FK_ID_CURSO, NOME, PERIODO, SIGLA FROM DISCIPLINA
+            `SELECT CODIGO as "codigo", FK_ID_CURSO as "id_curso", NOME as "nome", PERIODO as "periodo", SIGLA as "sigla" 
+             FROM DISCIPLINA 
              WHERE CODIGO = :codigo`,
-            [codigo]
+            { codigo }
         );
         
-        return result.rows as Disciplina[];
+        if (result.rows && result.rows.length > 0) {
+            const row = result.rows[0] as any;
+            return {
+                codigo: row.codigo,
+                id_curso: row.id_curso,
+                nome: row.nome,
+                periodo: row.periodo,
+                sigla: row.sigla
+            };
+        }
+        return null;
     } finally {
         await close(conn);
     }
