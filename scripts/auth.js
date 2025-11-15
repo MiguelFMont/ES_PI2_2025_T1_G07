@@ -265,7 +265,7 @@ if (botaoLogin) {
                         nome: data.nome,
                         email: data.email,
                         telefone: data.telefone,
-                        senha: senhaDigitada
+                        senha: senhaDigitada.slice(0, 4)
                     }));
 
                     const salvou = localStorage.getItem("usuarioLogado");

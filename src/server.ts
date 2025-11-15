@@ -169,23 +169,23 @@ app.post('/instituicao/verificar', async (req: Request, res: Response) => {
 
 // ✅ Cadastrar instituição
 app.post("/instituicao/cadastro", async (req, res) => {
-    const { nome, id_docente } = req.body;
-
-    if (!nome || !id_docente) {
-        return res.status(400).json({
-            sucesso: false,
-            error: "Nome e ID do docente são obrigatórios"
-        });
-    }
-
     try {
-        const id = await addInstituicao(nome, id_docente);
+        const { nomeInstituicao, nomeCurso, id_docente } = req.body;
+        
+        if (!nomeInstituicao || !id_docente) {
+            return res.status(400).json({
+                sucesso: false,
+                error: "Nome e ID do docente são obrigatórios"
+            });
+        }
+        const id = await addInstituicao(nomeCurso, nomeInstituicao, id_docente);
 
         res.json({
             sucesso: true,
-            message: "Instituição cadastrada com sucesso",
+            message: "Instituição e curso cadastrados com sucesso!",
             id: id.id,
-            nome: id.nome,
+            nome_instituicao: id.nome,
+            nome_curso: id.nomeCurso
         });
     } catch (error) {
         console.error("Erro ao cadastrar instituição:", error);

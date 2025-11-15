@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (senhaLabel && usuario.senha) {
-        senhaLabel.textContent = usuario.senha.slice(0, 4) + '****';
+        senhaLabel.textContent = usuario.senha + '****';
     }
 
     // --- FORMATAÇÃO EM TEMPO REAL ---
@@ -124,23 +124,6 @@ document.addEventListener("DOMContentLoaded", () => {
     function limparErros() {
         if (nomeContainer) nomeContainer.classList.remove('error');
         if (telefoneContainer) telefoneContainer.classList.remove('error');
-    }
-
-    // --- VALIDAR CAMPOS VAZIOS ---
-    function validarCamposVazios(campos) {
-        let algumVazio = false;
-
-        campos.forEach(input => {
-            if (!input || !input.value.trim()) {
-                const container = input ? input.closest('.name, .tel') : null;
-                if (container) {
-                    marcarErroCampo(container, "Campo obrigatório");
-                    algumVazio = true;
-                }
-            }
-        });
-
-        return algumVazio;
     }
 
     // --- EVENTO DO BOTÃO ATUALIZAR ---
@@ -412,7 +395,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Atualiza os dados do usuário (senha mascarada)
             const usuarioAtualizado = JSON.parse(localStorage.getItem("usuarioLogado"));
             if (usuarioAtualizado && senhaLabel) {
-                senhaLabel.textContent = usuarioAtualizado.senha ? usuarioAtualizado.senha.slice(0, 4) + '****' : '****';
+                senhaLabel.textContent = usuarioAtualizado.senha ? usuarioAtualizado.senha + '****' : '****';
             }
 
             console.log("✅ Dados de senha atualizados na interface");

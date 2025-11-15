@@ -2,7 +2,7 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const BASE_URL = "https://notadez.cfd"; // se testar algo mude o BASE_URL para localhost
+// const BASE_URL = "https://notadez.cfd"; // se testar algo mude o BASE_URL para localhost
 
 
 export function gerarCodigoVericacao(): string {

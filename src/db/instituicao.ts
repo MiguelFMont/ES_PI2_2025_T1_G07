@@ -35,21 +35,27 @@ export async function verificarCadastroInstituicao(nome: string, id_docente: num
 }
 
 // ✅ ADICIONAR INSTITUIÇÃO (sempre cria e vincula)
-export async function addInstituicao(nome: string, id_docente: number): Promise<{id: number; nome: string}> {
+export async function addInstituicao(nome_curso: string, nome_instituicao: string, id_docente: number): Promise<{id: number; nome: string, nomeCurso: string}> {
     const conn = await open();
     try {
-        // 1️⃣ INSERE NA TABELA INSTITUICAO
+        //  INSERE NA TABELA INSTITUICAO
         const result = await conn.execute<{outBinds : {id: number}}>(
             `INSERT INTO INSTITUICAO (NOME)
             VALUES (:nome)
             RETURNING ID_INSTITUICAO INTO :id`,
             {
-                nome, 
+                nome: nome_instituicao, 
                 id: {dir: OracleDB.BIND_OUT, type: OracleDB.NUMBER}
             },
             {autoCommit: false}
         );
-
+        await conn.execute(
+            `INSERT INTO CURSO (Nome)
+            VALUES (:nome)`,
+            { nome: nome_curso },
+            { autoCommit: false }
+        );
+        
         const outBinds = result.outBinds as {id?: number[]} | undefined;
 
         if (!outBinds || !outBinds.id || outBinds.id.length === 0) {
@@ -58,7 +64,6 @@ export async function addInstituicao(nome: string, id_docente: number): Promise<
 
         const id_instituicao = outBinds.id[0];
 
-        // 2️⃣ INSERE NA TABELA DOCENTE_INSTITUICAO (vincula docente à instituição)
         await conn.execute(
             `INSERT INTO DOCENTE_INSTITUICAO (FK_ID_DOCENTE, FK_ID_INSTITUICAO)
             VALUES (:id_docente, :id_instituicao)`,
@@ -66,14 +71,23 @@ export async function addInstituicao(nome: string, id_docente: number): Promise<
             { autoCommit: false }
         );
 
-        // 3️⃣ COMMIT
+        await conn.execute(
+            `INSERT INTO INSTITUICAO_CURSO (FK_ID_INSTITUICAO, FK_ID_CURSO)
+            VALUES (:id_instituicao, (SELECT ID_CURSO FROM CURSO WHERE NOME = :nome_curso))`,
+            { id_instituicao, nome_curso },
+            { autoCommit: false }
+        );
+
+
+        //  COMMIT
         await conn.commit();
 
         console.log(`✅ Instituição ${id_instituicao} criada e vinculada ao docente ${id_docente}`);
         
         return {
             id: id_instituicao,
-            nome: nome
+            nome: nome_instituicao,
+            nomeCurso: nome_curso
         };
     } catch (error) {
         await conn.rollback();
