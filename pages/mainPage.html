@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="../styles/pageMain.css">
     <link rel="stylesheet" href="../styles/load.css">
     <link rel="stylesheet" href="../styles/alert.css">
+    <link rel="stylesheet" href="../styles/modalExpansivo.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link
         href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap"
         rel="stylesheet">
@@ -21,7 +23,7 @@
 </head>
 
 <body>
-
+ 
     <div class="load" style="display: none;">
         <div class="loadCircle"></div>
     </div>
@@ -208,28 +210,13 @@
                             <input type="text" placeholder="Ex: Engenharia de Software" id="nomeDoCurso">
                             <label for="text"></label>
                         </div>
-                        <div class="campIdt" id="addCursoEdit">
-                            <p>Adicionar Curso</p>
-                            <div class="cursosEdidCamp">
-                                <div class="linkDatailsIdt">
-                                    <i class="ph ph-plus" id="cursoAddinIntituicoes"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="campIdt" id="deletCursoEdit">
-                            <p>Deletar Curso</p>
-                            <div class="cursosEdidCamp">
-                                <div class="linkDatailsIdt">
-                                    <i class="ph ph-trash" id="cursoDeletinIntituicoes"></i>
-                                </div>
-                            </div>
-                        </div>
                         <div class="buttonsCheck">
                             <button id="cancelBtnIdt">Cancelar</button>
                             <button class="createBtnIdt" id="createBtnInstituicao">Criar</button>
                         </div>
                     </div>
                 </div>
+
                 <div class="cardsCreateIdt">
                     <div class="contentCardIdt">
                         <i class="ph ph-buildings"></i>
@@ -252,6 +239,95 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- MODAL PARA EDIÇÃO DE INSTITUIÇÃO -->
+                <div class="modalEdicaoExpansivel">
+
+                    <div class="headerModalExpansivel">
+                        <h3><i class="ph ph-pencil-simple"></i> Editar instituição</h3>
+                        <button class="btnFecharExpansivel" aria-label="Fechar modal">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <div class="contentModalExpansivel">
+
+                        <div class="campoEdicao">
+                            <label for="editNomeInstituicao"><i class="ph ph-buildings"></i>Nome da Instituição</label>
+                            <input type="text" id="editNomeInstituicao" placeholder="">
+                        </div>
+
+                        <div class="campoEdicao">
+                            <label><i class="ph ph-books"></i> Cursos Vinculados Atualmente</label>
+
+                            <div class="listaCursosAtuais">
+
+                                <div class="itemCursoAtual">
+                                    <span class="nomeCurso"></span>
+                                    <button class="btnDeletarCurso" aria-label="Marcar para deletar">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+
+                                <div class="itemCursoAtual marcadoParaDeletar">
+                                    <span class="nomeCurso"></span>
+                                    <button class="btnDeletarCurso btnDesfazer" aria-label="Desfazer marcação">
+                                        <i class="fas fa-undo"></i>
+                                    </button>
+                                </div>
+
+                                <div class="itemCursoAtual">
+                                    <span class="nomeCurso"></span>
+                                    <button class="btnDeletarCurso" aria-label="Marcar para deletar">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="campoEdicao">
+                            <label for="addCursoInput"><i class="fas fa-plus-circle"></i> Adicionar Novo Curso à
+                                Instituição</label>
+
+                            <div class="addCursoContainer">
+                                <input type="text" id="addCursoInput" placeholder="Nome do novo curso...">
+                                <button class="btnAddCurso">
+                                    <i class="fas fa-plus"></i> Adicionar
+                                </button>
+                            </div>
+
+                            <div class="cursosTemporarios">
+
+                                <div class="itemCursoTemp">
+                                    <span></span>
+                                    <button class="btnRemoverTemp" aria-label="Remover curso temporário">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+
+                                <div class="itemCursoTemp">
+                                    <span></span>
+                                    <button class="btnRemoverTemp" aria-label="Remover curso temporário">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="footerModalExpansivel">
+                        <button class="btnCancelarEdicao">
+                            <i class="fas fa-times-circle"></i> Cancelar
+                        </button>
+                        <button class="btnSalvarEdicao">
+                            <i class="ph ph-check"></i> Salvar Alterações
+                        </button>
+                    </div>
+
+                </div>
+
                 <div class="containerAddIdt">
                     <div class="headerAddIdt">
                         <i class="ph ph-link-simple"></i>

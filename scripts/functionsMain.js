@@ -7,6 +7,13 @@ const AppState = {
     turmas: []
 };
 
+const EdicaoState = {
+    cursosParaAdicionar: [],
+    cursosParaDeletar: [],
+    instituicaoOriginal: null
+};
+
+
 // ============================================
 // 2. FUNÇÕES DE RENDERIZAÇÃO E ATUALIZAÇÃO DA UI
 // (Funções que manipulam o DOM para exibir dados)
@@ -103,7 +110,6 @@ function renderizarCardsInstituicoes() {
 
         containerCards.appendChild(card);
     });
-    document.dispatchEvent(new CustomEvent('cardsInstituicoesRenderizados'));
 }
 
 /**
@@ -985,6 +991,8 @@ function salvarDisciplina() {
 function vincularCursoInstituicaoDB(idInstituicao, nomeCurso) {
     mostrarLoader("mostrar");
 
+    let vinculado = false;
+
     // Verifica se já existe
     fetch("/curso/verificar", {
         method: "POST",
@@ -1015,11 +1023,10 @@ function vincularCursoInstituicaoDB(idInstituicao, nomeCurso) {
         .then(res => res.json())
         .then(dados => {
             if (dados.sucesso) {
+                vinculado = true;
                 mostrarLoader('esconder');
                 mostrarAlerta("Curso cadastrado com sucesso!", "sucesso");
 
-                // ATENÇÃO: inputInstituicao, inputNomeCurso e modal não estão definidos neste escopo.
-                // Esta função talvez devesse fechar o modal de *vincular*
                 fecharModalAdicionarCurso(); 
 
                 // Recarrega tudo para atualizar os vínculos
@@ -1036,6 +1043,7 @@ function vincularCursoInstituicaoDB(idInstituicao, nomeCurso) {
                 console.error("Erro:", err);
             }
         });
+        return vinculado;
 }
 
 // ============================================
@@ -1044,54 +1052,481 @@ function vincularCursoInstituicaoDB(idInstituicao, nomeCurso) {
 // ============================================
 
 /**
- * Edita uma instituição (função placeholder)
+ * Abre o modal de edição (USA O MODAL QUE JÁ EXISTE NO HTML)
  */
 function editarInstituicao(id) {
     console.log("✏️ Editar instituição ID:", id);
-    const instituicao = AppState.instituicoes.find(inst => inst.id == id);
+    
+    // Usa a função get para buscar a instituição
+    const instituicao = get.getInstituicaoPorId(id);
 
     if (!instituicao) {
         mostrarAlerta("Instituição não encontrada!", "erro");
         return;
     }
 
-    // Abre o modal de edição
-    const modal = document.querySelector("#instituicoesBody .createIdt");
-    const inputNome = document.querySelector("#nomeDaInstituicao");
+    // Encontra o card correspondente
+    const card = document.querySelector(`#instituicoesBody .contentCardIdt[data-id="${id}"]`);
+    
+    if (!card) {
+        console.error("❌ Card não encontrado!");
+        return;
+    }
 
-    if (modal && inputNome) {
+    // Salva estado original
+    EdicaoState.instituicaoOriginal = JSON.parse(JSON.stringify(instituicao));
+    EdicaoState.cursosParaAdicionar = [];
+    EdicaoState.cursosParaDeletar = [];
+
+    // Pega o modal que JÁ EXISTE no HTML
+    const modal = document.querySelector("#instituicoesBody .modalEdicaoExpansivel");
+    
+    if (!modal) {
+        console.error("❌ Modal não encontrado no HTML!");
+        return;
+    }
+
+    // Armazena o ID da instituição no modal
+    modal.setAttribute("data-instituicao-id", id);
+
+    // Preenche o input de nome
+    const inputNome = modal.querySelector("#editNomeInstituicao");
+    if (inputNome) {
         inputNome.value = instituicao.nome;
-        modal.classList.add("show");
+        inputNome.placeholder = instituicao.nome;
+    }
 
-        // Aqui você pode adicionar lógica para salvar a edição
-        mostrarAlerta("Função de edição em desenvolvimento", "aviso");
+    // Preenche a lista de cursos atuais
+    preencherCursosAtuaisExpansivel(instituicao, modal);
+
+    // Limpa o input e lista temporária
+    const inputAddCurso = modal.querySelector("#addCursoInput");
+    const containerTemp = modal.querySelector(".cursosTemporarios");
+    if (inputAddCurso) inputAddCurso.value = "";
+    if (containerTemp) containerTemp.innerHTML = "";
+
+    // Vincula eventos (apenas uma vez)
+    if (!modal.hasAttribute("data-eventos-vinculados")) {
+        vincularEventosModalExpansivel(modal);
+        modal.setAttribute("data-eventos-vinculados", "true");
+    }
+
+    // --- Lógica de Posicionamento ---
+    const cardRect = card.getBoundingClientRect();
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const top = cardRect.bottom + scrollTop + 10;
+    const left = cardRect.left;
+    const width = cardRect.width;
+
+    modal.style.position = 'absolute';
+    modal.style.top = `${top}px`;
+    modal.style.left = `${left}px`;
+    modal.style.width = `${width}px`;
+    // --- Fim da Lógica de Posicionamento ---
+
+    // Mostra o modal
+    modal.classList.add("show");
+    
+    console.log("✅ Modal posicionado abaixo do card");
+}
+
+/**
+ * Preenche a lista de cursos atuais
+ */
+function preencherCursosAtuaisExpansivel(instituicao, modal) {
+    const container = modal.querySelector(".listaCursosAtuais");
+    
+    if (!container) {
+        console.error("❌ Container listaCursosAtuais não encontrado");
+        return;
+    }
+
+    container.innerHTML = "";
+
+    // Usa a função get para buscar cursos da instituição
+    const cursosDaInstituicao = get.getCursosPorInstituicao(instituicao.id);
+
+    if (cursosDaInstituicao.length === 0) {
+        container.innerHTML = '<p class="semCursos"><i class="ph ph-info"></i> Nenhum curso cadastrado</p>';
+        return;
+    }
+
+    cursosDaInstituicao.forEach(curso => {
+        const cursoEl = document.createElement("div");
+        cursoEl.className = "itemCursoAtual";
+        cursoEl.setAttribute("data-curso-id", curso.id);
+        
+        cursoEl.innerHTML = `
+            <span class="nomeCurso">${curso.curso}</span>
+            <button class="btnDeletarCurso" data-curso-id="${curso.id}" data-curso-nome="${curso.curso}" title="Deletar curso">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        `;
+
+        container.appendChild(cursoEl);
+    });
+}
+
+/**
+ * Vincula todos os eventos do modal
+ */
+function vincularEventosModalExpansivel(modal) {
+    // Botão de fechar (X)
+    const btnFechar = modal.querySelector(".btnFecharExpansivel");
+    if (btnFechar) {
+        btnFechar.addEventListener("click", () => fecharModalEdicaoExpansivel(modal));
+    }
+
+    // Botão cancelar
+    const btnCancelar = modal.querySelector(".btnCancelarEdicao");
+    if (btnCancelar) {
+        btnCancelar.addEventListener("click", () => fecharModalEdicaoExpansivel(modal));
+    }
+
+    // Botão adicionar curso
+    const btnAdicionar = modal.querySelector(".btnAddCurso");
+    if (btnAdicionar) {
+        btnAdicionar.addEventListener("click", () => adicionarCursoTemporario(modal));
+    }
+
+    // Enter no input de curso
+    const inputCurso = modal.querySelector("#addCursoInput");
+    if (inputCurso) {
+        inputCurso.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                adicionarCursoTemporario(modal);
+            }
+        });
+    }
+
+    // Botão salvar
+    const btnSalvar = modal.querySelector(".btnSalvarEdicao");
+    if (btnSalvar) {
+        btnSalvar.addEventListener("click", () => {
+            const idInstituicao = modal.getAttribute("data-instituicao-id");
+            const inputNome = modal.querySelector("#editNomeInstituicao");
+            const novoNome = inputNome.value.trim();
+
+            if (novoNome === "") {
+                mostrarAlerta("Preencha o nome da instituição", "aviso");
+                return;
+            }
+
+            salvarEdicaoInstituicao(idInstituicao, novoNome, modal);
+        });
+    }
+
+    // Eventos de deletar/desfazer cursos (delegação)
+    const containerCursos = modal.querySelector(".listaCursosAtuais");
+    if (containerCursos) {
+        containerCursos.addEventListener("click", (e) => {
+            const btn = e.target.closest(".btnDeletarCurso");
+            if (!btn) return;
+
+            const idCurso = btn.getAttribute("data-curso-id");
+            const nomeCurso = btn.getAttribute("data-curso-nome");
+            const itemCurso = btn.closest(".itemCursoAtual");
+
+            if (!EdicaoState.cursosParaDeletar.includes(idCurso)) {
+                // Marca para deletar
+                EdicaoState.cursosParaDeletar.push(idCurso);
+                itemCurso.classList.add("marcadoParaDeletar");
+                btn.classList.add("btnDesfazer");
+                btn.innerHTML = '<i class="fas fa-undo"></i>';
+                btn.title = "Desfazer";
+                console.log("🗑️ Curso marcado para deletar:", nomeCurso);
+            } else {
+                // Desfaz
+                EdicaoState.cursosParaDeletar = EdicaoState.cursosParaDeletar.filter(id => id !== idCurso);
+                itemCurso.classList.remove("marcadoParaDeletar");
+                btn.classList.remove("btnDesfazer");
+                btn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+                btn.title = "Deletar curso";
+                console.log("↩️ Deleção desfeita:", nomeCurso);
+            }
+        });
+    }
+
+    // Eventos de remover cursos temporários (delegação)
+    const containerTemp = modal.querySelector(".cursosTemporarios");
+    if (containerTemp) {
+        containerTemp.addEventListener("click", (e) => {
+            const btn = e.target.closest(".btnRemoverTemp");
+            if (!btn) return;
+
+            const cursoTemp = btn.closest(".itemCursoTemp");
+            const nomeCurso = cursoTemp.querySelector("span").textContent;
+
+            EdicaoState.cursosParaAdicionar = EdicaoState.cursosParaAdicionar.filter(c => c !== nomeCurso);
+            cursoTemp.remove();
+            console.log("🗑️ Curso removido da lista temporária:", nomeCurso);
+        });
     }
 }
 
 /**
- * Edita um curso (função placeholder)
+ * Adiciona curso à lista temporária
  */
-function editarCurso(id) {
-    console.log("✏️ Editar curso ID:", id);
-    const curso = AppState.cursos.find(c => c.id == id);
+function adicionarCursoTemporario(modal) {
+    const inputCurso = modal.querySelector("#addCursoInput");
+    const containerTemp = modal.querySelector(".cursosTemporarios");
 
-    if (!curso) {
-        mostrarAlerta("Curso não encontrado!", "erro");
+    if (!inputCurso || !containerTemp) return;
+
+    const nomeCurso = inputCurso.value.trim();
+
+    if (nomeCurso === "") {
+        mostrarAlerta("Digite o nome do curso", "aviso");
         return;
     }
 
-    const modal = document.querySelector("#cursosBody .createIdt");
-    const inputInstituicao = document.querySelector("#instituicao");
-    const inputNomeCurso = document.querySelector("#nomeDoCurso");
-
-    if (modal && inputInstituicao && inputNomeCurso) {
-        // ATENÇÃO: O 'value' do select de instituição deve ser o ID
-        inputInstituicao.value = curso.fk_id_instituicao; // Corrigido
-        inputNomeCurso.value = curso.curso;
-        modal.classList.add("show");
-
-        mostrarAlerta("Função de edição em desenvolvimento", "aviso");
+    if (EdicaoState.cursosParaAdicionar.includes(nomeCurso)) {
+        mostrarAlerta("Curso já está na lista para adicionar", "aviso");
+        inputCurso.value = "";
+        return;
     }
+
+    EdicaoState.cursosParaAdicionar.push(nomeCurso);
+
+    const cursoEl = document.createElement("div");
+    cursoEl.className = "itemCursoTemp";
+    cursoEl.innerHTML = `
+        <span>${nomeCurso}</span>
+        <button class="btnRemoverTemp" title="Remover">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+
+    containerTemp.appendChild(cursoEl);
+    inputCurso.value = "";
+    console.log("✅ Curso adicionado temporariamente:", nomeCurso);
+}
+
+/**
+ * Fecha o modal
+ */
+function fecharModalEdicaoExpansivel(modal) {
+    modal.classList.remove("show");
+    
+    // Remove estilos de posicionamento
+    setTimeout(() => {
+        modal.style.position = '';
+        modal.style.top = '';
+        modal.style.left = '';
+        modal.style.width = '';
+    }, 300); // Aguarda a animação de fechamento
+    
+    // Limpa estado temporário
+    EdicaoState.cursosParaAdicionar = [];
+    EdicaoState.cursosParaDeletar = [];
+    EdicaoState.instituicaoOriginal = null;
+    
+    console.log("🔒 Modal fechado");
+}
+
+/**
+ * Salva todas as alterações
+ */
+function salvarEdicaoInstituicao(id, novoNome, modal) {
+    console.log(`💾 Salvando edição da instituição ID: ${id}`);
+
+    mostrarLoader('mostrar');
+
+    const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
+    if (!usuarioLogado || !usuarioLogado.id) {
+        mostrarAlerta("Erro: Usuário não autenticado.", "erro");
+        mostrarLoader('esconder');
+        return;
+    }
+
+    let promiseChain = Promise.resolve();
+
+    // 1. Atualiza o nome (se mudou)
+    if (novoNome !== EdicaoState.instituicaoOriginal.nome) {
+        promiseChain = promiseChain.then(() => {
+            return fetch("/instituicao/atualizar", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    id: parseInt(id),
+                    nome: novoNome,
+                    id_docente: parseInt(usuarioLogado.id)
+                })
+            });
+        })
+        .then(res => res.json())
+        .then(dados => {
+            if (!dados.sucesso && !dados.message) {
+                throw new Error("Erro ao atualizar nome");
+            }
+            console.log("✅ Nome atualizado");
+        });
+    }
+
+    // 2. Adiciona novos cursos
+    EdicaoState.cursosParaAdicionar.forEach(nomeCurso => {
+        promiseChain = promiseChain.then(() => {
+            return vincularCursoInstituicaoDB(parseInt(id), nomeCurso);
+        });
+    });
+
+    // 3. Deleta cursos marcados
+    EdicaoState.cursosParaDeletar.forEach(idCurso => {
+        promiseChain = promiseChain.then(() => {
+            return fetch("/curso/deletar", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: parseInt(idCurso) })
+            });
+        })
+        .then(res => res.json())
+        .then(dados => {
+            if (dados.sucesso) {
+                console.log(`✅ Curso deletado: ${idCurso}`);
+            }
+        });
+    });
+
+    // 4. Finaliza e atualiza o modal
+    promiseChain
+        .then(() => {
+            
+            // Recarrega os dados do banco
+            return fetch(`/instituicao/all/${usuarioLogado.id}`)
+                .then(res => res.json())
+                .then(dados => {
+                    // Atualiza o AppState com os novos dados
+                    let instituicoes = (Array.isArray(dados)) ? dados : (dados.instituicoes || []);
+                    
+                    AppState.instituicoes = instituicoes.map(inst => ({
+                        id: inst.id.toString(),
+                        nome: inst.nome,
+                        cursos: []
+                    }));
+                    
+                    // Recarrega os cursos para vincular
+                    return carregarCursosParaModal(id);
+                });
+        })
+        .then(() => {
+            // Busca a instituição atualizada no AppState
+            const instituicaoAtualizada = get.getInstituicaoPorId(id);
+            
+            if (instituicaoAtualizada) {
+                // Atualiza o estado de edição
+                EdicaoState.instituicaoOriginal = JSON.parse(JSON.stringify(instituicaoAtualizada));
+                EdicaoState.cursosParaAdicionar = [];
+                EdicaoState.cursosParaDeletar = [];
+                
+                // Atualiza os campos do modal
+                atualizarCamposModalEdicao(modal, instituicaoAtualizada);
+                
+                // Atualiza os cards em background (sem fechar o modal)
+                renderizarCardsInstituicoes();
+                atualizarContadorInstituicoes(AppState.instituicoes.length);
+                atualizarDashboardView();
+                mostrarAlerta("Instituição atualizada com sucesso!", "sucesso");
+            }
+        })
+        .catch(err => {
+            console.error("❌ Erro:", err);
+            mostrarAlerta("Erro ao atualizar instituição", "erro");
+        })
+        .finally(() => {
+            mostrarLoader('esconder');
+        });
+}
+
+/**
+ * Carrega cursos específicos para atualização do modal
+ */
+function carregarCursosParaModal(idInstituicao) {
+    console.log(`🔍 Carregando cursos para instituição ${idInstituicao}`);
+    
+    return fetch(`/curso/all/${idInstituicao}`)
+        .then(res => res.json())
+        .then(data => {
+            const cursos = data.cursos || [];
+            
+            // Atualiza o AppState.cursos mantendo os outros cursos
+            AppState.cursos = AppState.cursos.filter(c => c.fk_id_instituicao != idInstituicao);
+            
+            cursos.forEach(curso => {
+                AppState.cursos.push({
+                    id: curso.id.toString(),
+                    fk_id_instituicao: idInstituicao.toString(),
+                    nome: curso.nome_instituicao || curso.instituicao || "",
+                    curso: curso.nome || curso.nome_curso || "",
+                    disciplinas: curso.disciplinas || []
+                });
+            });
+            
+            // Vincula os cursos às instituições
+            vincularCursosNasInstituicoes();
+            
+            console.log("✅ Cursos atualizados no AppState");
+        });
+}
+
+/**
+ * Atualiza os campos do modal de edição com os dados atualizados
+ */
+function atualizarCamposModalEdicao(modal, instituicao) {
+    console.log("🔄 Atualizando campos do modal...");
+    
+    // Atualiza o nome no input
+    const inputNome = modal.querySelector("#editNomeInstituicao");
+    if (inputNome) {
+        inputNome.value = instituicao.nome;
+        inputNome.placeholder = instituicao.nome;
+    }
+    
+    // Atualiza a lista de cursos atuais
+    const containerCursos = modal.querySelector(".listaCursosAtuais");
+    if (containerCursos) {
+        containerCursos.innerHTML = "";
+        
+        const cursosDaInstituicao = get.getCursosPorInstituicao(instituicao.id);
+        
+        if (cursosDaInstituicao.length === 0) {
+            containerCursos.innerHTML = '<p class="semCursos"><i class="ph ph-info"></i> Nenhum curso cadastrado</p>';
+        } else {
+            cursosDaInstituicao.forEach(curso => {
+                const cursoEl = document.createElement("div");
+                cursoEl.className = "itemCursoAtual";
+                cursoEl.setAttribute("data-curso-id", curso.id);
+                
+                cursoEl.innerHTML = `
+                    <span class="nomeCurso">${curso.curso}</span>
+                    <button class="btnDeletarCurso" data-curso-id="${curso.id}" data-curso-nome="${curso.curso}" title="Deletar curso">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                `;
+                
+                containerCursos.appendChild(cursoEl);
+            });
+        }
+    }
+    
+    // Limpa os cursos temporários
+    const containerTemp = modal.querySelector(".cursosTemporarios");
+    if (containerTemp) {
+        containerTemp.innerHTML = "";
+    }
+    
+    // Limpa o input de adicionar curso
+    const inputAddCurso = modal.querySelector("#addCursoInput");
+    if (inputAddCurso) {
+        inputAddCurso.value = "";
+    }
+    
+    console.log("✅ Modal atualizado com sucesso!");
+}
+/**
+ * Edita um curso (função placeholder)
+ */
+function editarCurso(id) {
 }
 
 // ============================================
@@ -1133,14 +1568,14 @@ function deletarInstituicaoDB(id) {
 /**
  * Deleta um curso do banco de dados
  */
-function deletarCursoDB(id) {
+function deletarCursoDB(id, idInstituicao) {
     console.log(`🗑️ Deletando curso ID: ${id}`);
     mostrarLoader('mostrar');
 
     fetch("/curso/deletar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: parseInt(id) })
+        body: JSON.stringify({ id: parseInt(id), id_instituicao: parseInt(idInstituicao) })
     })
         .then(res => res.json())
         .then(dados => {
@@ -1242,7 +1677,6 @@ function abrirModalAdicionarDisciplina(idCurso) {
             datalist.innerHTML = "";
 
             // Exemplo: preencher com disciplinas que não estão no curso
-            // Você precisará ter um AppState.disciplinas ou buscar do servidor
         }
     }
 }

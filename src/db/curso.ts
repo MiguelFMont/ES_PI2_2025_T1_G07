@@ -49,13 +49,13 @@ export async function addCurso(
 
 
 // Deletar um curso
-export async function deleteCurso(id: number): Promise<boolean> {
+export async function deleteCurso(id: number, id_instituicao: number): Promise<boolean> {
     const conn = await open();
     try {
         // 1️⃣ Apaga os vínculos da tabela relacionamento
         await conn.execute(
-            `DELETE FROM INSTITUICAO_CURSO WHERE FK_ID_CURSO = :id`,
-            { id },
+            `DELETE FROM INSTITUICAO_CURSO WHERE FK_ID_CURSO = :id AND FK_ID_INSTITUICAO = :id_instituicao`,
+            { id, id_instituicao },
             { autoCommit: false }
         );
 

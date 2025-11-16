@@ -412,15 +412,15 @@ app.post('/curso/atualizar', async (req: Request, res: Response) => {
 // Deletar curso
 app.post('/curso/deletar', async (req: Request, res: Response) => {
     try {
-        const { id } = req.body;
-        if (!id) {
-            console.log("❌ O campo ID é obrigatório!");
+        const { id, id_instituicao } = req.body;
+        if (!id || !id_instituicao) {
+            console.log("❌ Os campos ID e ID da instituição são obrigatórios!");
             return res.status(400).json({
-                error: "O campo ID é obrigatório!"
+                error: "Os campos ID e ID da instituição são obrigatórios!"
             });
         }
 
-        await deleteCurso(id);
+        await deleteCurso(id, id_instituicao);
         console.log("✅ Curso deletado com sucesso! ID:", id);
         res.status(200).json({
             sucesso: true,

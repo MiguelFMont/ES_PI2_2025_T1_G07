@@ -1,0 +1,437 @@
+/* ============================================
+   MODAL EXPANSÍVEL DE EDIÇÃO (abaixo do card)
+   ============================================ */
+
+/* IMPORTANTE: Este CSS NÃO afeta o modal .createIdt */
+/* São componentes completamente separados */
+
+:root {
+    --black: #000000;
+    --white: #ffffff;
+    --white2: #f5f8fa;
+    --grey: #808080;
+    --red: #e20000;
+    --greyBorder: #c3c3c3;
+    --placeholder: #5a5a5a;
+
+    --shadow: rgba(0, 0, 0, 0.1);
+    --redShadow: rgba(255, 0, 0, 0.1);
+    --color3Shadow: rgb(227, 0, 117, 0.2);
+    --color4Shadow: rgb(255, 74, 74, 0.2);
+    --color5shadow: rgba(255, 178, 25, 0.2);
+    --Shadow: rgba(97, 92, 92, 0.5);
+    --color8Shadow: rgba(37, 228, 117, 0.2);
+    --color9Shadow: rgb(183, 6, 228, 0.2);
+
+    --color1: #ebe8e8;
+    /* Fundo principal (claro) */
+    --color2: #e8e8e8;
+    /* Fundo secundário */
+    --color3: #e30075;
+    /* Cor escura para textos */
+    --color4: #ff4a4a;
+    /* Vermelho (erros ou alertas) */
+    --color5: #ffb319;
+    /* Amarelo (hover de botões) */
+    --color5Hover: #e39e13;
+    /* Amarelo escuro (hover de botões) */
+    --: #615c5c;
+    /* cinza (hover alternativo de botões) */
+    --color9: #b706e4;
+    --color8: #25e475;
+    /* Verde (sucesso) */
+
+    --lightgrey: #d3d3d3;
+    /* Bordas e separadores suaves */
+    --lightgrey: #ecf0f1;
+    --grey: #95a5a6;
+    --lightwhite: #f9f9f9;
+    --red: #e74c3c;
+    --green: #2ecc71;
+
+}
+
+
+.modalEdicaoExpansivel {
+    background: white;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    margin-top: -5px;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: top;
+}
+
+.modalEdicaoExpansivel.show {
+    max-height: 700px;
+    opacity: 1;
+    margin-bottom: 20px;
+    transform: scale(0.99);
+}
+
+.headerModalExpansivel {
+    color: var(--black);
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.headerModalExpansivel h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.headerModalExpansivel h3 i {
+    font-size: 1.4rem;
+    color: var(--color5);
+}
+
+.btnFecharExpansivel {
+    background: transparent;
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btnFecharExpansivel:hover {
+    transform: rotate(90deg);
+}
+
+.btnFecharExpansivel i {
+    color: var(--color5);
+    font-size: 1.3rem;
+}
+
+/* Conteúdo do Modal */
+.contentModalExpansivel {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.campoEdicao {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.campoEdicao label {
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.campoEdicao label i {
+    font-size: 1.1rem;
+    color: var(--color5);
+}
+
+.campoEdicao input[type="text"] {
+    padding: 10px 12px;
+    border: 2px solid var(--lightgrey);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    font-family: 'Poppins', sans-serif;
+}
+
+.campoEdicao input[type="text"]:focus {
+    outline: none;
+    border-color: var(--color5);
+}
+
+/* Lista de Cursos Atuais */
+.listaCursosAtuais {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 8px;
+    background: var(--lightwhite);
+    border-radius: 8px;
+    border: 1px solid var(--lightgrey);
+}
+
+.itemCursoAtual {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: white;
+    border: 1px solid var(--lightgrey);
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.itemCursoAtual:hover {
+    border-color: var(--color2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.itemCursoAtual.marcadoParaDeletar {
+    background: #fee;
+    border-color: var(--red);
+    opacity: 0.7;
+}
+
+.itemCursoAtual.marcadoParaDeletar .nomeCurso {
+    text-decoration: line-through;
+    color: var(--red);
+}
+
+.nomeCurso {
+    font-weight: 500;
+    color: var(--black);
+    flex: 1;
+}
+
+.btnDeletarCurso {
+    background: transparent;
+    border: 1px solid var(--red);
+    color: var(--red);
+    width: 35px;
+    height: 35px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btnDeletarCurso:hover {
+    background: var(--red);
+    color: white;
+    transform: scale(1.05);
+}
+
+.btnDeletarCurso i {
+    font-size: 1.1rem;
+}
+
+.btnDeletarCurso.btnDesfazer {
+    border-color: var(--red);
+    color: var(--red);
+}
+
+.btnDeletarCurso.btnDesfazer:hover,
+.btnDesfazer:focus {
+    background: var(--red);
+    color: white;
+    transform: rotate(-90deg);
+    outline: none;
+}
+
+.btnDeletarCurso:focus{
+    background: var(--red);
+    color: white;
+    outline: none;
+}
+
+
+.semCursos {
+    text-align: center;
+    color: var(--grey);
+    font-size: 0.9rem;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.semCursos i {
+    font-size: 1.2rem;
+}
+
+/* Container de Adicionar Curso */
+.addCursoContainer {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.addCursoContainer input {
+    flex: 1;
+}
+
+.btnAddCurso {
+    background: var(--green);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    white-space: nowrap;
+    font-family: 'Poppins', sans-serif;
+}
+
+.btnAddCurso:hover,
+.btnAddCurso:focus {
+    background: #27ae60;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+    outline: none;
+}
+
+.btnAddCurso i {
+    font-size: 1.1rem;
+}
+
+/* Cursos Temporários (adicionados mas não salvos) */
+.cursosTemporarios {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+    min-height: 0;
+}
+
+.itemCursoTemp {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--color5);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    animation: slideIn 0.3s ease;
+}
+
+.itemCursoTemp:hover {
+    background: var(--red);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.btnRemoverTemp {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btnRemoverTemp:hover,
+.btnRemoverTemp:focus {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+    outline: none;
+}
+
+.btnRemoverTemp i {
+    color: white;
+    font-size: 0.9rem;
+}
+
+/* Footer do Modal */
+.footerModalExpansivel {
+    padding: 15px 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.btnCancelarEdicao,
+.btnSalvarEdicao {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btnCancelarEdicao i,
+.btnSalvarEdicao i {
+    font-size: 1.1rem;
+}
+
+.btnCancelarEdicao {
+    background: white;
+    color: var(--black);
+    border: 2px solid var(--lightgrey);
+}
+
+.btnCancelarEdicao:hover {
+    background: var(--lightwhite);
+    border-color: var(--grey);
+    transform: translateY(-1px);
+}
+
+.btnSalvarEdicao {
+    background: var(--color5);
+    color: white;
+}
+
+.btnSalvarEdicao:hover {
+    background: var(--green);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+/* Scrollbar customizada para lista de cursos */
+.listaCursosAtuais::-webkit-scrollbar {
+    width: 8px;
+}
+
+.listaCursosAtuais::-webkit-scrollbar-track {
+    background: var(--lightgrey);
+    border-radius: 4px;
+}
+
+.listaCursosAtuais::-webkit-scrollbar-thumb {
+    background: var(--grey);
+    border-radius: 4px;
+}
+
+.listaCursosAtuais::-webkit-scrollbar-thumb:hover {
+    background: var(--);
+}

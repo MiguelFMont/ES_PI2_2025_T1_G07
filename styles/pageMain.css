@@ -834,7 +834,7 @@ body {
     gap: 10px;
 }
 
-.buttonsCheck button{
+.buttonsCheck button {
     border: none;
     border-radius: 8px;
     height: 40px;
@@ -874,6 +874,7 @@ body {
 }
 
 .contentCardIdt {
+    z-index: 1;
     position: relative;
     display: flex;
     align-items: center;
