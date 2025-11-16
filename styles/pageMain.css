@@ -578,7 +578,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 35px;
+    margin-bottom: 20px;
 }
 
 .titleIdt h1 {
@@ -870,7 +870,7 @@ body {
     gap: 16px;
     height: min-content;
     width: 100%;
-    padding: 20px 0;
+    padding: 10px 0;
 }
 
 .contentCardIdt {

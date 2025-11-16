@@ -439,6 +439,95 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- MODAL PARA EDIÇÃO DE CURSOS -->
+                <div class="modalEdicaoExpansivel">
+
+                    <div class="headerModalExpansivel">
+                        <h3><i class="ph ph-pencil-simple"></i> Editar Curso</h3>
+                        <button class="btnFecharExpansivel" aria-label="Fechar modal">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <div class="contentModalExpansivel">
+
+                        <div class="campoEdicao">
+                            <label for="editNomeCurso"><i class="ph ph-books"></i>Nome do Curso</label>
+                            <input type="text" id="editNomeCurso" placeholder="">
+                        </div>
+
+                        <div class="campoEdicao">
+                            <label><i class="ph ph-books"></i> Disciplinas Vinculadas Atualmente</label>
+
+                            <div class="listaCursosAtuais">
+
+                                <div class="itemCursoAtual">
+                                    <span class="nomeCurso"></span>
+                                    <button class="btnDeletarCurso" aria-label="Marcar para deletar">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+
+                                <div class="itemCursoAtual marcadoParaDeletar">
+                                    <span class="nomeCurso"></span>
+                                    <button class="btnDeletarCurso btnDesfazer" aria-label="Desfazer marcação">
+                                        <i class="fas fa-undo"></i>
+                                    </button>
+                                </div>
+
+                                <div class="itemCursoAtual">
+                                    <span class="nomeCurso"></span>
+                                    <button class="btnDeletarCurso" aria-label="Marcar para deletar">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="campoEdicao">
+                            <label for="addCursoInput"><i class="fas fa-plus-circle"></i> Adicionar Novo Curso à
+                                Instituição</label>
+
+                            <div class="addCursoContainer">
+                                <input type="text" id="addCursoInput" placeholder="Nome do novo curso...">
+                                <button class="btnAddCurso">
+                                    <i class="fas fa-plus"></i> Adicionar
+                                </button>
+                            </div>
+
+                            <div class="cursosTemporarios">
+
+                                <div class="itemCursoTemp">
+                                    <span></span>
+                                    <button class="btnRemoverTemp" aria-label="Remover curso temporário">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+
+                                <div class="itemCursoTemp">
+                                    <span></span>
+                                    <button class="btnRemoverTemp" aria-label="Remover curso temporário">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="footerModalExpansivel">
+                        <button class="btnCancelarEdicao">
+                            <i class="fas fa-times-circle"></i> Cancelar
+                        </button>
+                        <button class="btnSalvarEdicao">
+                            <i class="ph ph-check"></i> Salvar Alterações
+                        </button>
+                    </div>
+
+                </div>
+
                 <div class="containerAddIdt">
                     <div class="headerAddIdt">
                         <i class="ph ph-link-simple"></i>

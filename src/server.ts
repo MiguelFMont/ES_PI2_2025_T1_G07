@@ -413,6 +413,7 @@ app.post('/curso/atualizar', async (req: Request, res: Response) => {
 app.post('/curso/deletar', async (req: Request, res: Response) => {
     try {
         const { id, id_instituicao } = req.body;
+        console.log(id, id_instituicao);
         if (!id || !id_instituicao) {
             console.log("❌ Os campos ID e ID da instituição são obrigatórios!");
             return res.status(400).json({

@@ -66,6 +66,9 @@
 }
 
 .modalEdicaoExpansivel.show {
+    /* futuramente mudar ou tirar o z-index, a ideia é que o modal expansível não fique sobreposto ao modal de criação
+    ele deve "empurrar" os cards abaixo dele (se existirem) */
+    z-index: 100; 
     max-height: 700px;
     opacity: 1;
     margin-bottom: 20px;
@@ -314,7 +317,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: var(--color5);
+    background: var(--green);
     color: white;
     padding: 8px 12px;
     border-radius: 6px;

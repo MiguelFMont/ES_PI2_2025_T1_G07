@@ -426,62 +426,6 @@ document.addEventListener('DOMContentLoaded', () => {
     //==================================================
     //       MODAL DE EDIÇÃO EXPANSÍVEL
     //==================================================
-    /**
-    * Popula o modal de edição com os dados da instituição clicada.
-    */
-    function popularModalEdicao(modal, instituicao) {
-        if (!modal || !instituicao) {
-            console.error("Modal ou Instituição inválida para popular.");
-            return;
-        }
-
-        // 1. Armazena o ID da instituição no modal (para o 'Salvar')
-        modal.setAttribute('data-editing-id', instituicao.id);
-
-        // 2. Popula o nome da instituição
-        // (O ID do input no seu HTML é 'editNomeDisciplina')
-        const inputNome = modal.querySelector('#editNomeInstituicao');
-        if (inputNome) {
-            inputNome.placeholder = instituicao.nome;
-        }
-
-        // 3. Popula a lista de "Cursos Vinculados Atualmente"
-        const listaCursosContainer = modal.querySelector('.listaCursosAtuais');
-        if (listaCursosContainer) {
-            listaCursosContainer.innerHTML = ""; // Limpa a lista anterior
-
-            // instituicao.cursos é um array de strings, ex: ["Teste"]
-            if (instituicao.cursos && instituicao.cursos.length > 0) {
-
-                const cursosHTML = instituicao.cursos.map(nomeCurso => `
-                <div class="itemCursoAtual">
-                    <span class="nomeCurso">${nomeCurso}</span>
-                    <button class="btnDeletarCurso" aria-label="Marcar para deletar">
-                        <i class="fas fa-trash-alt"></i> 
-                    </button>
-                </div>
-            `).join("");
-
-                listaCursosContainer.innerHTML = cursosHTML;
-
-            } else {
-                // Mostra a mensagem de "sem cursos"
-                listaCursosContainer.innerHTML = `
-                <div class="semCursos">
-                    <i class="fas fa-info-circle"></i> Nenhum curso vinculado.
-                </div>
-            `;
-            }
-        }
-
-        // 4. Limpa os campos temporários da última edição
-        const inputAddCurso = modal.querySelector('#addCursoInput');
-        const containerCursosTemp = modal.querySelector('.cursosTemporarios');
-
-        if (inputAddCurso) inputAddCurso.value = "";
-        if (containerCursosTemp) containerCursosTemp.innerHTML = "";
-    }
-
 
     /**
      * Vincula todos os eventos de clique para o modal expansível de INSTITUIÇÕES.
@@ -511,15 +455,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const idInstituicao = card.getAttribute("data-id");
 
-            // LOG: Verifica qual botão foi clicado
-            console.log("🎯 Botão clicado:", {
-                id: idInstituicao,
-                classes: btn.className,
-                tipo: btn.classList.contains("addCurso") ? "ADICIONAR" :
-                    btn.classList.contains("editCard") ? "EDITAR" :
-                        btn.classList.contains("deletCard") ? "DELETAR" : "DESCONHECIDO"
-            });
-
             if (btn.classList.contains("addCurso")) {
                 console.log("➕ Executando: Adicionar Curso");
                 e.preventDefault();
@@ -540,19 +475,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log("🗑️ Executando: Deletar Instituição");
                 e.preventDefault();
                 e.stopPropagation();
+                const idInstituicao = card.getAttribute("data-id");
+                const cursosEmInstituicao = get.getCursosPorInstituicao(idInstituicao);
 
-                if (confirm("Tem certeza que deseja deletar esta instituição?")) {
-                    deletarInstituicaoDB(idInstituicao);
+                if (cursosEmInstituicao.length > 0) {
+                    mostrarAlerta("Não é possível deletar uma instituição que possui cursos vinculados.", "erro");
+                    return;
                 }
+
+                mostrarConfirm(`Tem certeza que deseja deletar a instituição ${get.getNomeInstituicaoPorId(idInstituicao)}?`, (confirmado) => {
+                    if (confirmado) {
+                        deletarInstituicaoDB(idInstituicao);
+                    }
+                });
             }
         });
 
         console.log("✅ Eventos vinculados com sucesso!");
     }
-
-    // ===================================================
-    // SUBSTITUA TAMBÉM ESTA PARTE NO SEU main.js:
-    // ===================================================
 
     // Escuta quando os cards são renderizados
     document.addEventListener("cardsInstituicoesRenderizados", () => {
