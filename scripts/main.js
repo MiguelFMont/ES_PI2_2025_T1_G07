@@ -604,7 +604,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnNovaRurma) {
         btnNovaRurma.addEventListener('click', () => {
             console.log("➕ Botão Nova Turma clicado");
-            // Preencher datalist de cursos se necessário
+            preencherSelectDisciplinas();
         });
     }
 
@@ -612,7 +612,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (criarTurmaBtn) {
         criarTurmaBtn.addEventListener('click', () => {
             console.log("💾 Botão Criar Turma clicado");
-            // Implementar salvarTurma se necessário
+            salvarTurma();
         });
     }
 
@@ -652,11 +652,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } else if (btn.classList.contains("deletCard")) {
                 console.log("🗑️ Botão deletar turma clicado");
-                mostrarConfirm("Tem certeza que deseja deletar esta turma?", (confirmado) => {
-                    if (confirmado) {
+                if (typeof mostrarConfirm === 'function') {
+                    mostrarConfirm("Tem certeza que deseja deletar esta turma?", (confirmado) => {
+                        if (confirmado) {
+                            deletarTurmaDB(idTurma);
+                        }
+                    });
+                } else {
+                    if (confirm("Tem certeza que deseja deletar esta turma?")) {
                         deletarTurmaDB(idTurma);
                     }
-                });
+                }
             }
         });
 
