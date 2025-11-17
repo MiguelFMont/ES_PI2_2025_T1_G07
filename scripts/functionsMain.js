@@ -4,13 +4,28 @@
 const AppState = {
     instituicoes: [],
     cursos: [],
+    disciplinas: [],
     turmas: []
 };
 
 const EdicaoState = {
     cursosParaAdicionar: [],
     cursosParaDeletar: [],
-    instituicaoOriginal: null
+    instituicaoOriginal: null,
+};
+
+const EdicaoStateCurso = {
+    disciplinasParaAdicionar: [],
+    disciplinasParaDeletar: [],
+    cursoOriginal: null,
+};
+
+const EdicaoStateDisciplina = {
+    disciplinaOriginal: null,
+};
+
+const EdicaoStateTurma = {
+    turmaOriginal: null,
 };
 
 
@@ -404,6 +419,161 @@ function atualizarDashboardView() {
 }
 
 /**
+ * Atualiza o contador visual de disciplinas no dashboard
+ */
+function atualizarContadorDisciplinas(quantidade) {
+    const counter = document.querySelector("#disciplinas .titleOptionDashboard p");
+    if (counter) {
+        counter.textContent = quantidade;
+        console.log("📊 Contador de Disciplinas atualizado:", quantidade);
+    }
+}
+
+/**
+ * Mostra o card vazio quando não há disciplinas
+ */
+function mostrarCardVazioDisciplinas() {
+    const containerCards = document.querySelector("#disciplinasBody .cardsCreateIdt");
+    const cardVazio = document.querySelector("#disciplinasBody .cardIdt");
+
+    if (containerCards) {
+        containerCards.style.display = "none";
+        containerCards.style.opacity = "0";
+        containerCards.style.pointerEvents = "none";
+    }
+
+    if (cardVazio) {
+        const iconIdt = cardVazio.querySelector('.iconIdt');
+        const h3 = cardVazio.querySelector('h3');
+        const p = cardVazio.querySelector('p');
+
+        if (iconIdt) iconIdt.style.display = "flex";
+        if (h3) h3.style.display = "block";
+        if (p) p.style.display = "block";
+
+        cardVazio.style.display = "flex";
+        cardVazio.style.border = "1px dashed var(--lightgrey)";
+        cardVazio.style.borderWidth = "2px";
+        cardVazio.style.height = "250px";
+        cardVazio.style.padding = "";
+
+        const modal = cardVazio.querySelector('.createIdt');
+        if (modal) {
+            modal.classList.remove('show');
+        }
+    }
+}
+
+/**
+ * Renderiza os cards de disciplinas na interface
+ */
+function renderizarCardsDisciplinas() {
+    console.log("🎨 Renderizando cards de disciplinas...");
+
+    const containerCards = document.querySelector("#disciplinasBody .cardsCreateIdt");
+    const cardVazio = document.querySelector("#disciplinasBody .cardIdt");
+
+    if (!containerCards) {
+        console.error("❌ Container de cards de disciplinas não encontrado!");
+        return;
+    }
+
+    containerCards.innerHTML = "";
+
+    // ✅ USA DIRETAMENTE AppState.disciplinas
+    const todasDisciplinas = AppState.disciplinas || [];
+
+    console.log(`📚 Total de disciplinas no AppState: ${todasDisciplinas.length}`);
+
+    atualizarContadorDisciplinas(todasDisciplinas.length);
+
+    if (todasDisciplinas.length === 0) {
+        mostrarCardVazioDisciplinas();
+        return;
+    }
+
+    // Esconde o card vazio
+    if (cardVazio) {
+        const iconIdt = cardVazio.querySelector('.iconIdt');
+        const h3 = cardVazio.querySelector('h3');
+        const p = cardVazio.querySelector('p');
+
+        if (iconIdt) iconIdt.style.display = "none";
+        if (h3) h3.style.display = "none";
+        if (p) p.style.display = "none";
+
+        cardVazio.style.border = "none";
+        cardVazio.style.height = "0";
+        cardVazio.style.padding = "0";
+        cardVazio.style.overflow = "visible";
+
+        const modal = cardVazio.querySelector('.createIdt');
+        if (modal) {
+            modal.classList.remove('show');
+        }
+    }
+
+    containerCards.style.display = "grid";
+    containerCards.style.opacity = "1";
+    containerCards.style.pointerEvents = "all";
+
+    // Cria um card para cada disciplina
+    todasDisciplinas.forEach(disciplina => {
+        // Busca informações do curso
+        const curso = AppState.cursos.find(c => c.id == disciplina.id_curso);
+        const nomeCurso = curso ? curso.curso : "Curso não encontrado";
+        const nomeInstituicao = curso ? get.getNomeInstituicaoPorId(curso.fk_id_instituicao) : "Instituição não encontrada";
+
+        const card = document.createElement("div");
+        card.className = "contentCardIdt";
+        card.setAttribute("data-codigo", disciplina.codigo);
+        card.setAttribute("data-curso-id", disciplina.id_curso);
+
+        card.innerHTML = `
+            <i class="ph ph-book-open" id="disciplinasIcon"></i>
+            <div class="textContentCardIdt">
+                <h2>${disciplina.nome}</h2>
+                <p style="font-size: 0.85rem; color: var(--color6); margin: 5px 0;">
+                    ${nomeCurso} - ${nomeInstituicao}
+                </p>
+                <div class="viewDetails">
+                    <div class="code">${disciplina.codigo || 'N/A'}</div>
+                    <div class="acronym">${disciplina.sigla || 'N/A'}</div>
+                    <div class="period">${disciplina.periodo || '?'}°</div>
+                </div>
+            </div>
+            <div class="editAndDelet">
+                <button class="editCard" data-disciplina-codigo="${disciplina.codigo}">
+                    <i class="ph ph-pencil-simple"></i>
+                </button>
+                <button class="deletCard" data-disciplina-codigo="${disciplina.codigo}">
+                    <i class="ph ph-trash"></i>
+                </button>
+            </div>
+        `;
+
+        containerCards.appendChild(card);
+    });
+
+    console.log(`✅ ${todasDisciplinas.length} cards de disciplinas renderizados`);
+
+    document.dispatchEvent(new CustomEvent('cardsDisciplinasRenderizados'));
+}
+
+/**
+ * Renderiza os cards de turmas na interface
+ * Nota: Esta função dispara um evento para que os listeners de turmas sejam ativados
+ */
+function renderizarCardsTurmas() {
+    console.log("🎨 Renderizando cards de turmas...");
+
+    // Dispara evento customizado para vincular eventos
+    document.dispatchEvent(new CustomEvent('cardsTurmasRenderizados'));
+
+    console.log(`✅ Evento de turmas disparado`);
+}
+
+/**
  * Atualiza o contador visual de instituições no dashboard
  */
 function atualizarContadorInstituicoes(quantidade) {
@@ -441,6 +611,122 @@ function atualizarContadorTurmas(quantidade) {
 // (Funções que buscam dados do DB e atualizam o AppState)
 // ============================================
 
+
+/**
+ * Carrega todas as disciplinas dos cursos do usuário logado
+ * Busca disciplinas curso por curso a partir de AppState.cursos
+ */
+function carregarDisciplinasFromDB() {
+    console.log("📚 Carregando disciplinas dos cursos do usuário...");
+    
+    // Verifica se há cursos carregados
+    if (!AppState.cursos || AppState.cursos.length === 0) {
+        console.log("⚠️ Nenhum curso carregado. Pulando carregamento de disciplinas.");
+        AppState.disciplinas = [];
+        atualizarContadorDisciplinas(0);
+        renderizarCardsDisciplinas();
+        return Promise.resolve([]);
+    }
+
+    const idsCursos = AppState.cursos.map(curso => curso.id);
+    console.log("🔍 IDs dos cursos do usuário:", idsCursos);
+
+    // Busca TODAS as disciplinas e filtra no frontend
+    return fetch("/disciplina/all", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" }
+    })
+        .then(res => {
+            console.log("📥 Status da resposta /disciplina/all:", res.status);
+            
+            if (res.status === 404) {
+                console.log("ℹ️ Nenhuma disciplina cadastrada no sistema");
+                return [];
+            }
+            
+            if (!res.ok) {
+                throw new Error(`Erro HTTP ${res.status}`);
+            }
+            
+            return res.json();
+        })
+        .then(data => {
+            console.log("📦 Dados recebidos do servidor:", data);
+            
+            // Extrai o array de disciplinas
+            let todasDisciplinas = [];
+            if (Array.isArray(data)) {
+                todasDisciplinas = data;
+            } else if (data.disciplinas && Array.isArray(data.disciplinas)) {
+                todasDisciplinas = data.disciplinas;
+            }
+            
+            console.log(`📊 Total de disciplinas no banco: ${todasDisciplinas.length}`);
+            
+            if (todasDisciplinas.length === 0) {
+                console.log("⚠️ Nenhuma disciplina cadastrada no sistema");
+                AppState.disciplinas = [];
+                atualizarContadorDisciplinas(0);
+                renderizarCardsDisciplinas();
+                return [];
+            }
+            
+            // ✅ FILTRA apenas disciplinas dos cursos do usuário
+            const disciplinasDoUsuario = todasDisciplinas.filter(disc => {
+                // Converte para string para comparar corretamente
+                const idCursoDisc = disc.id_curso ? disc.id_curso.toString() : null;
+                const pertence = idsCursos.includes(idCursoDisc);
+                
+                if (pertence) {
+                    console.log(`   ✅ Disciplina "${disc.nome}" pertence ao usuário (curso ${idCursoDisc})`);
+                } else {
+                    console.log(`   ❌ Disciplina "${disc.nome}" NÃO pertence ao usuário (curso ${idCursoDisc})`);
+                }
+                
+                return pertence;
+            });
+            
+            console.log(`📊 Total de disciplinas DO USUÁRIO: ${disciplinasDoUsuario.length}`);
+            
+            if (disciplinasDoUsuario.length === 0) {
+                console.log("⚠️ O usuário não tem disciplinas cadastradas nos seus cursos");
+                AppState.disciplinas = [];
+                atualizarContadorDisciplinas(0);
+                renderizarCardsDisciplinas();
+                return [];
+            }
+            
+            // Formata as disciplinas
+            AppState.disciplinas = disciplinasDoUsuario.map(disc => ({
+                id: disc.id ? disc.id.toString() : null,
+                codigo: disc.codigo,
+                nome: disc.nome,
+                sigla: disc.sigla,
+                periodo: disc.periodo,
+                id_curso: disc.id_curso ? disc.id_curso.toString() : null
+            }));
+            
+            console.log(`✅ ${AppState.disciplinas.length} disciplinas salvas no AppState`);
+            console.log("📋 Disciplinas do usuário:", AppState.disciplinas);
+            
+            // Vincula disciplinas aos cursos
+            vincularDisciplinasAosCursos();
+            
+            // Atualiza contador e renderiza
+            atualizarContadorDisciplinas(AppState.disciplinas.length);
+            renderizarCardsDisciplinas();
+
+            return AppState.disciplinas;
+        })
+        .catch(err => {
+            console.error("❌ Erro ao carregar disciplinas:", err);
+            AppState.disciplinas = [];
+            atualizarContadorDisciplinas(0);
+            renderizarCardsDisciplinas();
+            return [];
+        });
+}
+
 /**
  * Carrega instituições do banco de dados. (Ponto de entrada principal)
  */
@@ -466,25 +752,29 @@ function carregarInstituicoesFromDB() {
             if (instituicoes.length === 0) {
                 console.log("⚠️ Nenhuma instituição foi cadastrada");
                 AppState.instituicoes = [];
+                AppState.cursos = [];
+                AppState.disciplinas = [];
                 mostrarAlerta("Cadastre uma instituição!", "aviso");
                 atualizarContadorInstituicoes(0);
+                atualizarContadorCursos(0);
+                atualizarContadorDisciplinas(0);
 
-                // Mostra o card vazio
                 mostrarCardVazioInstituicoes();
+                renderizarCardsCursos();
+                renderizarCardsDisciplinas();
 
                 mostrarLoader('esconder');
             } else {
-                // ✅ SALVA INSTITUIÇÕES SEM CURSOS (serão vinculados depois)
                 AppState.instituicoes = instituicoes.map(inst => ({
                     id: inst.id.toString(),
                     nome: inst.nome,
-                    cursos: [] // Inicializa vazio
+                    cursos: []
                 }));
 
                 console.log("✅ Instituições carregadas:", AppState.instituicoes);
                 atualizarContadorInstituicoes(AppState.instituicoes.length);
 
-                // Carrega cursos (que vai vincular às instituições e renderizar cards)
+                // Carrega cursos (que vai carregar disciplinas)
                 carregarCursosFromDB();
             }
         })
@@ -503,8 +793,11 @@ function carregarCursosFromDB() {
     if (!instituicoes || instituicoes.length === 0) {
         console.log("ℹ️ Nenhuma instituição carregada. Pulando carregamento de Cursos.");
         AppState.cursos = [];
+        AppState.disciplinas = [];
         atualizarContadorCursos(0);
+        atualizarContadorDisciplinas(0);
         renderizarCardsCursos();
+        renderizarCardsDisciplinas();
         carregarTurmasFromDB();
         return;
     }
@@ -512,7 +805,7 @@ function carregarCursosFromDB() {
     const idsInstituicoes = instituicoes.map(inst => inst.id);
     console.log("🔍 Buscando cursos para instituições:", idsInstituicoes);
 
-    const fetchCursosPromises = idsInstituicoes.map((id, index) => {
+    const fetchCursosPromises = idsInstituicoes.map((id) => {
         console.log(`📡 Fazendo requisição para /curso/all/${id}`);
         return fetch(`/curso/all/${id}`)
             .then(res => res.json())
@@ -524,13 +817,14 @@ function carregarCursosFromDB() {
 
     Promise.all(fetchCursosPromises)
         .then(resultados => {
-            // Processa cada resultado mantendo o ID da instituição
+            console.log("DADOS BRUTOS DOS CURSOS:", JSON.stringify(resultados, null, 2));
+            
             const todosCursos = resultados.flatMap(({ instituicaoId, data }) => {
                 const cursos = data.cursos || [];
-                // GARANTE que cada curso tenha o fk_id_instituicao
                 return cursos.map(curso => ({
-                    ...curso, // ... (spread operator) é basicamente um operador que da um push dos elementos de um array para outro
-                    fk_id_instituicao: curso.fk_id_instituicao || instituicaoId
+                    ...curso,
+                    fk_id_instituicao: curso.fk_id_instituicao || instituicaoId,
+                    // ✅ REMOVIDO: Não pegamos mais disciplinas aqui
                 }));
             });
 
@@ -541,29 +835,32 @@ function carregarCursosFromDB() {
                 AppState.cursos = [];
                 mostrarAlerta("Cadastre um curso!", "aviso");
             } else {
-                // ✅ SALVA CURSOS COM FK_ID_INSTITUICAO GARANTIDO
+                // ✅ MODIFICADO: Cursos sem disciplinas inicialmente
                 AppState.cursos = todosCursos.map(curso => {
                     const cursoFormatado = {
                         id: curso.id.toString(),
                         fk_id_instituicao: curso.fk_id_instituicao ? curso.fk_id_instituicao.toString() : null,
                         nome: curso.nome_instituicao || curso.instituicao || "",
                         curso: curso.nome || curso.nome_curso || "",
-                        disciplinas: curso.disciplinas || []
+                        disciplinas: [] // ✅ Será preenchido por vincularDisciplinasAosCursos()
                     };
                     console.log("📝 Curso formatado:", cursoFormatado);
                     return cursoFormatado;
                 });
                 console.log("✅ AppState.cursos atualizado:", AppState.cursos);
-
-                // VINCULA OS CURSOS ÀS INSTITUIÇÕES
-                vincularCursosNasInstituicoes(); //usado somente para renderizar os cards
+                vincularCursosNasInstituicoes();
             }
-            vincularCursosNasInstituicoes()//mesmo não tendo cursos para vincular, precisa renderizar os cards
+            
+            vincularCursosNasInstituicoes();
             renderizarCardsCursos();
-
             atualizarContadorCursos(AppState.cursos.length);
-            atualizarDashboardView(); // Atualiza dashboard com cursos vinculados
-            carregarTurmasFromDB();
+            
+            // ✅ NOVO: Carrega disciplinas separadamente
+            carregarDisciplinasFromDB()
+                .then(() => {
+                    atualizarDashboardView();
+                    carregarTurmasFromDB();
+                });
         })
         .catch(err => {
             console.error("❌ Erro ao carregar cursos:", err);
@@ -605,12 +902,14 @@ function carregarTurmasFromDB() {
                     id: turma.id.toString(),
                     nome_turma: turma.nome || "Nome Turma",
                     periodo: turma.periodo ? `${turma.periodo}° Semestre` : "Período não definido",
-                    fk_id_curso: turma.fk_id_curso
+                    fk_id_curso: turma.fk_id_curso,
+                    codigo: turma.codigo || ""
                 }));
                 console.log("✅ Turmas formatadas:", AppState.turmas);
             }
 
             atualizarContadorTurmas(AppState.turmas.length);
+            renderizarCardsTurmas(); // Dispara o evento para vincular eventos às turmas
             atualizarDashboardView();
             mostrarLoader('esconder');
         })
@@ -766,18 +1065,6 @@ function salvarCurso() {
         return;
     }
 
-    // Preenche o select com as instituições do AppState
-    if (selectInstituicao.options.length <= 1) { // Se só tem a opção padrão ou está vazio
-        selectInstituicao.innerHTML = '<option value="" disabled selected>Selecione a instituição</option>';
-
-        AppState.instituicoes.forEach(inst => {
-            const option = document.createElement("option");
-            option.value = inst.id; // Usa o ID como value
-            option.textContent = inst.nome;
-            selectInstituicao.appendChild(option);
-        });
-    }
-
     const idInstituicao = selectInstituicao.value.trim();
     const nomeCurso = inputNomeCurso.value.trim();
 
@@ -860,68 +1147,54 @@ function salvarCurso() {
  * Salva uma nova disciplina (vinculada a um curso existente) no DB.
  */
 function salvarDisciplina() {
-    const modal = document.querySelector("#cursosBody .createIdt"); // ATENÇÃO: Verifique se este seletor está correto
+    const modal = document.querySelector("#disciplinasBody .createIdt");
     if (!modal) {
         console.error("Modal não encontrado!");
         return;
     }
 
-    const inputCodigoDisciplina = modal.querySelector("#inputCodigoDisciplina");
-    const inputNomeCurso = modal.querySelector("#cursoSelect");
+    const selectCurso = modal.querySelector("#curso");
     const inputNomeDisciplina = modal.querySelector("#inputNomeDisciplina");
-    const inputPeriodo = modal.querySelector("periodoSelect"); // ATENÇÃO: Faltou o # ou .
     const inputSiglaDisciplina = modal.querySelector("#inputSiglaDisciplina");
+    const selectPeriodo = modal.querySelector("#periodoSelect");
+    const inputCodigoDisciplina = modal.querySelector("#inputCodigoDisciplina");
 
-    // ATENÇÃO: Verificação de inputs estava incorreta
-    if (!inputCodigoDisciplina || !inputNomeCurso || !inputNomeDisciplina || !inputPeriodo || !inputSiglaDisciplina) {
-        console.error("Inputs não encontrados! Verifique os IDs/Classes.", {
-            inputCodigoDisciplina,
-            inputNomeCurso,
-            inputNomeDisciplina,
-            inputPeriodo,
-            inputSiglaDisciplina
-        });
+    if (!selectCurso || !inputNomeDisciplina || !inputSiglaDisciplina || !selectPeriodo || !inputCodigoDisciplina) {
+        console.error("Inputs não encontrados!");
         return;
     }
 
+    const idCurso = selectCurso.value.trim();
+    const nomeDisciplina = inputNomeDisciplina.value.trim();
+    const siglaDisciplina = inputSiglaDisciplina.value.trim();
+    const periodo = selectPeriodo.value.trim();
     const codigoDisciplina = inputCodigoDisciplina.value.trim();
-    const nomeCurso = inputNomeCurso.value.trim(); // Corrigido de cursoSelect.value
-    const nomeDisciplina = inputNomeDisciplina.value.trim()
-    const periodo = inputPeriodo.value.trim(); // Corrigido de periodoSelect.value
-    const sigla = inputSiglaDisciplina.value.trim();
 
+    // Validações
+    if (idCurso === "") {
+        mostrarAlerta("Selecione um curso", "aviso");
+        return;
+    }
     if (nomeDisciplina === "") {
         mostrarAlerta("Preencha o campo \"Nome da Disciplina\"", "aviso");
         return;
     }
-
-    const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
-    if (!usuarioLogado || !usuarioLogado.id) {
-        mostrarAlerta("Erro: Usuário não autenticado. Faça login novamente.", "erro");
+    if (siglaDisciplina === "") {
+        mostrarAlerta("Preencha o campo \"Sigla\"", "aviso");
+        return;
+    }
+    if (periodo === "") {
+        mostrarAlerta("Selecione o período", "aviso");
+        return;
+    }
+    if (codigoDisciplina === "") {
+        mostrarAlerta("Preencha o campo \"Código\"", "aviso");
         return;
     }
 
-    // Busca o ID da instituição se foi selecionada
-    let fk_id_curso = null;
-    if (nomeCurso) {
-        // ATENÇÃO: Buscando em 'disciplinaBody', deveria ser 'cursosBody'?
-        const curso = JSON.parse(localStorage.getItem("cursosBody")) || []; // Corrigido para cursosBody
-        const cursoEncontrada = curso.find(
-            inst => inst.nome.toLowerCase() === nomeCurso.toLowerCase() // ATENÇÃO: inst.nome ou inst.curso?
-        );
-
-        if (cursoEncontrada) {
-            fk_id_curso = parseInt(cursoEncontrada.id);
-            console.log(fk_id_curso)
-        } else {
-            mostrarAlerta("Curso não encontrado. Selecione um curso válido.", "aviso");
-            return;
-        }
-    }
-
+    const fk_id_curso = parseInt(idCurso);
     mostrarLoader("mostrar");
 
-    // Verifica se já existe
     fetch("/disciplina/verificar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -933,16 +1206,15 @@ function salvarDisciplina() {
         .then(res => res.json())
         .then(data => {
             if (data.sucesso) {
-                // Pode cadastrar
                 return fetch("/disciplina/cadastro", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
+                        codigo: codigoDisciplina,
                         id_curso: fk_id_curso,
                         nome: nomeDisciplina,
                         periodo: periodo,
-                        sigla: sigla
-                        // ATENÇÃO: Faltando 'codigoDisciplina'?
+                        sigla: siglaDisciplina
                     })
                 });
             } else {
@@ -951,26 +1223,24 @@ function salvarDisciplina() {
                 throw new Error("Disciplina duplicada");
             }
         })
-        .then(res => {
-            return res.json();
-        })
+        .then(res => res.json())
         .then(dados => {
-
-            if (dados.sucesso) {
+            if (dados.message || dados.codigo) {
                 mostrarLoader('esconder');
                 mostrarAlerta("Disciplina cadastrada com sucesso!", "sucesso");
 
-                // Limpa os inputs e fecha o modal
-                inputCodigoDisciplina.value = "";
-                inputNomeCurso.value = "";
+                // Limpa inputs
+                selectCurso.value = "";
                 inputNomeDisciplina.value = "";
-                inputPeriodo.value = "";
                 inputSiglaDisciplina.value = "";
+                selectPeriodo.value = "";
+                inputCodigoDisciplina.value = "";
                 modal.classList.remove("show");
 
-                // Recarrega os cursos (para atualizar as disciplinas)
-                carregarCursosFromDB();
-
+                // ✅ MODIFICADO: Recarrega apenas disciplinas
+                carregarDisciplinasFromDB().then(() => {
+                    renderizarCardsCursos(); // Atualiza cursos com disciplinas vinculadas
+                });
             } else {
                 mostrarLoader('esconder');
                 mostrarAlerta("Erro ao cadastrar a disciplina!", "erro");
@@ -985,11 +1255,11 @@ function salvarDisciplina() {
         });
 }
 
+
 /**
  * Vincula um curso já existente a uma instituição (via modal "Adicionar Curso").
  */
 function vincularCursoInstituicaoDB(idInstituicao, nomeCurso) {
-
     return fetch("/curso/verificar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1049,7 +1319,6 @@ function vincularCursoInstituicaoDB(idInstituicao, nomeCurso) {
  * Abre o modal de edição (USA O MODAL QUE JÁ EXISTE NO HTML)
  */
 function editarInstituicao(id) {
-    console.log("✏️ Editar instituição ID:", id);
 
     // Usa a função get para buscar a instituição
     const instituicao = get.getInstituicaoPorId(id);
@@ -1164,6 +1433,38 @@ function preencherCursosAtuaisExpansivel(instituicao, modal) {
 /**
  * Vincula todos os eventos do modal
  */
+
+function vincularEventosModalCursoExpansivel(modal) {
+    const btnFechar = modal.querySelector(".btnFecharExpansivel");
+    if (btnFechar) {
+        btnFechar.addEventListener("click", () => fecharModalEdicaoExpansivel(modal));
+    }
+
+    // Botão cancelar
+    const btnCancelar = modal.querySelector(".btnCancelarEdicao");
+    if (btnCancelar) {
+        btnCancelar.addEventListener("click", () => fecharModalEdicaoExpansivel(modal));
+    }
+
+    // Botão adicionar curso
+    const btnAdicionar = modal.querySelector(".btnAddCurso");
+    if (btnAdicionar) {
+        btnAdicionar.addEventListener("click", () => adicionarCursoTemporario(modal));
+    }
+
+    // Enter no input de curso
+    const inputDisciplina = modal.querySelector("#addDisciplinaInput");
+    if (inputCurso) {
+        inputCurso.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                adicionarCursoTemporario(modal);
+            }
+        });
+    }
+}
+
+//instituicao
 function vincularEventosModalExpansivel(modal) {
     // Botão de fechar (X)
     const btnFechar = modal.querySelector(".btnFecharExpansivel");
@@ -1260,8 +1561,116 @@ function vincularEventosModalExpansivel(modal) {
 }
 
 /**
+ * Vincula eventos do modal de edição de DISCIPLINAS
+ */
+function vincularEventosModalDisciplina(modal) {
+    // Botão de fechar (X)
+    const btnFechar = modal.querySelector(".btnFecharExpansivel");
+    if (btnFechar) {
+        btnFechar.addEventListener("click", () => fecharModalEdicaoExpansivel(modal));
+    }
+
+    // Botão cancelar
+    const btnCancelar = modal.querySelector(".btnCancelarEdicao");
+    if (btnCancelar) {
+        btnCancelar.addEventListener("click", () => fecharModalEdicaoExpansivel(modal));
+    }
+
+    // Botão salvar
+    const btnSalvar = modal.querySelector(".btnSalvarEdicao");
+    if (btnSalvar) {
+        btnSalvar.addEventListener("click", () => {
+            const codigoDisciplina = modal.getAttribute("data-disciplina-codigo");
+            const idCurso = modal.getAttribute("data-curso-id");
+
+            const inputNome = modal.querySelector("#editNomeDisciplina");
+            const inputSigla = modal.querySelector("#editSiglaDisciplina");
+            const inputCodigo = modal.querySelector("#editCodigoDisciplina");
+            const selectPeriodo = modal.querySelector("#editPeriodoDisciplina");
+
+            const novoNome = inputNome?.value.trim() || "";
+            const novaSigla = inputSigla?.value.trim() || "";
+            const codigo = inputCodigo?.value.trim() || "";
+            const novoPeriodo = selectPeriodo?.value || "";
+
+            if (novoNome === "") { mostrarAlerta("Preencha o nome da disciplina", "aviso"); return; }
+            if (novaSigla === "") { mostrarAlerta("Preencha a sigla", "aviso"); return; }
+            if (codigo === "") { mostrarAlerta("Erro: Código da disciplina não encontrado", "erro"); return; }
+            if (novoPeriodo === "") { mostrarAlerta("Selecione o período", "aviso"); return; }
+
+            salvarEdicaoDisciplina(codigo, idCurso, novoNome, novaSigla, novoPeriodo, modal);
+        });
+    }
+}
+
+/**
  * Adiciona curso à lista temporária
  */
+
+function adicionarDisciplinaTemporario(modal) {
+    const inputDisciplina = modal.querySelector("#addDisciplinaInput").value.trim();
+    const inputSigla = modal.querySelector("#inputSiglaDisciplina").value.trim();
+    const inputPeriodo = modal.querySelector("#periodoSelect").value.trim();
+    const codigoDisciplina = modal.querySelector("#inputCodigoDisciplina").value.trim();
+
+    const containerTemp = modal.querySelector("#cursosBody .cursosTemporarios"); // container é para disciplinas
+    if (!inputDisciplina || !containerTemp) return;
+
+    function marcarErroCampo(campo) {
+        campo.style.border = "2px solid red";
+        campo.style.animation = "shake 0.3s";
+        setTimeout(() => {
+            campo.style.animation = "";
+        }, 300);
+    }
+
+    if (inputDisciplina === "") {
+        mostrarAlerta("Digite o nome da disciplina", "aviso");
+        marcarErroCampo(modal.querySelector("#addDisciplinaInput"));
+        return;
+    }
+    if (codigoDisciplina === "") {
+        mostrarAlerta("Digite o código da disciplina", "aviso");
+        marcarErroCampo(modal.querySelector("#inputCodigoDisciplina"));
+        return;
+    }
+    if (inputSigla === "") {
+        mostrarAlerta("Digite a sigla da disciplina", "aviso");
+        marcarErroCampo(modal.querySelector("#inputSiglaDisciplina"));
+        return;
+    }
+    if (inputPeriodo === "") {
+        mostrarAlerta("Digite o período da disciplina", "aviso");
+        marcarErroCampo(modal.querySelector("#periodoSelect"));
+        return;
+    }
+    if (EdicaoState.disciplinasParaAdicionar.includes(inputDisciplina)) {
+        mostrarAlerta("Disciplina já está na lista para adicionar", "aviso");
+        inputDisciplina.value = "";
+        return;
+    }
+    EdicaoState.disciplinasParaAdicionar.push({
+        nome: inputDisciplina,
+        sigla: inputSigla,
+        periodo: inputPeriodo,
+        codigo: codigoDisciplina
+    });
+
+    const disciplinaEl = document.createElement("div");
+    disciplinaEl.className = "itemCursoTemp";
+    disciplinaEl.innerHTML = `
+        <span>${inputDisciplina} - ${inputSigla} - ${inputPeriodo} - ${codigoDisciplina}</span>
+        <button class="btnRemoverTemp" title="Remover">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    containerTemp.appendChild(disciplinaEl);
+    inputDisciplina.value = "";
+    inputSigla.value = "";
+    inputPeriodo.value = "";
+    codigoDisciplina.value = "";
+}
+
 function adicionarCursoTemporario(modal) {
     const inputCurso = modal.querySelector("#addCursoInput");
     const containerTemp = modal.querySelector(".cursosTemporarios");
@@ -1294,7 +1703,6 @@ function adicionarCursoTemporario(modal) {
 
     containerTemp.appendChild(cursoEl);
     inputCurso.value = "";
-    console.log("✅ Curso adicionado temporariamente:", nomeCurso);
 }
 
 /**
@@ -1453,7 +1861,6 @@ function salvarEdicaoInstituicao(id, novoNome, modal) {
                 renderizarCardsInstituicoes();
                 atualizarContadorInstituicoes(AppState.instituicoes.length);
                 atualizarDashboardView();
-                mostrarAlerta("Instituição atualizada com sucesso!", "sucesso");
             }
         })
         .catch(err => {
@@ -1551,11 +1958,7 @@ function atualizarCamposModalEdicao(modal, instituicao) {
 
     console.log("✅ Modal atualizado com sucesso!");
 }
-/**
- * Edita um curso (função placeholder)
- */
-function editarCurso(id) {
-}
+
 
 // ============================================
 // 6. FUNÇÕES DE DELEÇÃO DE DADOS (DELETE)
@@ -1565,31 +1968,35 @@ function editarCurso(id) {
 /**
  * Deleta uma instituição do banco de dados
  */
-function deletarInstituicaoDB(id) {
-    console.log(`🗑️ Deletando instituição ID: ${id}`);
+function deletarDisciplinaDB(codigo) {
+    console.log(`🗑️ Deletando disciplina código: ${codigo}`);
     mostrarLoader('mostrar');
 
-    fetch("/instituicao/deletar", {
+    fetch("/disciplina/deletar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: parseInt(id) })
+        body: JSON.stringify({ codigo: codigo })
     })
         .then(res => res.json())
         .then(dados => {
             console.log("✅ Resposta do servidor:", dados);
-
             if (dados.sucesso || dados.message) {
-                mostrarAlerta("Instituição deletada com sucesso!", "sucesso");
-                carregarInstituicoesFromDB();
-                fecharModalEdicaoExpansivel(document.querySelector("#instituicoesBody .modalEdicaoExpansivel"));
+                mostrarAlerta("Disciplina deletada com sucesso!", "sucesso");
+                
+                // ✅ MODIFICADO: Recarrega apenas disciplinas
+                carregarDisciplinasFromDB().then(() => {
+                    renderizarCardsCursos(); // Atualiza cursos
+                });
+                
+                fecharModalEdicaoExpansivel(document.querySelector("#disciplinasBody .modalEdicaoExpansivel"));
             } else {
                 throw new Error(dados.error || "Erro ao deletar");
             }
             mostrarLoader('esconder');
         })
         .catch(err => {
-            console.error("❌ Erro ao deletar instituição:", err);
-            mostrarAlerta("Erro ao deletar instituição do banco de dados.", "erro");
+            console.error("❌ Erro ao deletar disciplina:", err);
+            mostrarAlerta("Erro ao deletar disciplina do banco de dados.", "erro");
             mostrarLoader('esconder');
         });
 }
@@ -1624,6 +2031,73 @@ function deletarCursoDB(id, idInstituicao) {
             mostrarLoader('esconder');
         });
 }
+/**
+ * Deleta uma disciplina do banco de dados (usando CODIGO)
+ */
+function deletarDisciplinaDB(codigo) {
+    console.log(`🗑️ Deletando disciplina código: ${codigo}`);
+    mostrarLoader('mostrar');
+
+    fetch("/disciplina/deletar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ codigo: codigo })
+    })
+        .then(res => res.json())
+        .then(dados => {
+            console.log("✅ Resposta do servidor:", dados);
+            if (dados.sucesso || dados.message) {
+                mostrarAlerta("Disciplina deletada com sucesso!", "sucesso");
+                
+                // ✅ MODIFICADO: Recarrega apenas disciplinas
+                carregarDisciplinasFromDB().then(() => {
+                    renderizarCardsCursos(); // Atualiza cursos
+                });
+                
+                fecharModalEdicaoExpansivel(document.querySelector("#disciplinasBody .modalEdicaoExpansivel"));
+            } else {
+                throw new Error(dados.error || "Erro ao deletar");
+            }
+            mostrarLoader('esconder');
+        })
+        .catch(err => {
+            console.error("❌ Erro ao deletar disciplina:", err);
+            mostrarAlerta("Erro ao deletar disciplina do banco de dados.", "erro");
+            mostrarLoader('esconder');
+        });
+}
+
+/**
+ * Deleta uma turma do banco de dados
+ */
+function deletarTurmaDB(id) {
+    console.log(`🗑️ Deletando turma ID: ${id}`);
+    mostrarLoader('mostrar');
+
+    fetch("/turma/deletar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: parseInt(id) })
+    })
+        .then(res => res.json())
+        .then(dados => {
+            console.log("✅ Resposta do servidor:", dados);
+
+            if (dados.sucesso || dados.message) {
+                mostrarAlerta("Turma deletada com sucesso!", "sucesso");
+                carregarInstituicoesFromDB();
+                fecharModalEdicaoExpansivel(document.querySelector("#turmasBody .modalEdicaoExpansivel"));
+            } else {
+                throw new Error(dados.error || "Erro ao deletar");
+            }
+            mostrarLoader('esconder');
+        })
+        .catch(err => {
+            console.error("❌ Erro ao deletar turma:", err);
+            mostrarAlerta("Erro ao deletar turma do banco de dados.", "erro");
+            mostrarLoader('esconder');
+        });
+}
 
 // ============================================
 // 7. GERENCIAMENTO DE MODAIS E UI AUXILIAR
@@ -1634,7 +2108,6 @@ function deletarCursoDB(id, idInstituicao) {
  * Abre modal para adicionar curso (na tela de Instituições)
  */
 function abrirModalAdicionarCurso(idInstituicao) {
-    console.log("➕ Adicionar curso à instituição ID:", idInstituicao);
 
     const instituicao = AppState.instituicoes.find(inst => inst.id == idInstituicao);
 
@@ -1748,6 +2221,30 @@ function preencherSelectInstituicoes() {
     console.log("✅ Select preenchido com sucesso!");
 }
 
+function preencherSelectCursos() {
+    const selectCurso = document.querySelector("#disciplinasBody #curso"); // ✅ ID correto
+
+    if (!selectCurso) {
+        console.error("Select de cursos não encontrado!");
+        return;
+    }
+
+    console.log("📝 Preenchendo select com", AppState.cursos.length, "cursos");
+
+    // Limpa o select e adiciona a opção padrão
+    selectCurso.innerHTML = '<option value="" disabled selected>Selecione o curso</option>';
+
+    // Adiciona cada curso como uma option
+    AppState.cursos.forEach(curso => {
+        const option = document.createElement("option");
+        option.value = curso.id; // Usa o ID como value
+        option.textContent = `${curso.curso} - ${get.getNomeInstituicaoPorId(curso.fk_id_instituicao)}`;
+        selectCurso.appendChild(option);
+    });
+
+    console.log("✅ Select de cursos preenchido com", selectCurso.options.length - 1, "opções");
+}
+
 // ============================================
 // 8. FUNÇÕES AUXILIARES E GETTERS DO ESTADO
 // (Funções que leem o AppState ou manipulam o estado local)
@@ -1819,6 +2316,36 @@ const get = (() => {
  * Vincula cursos às instituições no AppState (LOCALMENTE)
  * Usado para renderizar os cards de instituições com seus cursos.
  */
+
+/**
+ * Vincula as disciplinas aos cursos no AppState (apenas localmente)
+ */
+function vincularDisciplinasAosCursos() {
+    console.log("🔗 Vinculando disciplinas aos cursos...");
+
+    if (!AppState.disciplinas || AppState.disciplinas.length === 0) {
+        console.log("⚠️ Nenhuma disciplina para vincular");
+        // Limpa disciplinas de todos os cursos
+        AppState.cursos.forEach(curso => {
+            curso.disciplinas = [];
+        });
+        return;
+    }
+
+    // Para cada curso, busca suas disciplinas
+    AppState.cursos.forEach(curso => {
+        const disciplinasDoCurso = AppState.disciplinas.filter(
+            disc => disc.id_curso == curso.id
+        );
+
+        curso.disciplinas = disciplinasDoCurso;
+
+        console.log(`   📚 Curso "${curso.curso}" tem ${disciplinasDoCurso.length} disciplina(s)`);
+    });
+
+    console.log("✅ Disciplinas vinculadas aos cursos");
+}
+
 function vincularCursosNasInstituicoes() {
 
     AppState.instituicoes = AppState.instituicoes.map(inst => {
@@ -1848,8 +2375,431 @@ function vincularCursosNasInstituicoes() {
     renderizarCardsInstituicoes();
 }
 
-// ============================================
-// 9. INICIALIZAÇÃO DA APLICAÇÃO
+function preencherDisciplinasAtuaisCursoExpansivel(curso, modal) {
+    const container = modal.querySelector("#cursosBody .listaCursosAtuais");
+
+    container.innerHTML = "";
+
+    if (curso.disciplinas.length === 0) {
+        container.innerHTML = '<p class="semCursos"><i class="ph ph-info"></i> Nenhuma disciplina cadastrada</p>';
+        return;
+    }
+    curso.disciplinas.forEach(disciplina => {
+        const disciplinaEl = document.createElement("div");
+        disciplinaEl.className = "itemCursoAtual";
+        disciplinaEl.setAttribute("data-disciplina-id", disciplina.id);
+        disciplinaEl.innerHTML = `
+            <span class="nomeCurso">${disciplina.nome}</span>
+            <button class="btnDeletarCurso" data-disciplina-id="${disciplina.id}" data-disciplina-nome="${disciplina.nome}" title="Deletar disciplina">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        `;
+
+        container.appendChild(disciplinaEl);
+    });
+}
+
+function editarCurso(idCurso) {
+    const curso = get.getCursoPorId(idCurso);
+
+    const card = document.querySelector(`#cursosBody .contentCardIdt[data-id="${idCurso}"]`);
+    EdicaoStateCurso.cursoOriginal = JSON.parse(JSON.stringify(curso));
+    EdicaoStateCurso.disciplinasParaAdicionar = [];
+    EdicaoStateCurso.disciplinasParaDeletar = [];
+
+    const modal = document.querySelector("#cursosBody .modalEdicaoExpansivel");
+
+    modal.setAttribute("data-curso-id", idCurso);
+
+    const inputNomeCurso = modal.querySelector("#editNomeCurso");
+    if (inputNomeCurso) {
+        inputNomeCurso.value = curso.curso;
+        inputNomeCurso.placeholder = curso.curso;
+    }
+
+    preencherDisciplinasAtuaisCursoExpansivel(curso, modal);
+
+    const inputAddDisciplina = modal.querySelector("#addDisciplinaInput");
+    const containerTemp = modal.querySelector(".cursosTemporarios");
+    //aqui são disciplinas temporárias mas para não alterar o style ja definido, o nome da classe foi mantido;
+    if (inputAddDisciplina) inputAddDisciplina.value = "";
+    if (containerTemp) containerTemp.innerHTML = "";
+
+    if (!modal.hasAttribute("data-eventos-vinculados")) {
+        vincularEventosModalExpansivel(modal);
+        modal.setAttribute("data-eventos-vinculados", "true");
+    }
+
+    const cardRect = card.getBoundingClientRect(); //pega o tamanho e posição do card clicado para centrar o modal embaixo dele
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const top = cardRect.bottom + scrollTop + 10;
+    const left = cardRect.left;
+    const width = cardRect.width;
+
+    modal.style.position = 'absolute';
+    modal.style.top = `${top}px`;
+    modal.style.left = `${left}px`;
+    modal.style.width = `${width}px`;
+    modal.classList.add("show");
+}
+
+/**
+ * Abre o modal de edição para DISCIPLINAS
+ */
+/**
+ * Abre o modal de edição para DISCIPLINAS (usando CODIGO)
+ */
+function editarDisciplina(codigoDisciplina) {
+    console.log("✏️ Abrindo edição para disciplina código:", codigoDisciplina);
+
+    // Encontra a disciplina em todas as disciplinas do AppState
+    let disciplina = null;
+    let idCurso = null;
+
+    AppState.cursos.forEach(curso => {
+        if (curso.disciplinas) {
+            const disc = curso.disciplinas.find(d => d.codigo == codigoDisciplina);
+            if (disc) {
+                disciplina = disc;
+                idCurso = curso.id;
+            }
+        }
+    });
+
+    if (!disciplina) {
+        mostrarAlerta("Disciplina não encontrada!", "erro");
+        return;
+    }
+
+    // Encontra o card correspondente
+    const card = document.querySelector(`#disciplinasBody .contentCardIdt[data-codigo="${codigoDisciplina}"]`);
+    if (!card) {
+        console.error("❌ Card de disciplina não encontrado!");
+        return;
+    }
+
+    // Salva estado original
+    EdicaoStateDisciplina.disciplinaOriginal = JSON.parse(JSON.stringify(disciplina));
+
+    // Pega o modal que JÁ EXISTE no HTML
+    const modal = document.querySelector("#disciplinasBody .modalEdicaoExpansivel");
+    if (!modal) {
+        console.error("❌ Modal de edição de disciplina não encontrado no HTML!");
+        return;
+    }
+
+    // Armazena o código da disciplina e do curso no modal
+    modal.setAttribute("data-disciplina-codigo", codigoDisciplina);
+    modal.setAttribute("data-curso-id", idCurso);
+
+    // Preenche os inputs de edição
+    const inputNome = modal.querySelector("#editNomeDisciplina");
+    const inputSigla = modal.querySelector("#editSiglaDisciplina");
+    const inputCodigo = modal.querySelector("#editCodigoDisciplina");
+    const selectPeriodo = modal.querySelector("#editPeriodoDisciplina");
+
+    if (inputNome) {
+        inputNome.value = disciplina.nome || "";
+        inputNome.placeholder = disciplina.nome || "";
+    }
+    if (inputSigla) {
+        inputSigla.value = disciplina.sigla || "";
+    }
+    if (inputCodigo) {
+        // O código não deve ser editável, apenas exibido
+        inputCodigo.value = disciplina.codigo || "";
+        inputCodigo.readOnly = true;
+    }
+    if (selectPeriodo) {
+        selectPeriodo.value = disciplina.periodo || "";
+    }
+
+    // Vincula eventos (apenas uma vez)
+    if (!modal.hasAttribute("data-eventos-vinculados")) {
+        vincularEventosModalDisciplina(modal);
+        modal.setAttribute("data-eventos-vinculados", "true");
+    }
+
+    // --- Lógica de Posicionamento ---
+    const cardRect = card.getBoundingClientRect();
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const top = cardRect.bottom + scrollTop + 10;
+    const left = cardRect.left;
+    const width = cardRect.width;
+
+    modal.style.position = 'absolute';
+    modal.style.top = `${top}px`;
+    modal.style.left = `${left}px`;
+    modal.style.width = `${width}px`;
+
+    // Mostra o modal
+    modal.classList.add("show");
+    console.log("✅ Modal de disciplina posicionado abaixo do card");
+}
+
+/**
+ * Abre o modal de edição para TURMAS
+ */
+function editarTurma(idTurma) {
+    // Encontra a turma no AppState
+    const turma = AppState.turmas.find(t => t.id == idTurma);
+
+    if (!turma) {
+        mostrarAlerta("Turma não encontrada!", "erro");
+        return;
+    }
+
+    // Encontra o card correspondente
+    const card = document.querySelector(`#turmasBody .contentCardIdt[data-id="${idTurma}"]`);
+    if (!card) {
+        console.error("❌ Card de turma não encontrado!");
+        return;
+    }
+
+    // Salva estado original
+    EdicaoStateTurma.turmaOriginal = JSON.parse(JSON.stringify(turma));
+
+    // Pega o modal que JÁ EXISTE no HTML
+    const modal = document.querySelector("#turmasBody .modalEdicaoExpansivel");
+    if (!modal) {
+        console.error("❌ Modal não encontrado no HTML!");
+        return;
+    }
+
+    // Armazena o ID da turma no modal
+    modal.setAttribute("data-turma-id", idTurma);
+
+    // Preenche os inputs de edição
+    const inputNome = modal.querySelector("#editNomeTurma");
+    const inputCodigo = modal.querySelector("#editCodigoTurma");
+    const selectPeriodo = modal.querySelector("#editPeriodoTurma");
+
+    if (inputNome) {
+        inputNome.value = turma.nome_turma || "";
+        inputNome.placeholder = turma.nome_turma || "";
+    }
+    if (inputCodigo) {
+        inputCodigo.value = turma.codigo || "";
+    }
+    if (selectPeriodo) {
+        // Extrai apenas o número do período (ex: "1° Semestre" -> "1")
+        const periodoNum = turma.periodo ? turma.periodo.toString().match(/\d+/)[0] : "";
+        selectPeriodo.value = periodoNum || "";
+    }
+
+    // Vincula eventos (apenas uma vez)
+    if (!modal.hasAttribute("data-eventos-vinculados")) {
+        vincularEventosModalTurma(modal);
+        modal.setAttribute("data-eventos-vinculados", "true");
+    }
+
+    // --- Lógica de Posicionamento ---
+    const cardRect = card.getBoundingClientRect();
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const top = cardRect.bottom + scrollTop + 10;
+    const left = cardRect.left;
+    const width = cardRect.width;
+
+    modal.style.position = 'absolute';
+    modal.style.top = `${top}px`;
+    modal.style.left = `${left}px`;
+    modal.style.width = `${width}px`;
+
+    // Mostra o modal
+    modal.classList.add("show");
+    console.log("✅ Modal de turma posicionado abaixo do card");
+}
+
+/**
+ * Vincula eventos do modal de edição de DISCIPLINAS
+ */
+function vincularEventosModalDisciplina(modal) {
+    // Botão de fechar (X)
+    const btnFechar = modal.querySelector(".btnFecharExpansivel");
+    if (btnFechar) {
+        btnFechar.addEventListener("click", () => fecharModalEdicaoExpansivel(modal));
+    }
+
+    // Botão cancelar
+    const btnCancelar = modal.querySelector(".btnCancelarEdicao");
+    if (btnCancelar) {
+        btnCancelar.addEventListener("click", () => fecharModalEdicaoExpansivel(modal));
+    }
+
+    // Botão salvar
+    const btnSalvar = modal.querySelector(".btnSalvarEdicao");
+    if (btnSalvar) {
+        btnSalvar.addEventListener("click", () => {
+            const codigoDisciplina = modal.getAttribute("data-disciplina-id");
+            const idCurso = modal.getAttribute("data-curso-id");
+            const inputNome = modal.querySelector("#editNomeDisciplina");
+            const inputSigla = modal.querySelector("#editSiglaDisciplina");
+            const inputCodigo = modal.querySelector("#editCodigoDisciplina");
+            const selectPeriodo = modal.querySelector("#editPeriodoDisciplina");
+
+            const novoNome = inputNome?.value.trim() || "";
+            const novaSigla = inputSigla?.value.trim() || "";
+            const novoCodigo = inputCodigo?.value.trim() || "";
+            const novoPeriodo = selectPeriodo?.value || "";
+
+            if (novoNome === "") {
+                mostrarAlerta("Preencha o nome da disciplina", "aviso");
+                return;
+            }
+
+            if (novaSigla === "") {
+                mostrarAlerta("Preencha a sigla", "aviso");
+                return;
+            }
+
+            if (novoCodigo === "") {
+                mostrarAlerta("Preencha o código", "aviso");
+                return;
+            }
+
+            if (novoPeriodo === "") {
+                mostrarAlerta("Selecione o período", "aviso");
+                return;
+            }
+
+            salvarEdicaoDisciplina(codigoDisciplina, idCurso, novoNome, novaSigla, novoCodigo, novoPeriodo, modal);
+        });
+    }
+}
+
+/**
+ * Vincula eventos do modal de edição de TURMAS
+ */
+function vincularEventosModalTurma(modal) {
+    // Botão de fechar (X)
+    const btnFechar = modal.querySelector(".btnFecharExpansivel");
+    if (btnFechar) {
+        btnFechar.addEventListener("click", () => fecharModalEdicaoExpansivel(modal));
+    }
+
+    // Botão cancelar
+    const btnCancelar = modal.querySelector(".btnCancelarEdicao");
+    if (btnCancelar) {
+        btnCancelar.addEventListener("click", () => fecharModalEdicaoExpansivel(modal));
+    }
+
+    // Botão salvar
+    const btnSalvar = modal.querySelector(".btnSalvarEdicao");
+    if (btnSalvar) {
+        btnSalvar.addEventListener("click", () => {
+            const idTurma = modal.getAttribute("data-turma-id");
+            const inputNome = modal.querySelector("#editNomeTurma");
+            const inputCodigo = modal.querySelector("#editCodigoTurma");
+            const selectPeriodo = modal.querySelector("#editPeriodoTurma");
+
+            const novoNome = inputNome?.value.trim() || "";
+            const novoCodigo = inputCodigo?.value.trim() || "";
+            const novoPeriodo = selectPeriodo?.value || "";
+
+            if (novoNome === "") {
+                mostrarAlerta("Preencha o nome da turma", "aviso");
+                return;
+            }
+
+            if (novoPeriodo === "") {
+                mostrarAlerta("Selecione o período", "aviso");
+                return;
+            }
+
+            salvarEdicaoTurma(idTurma, novoNome, novoCodigo, novoPeriodo, modal);
+        });
+    }
+}
+
+/**
+ * Salva as alterações de uma DISCIPLINA no banco de dados (usando CODIGO)
+ */
+function salvarEdicaoDisciplina(codigo, idCurso, novoNome, novaSigla, novoPeriodo, modal) {
+    console.log("💾 Salvando edição de disciplina...");
+    mostrarLoader("mostrar");
+
+    fetch("/disciplina/atualizar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            codigo: codigo,
+            id_curso: parseInt(idCurso),
+            nome: novoNome,
+            sigla: novaSigla,
+            periodo: parseInt(novoPeriodo)
+        })
+    })
+    .then(res => res.json())
+    .then(dados => {
+        if (dados.message) {
+            mostrarLoader('esconder');
+            mostrarAlerta("Disciplina atualizada com sucesso!", "sucesso");
+            
+            // ✅ MODIFICADO: Recarrega apenas disciplinas
+            carregarDisciplinasFromDB().then(() => {
+                renderizarCardsCursos();
+            });
+            
+            fecharModalEdicaoExpansivel(modal);
+        } else {
+            mostrarLoader('esconder');
+            mostrarAlerta(dados.error || "Erro ao atualizar disciplina", "erro");
+        }
+    })
+    .catch(err => {
+        mostrarLoader('esconder');
+        mostrarAlerta("Erro ao atualizar disciplina", "erro");
+        console.error("❌ Erro:", err);
+    });
+}
+
+/**
+ * Salva as alterações de uma TURMA no banco de dados
+ */
+function salvarEdicaoTurma(idTurma, novoNome, novoCodigo, novoPeriodo, modal) {
+    console.log("💾 Salvando edição de turma...");
+    mostrarLoader("mostrar");
+
+    const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
+    if (!usuarioLogado || !usuarioLogado.id) {
+        mostrarAlerta("Erro: Usuário não autenticado.", "erro");
+        mostrarLoader('esconder');
+        return;
+    }
+
+    fetch("/turma/atualizar", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            id: parseInt(idTurma),
+            nome: novoNome,
+            codigo: novoCodigo,
+            periodo: parseInt(novoPeriodo)
+        })
+    })
+        .then(res => res.json())
+        .then(dados => {
+            if (dados.sucesso) {
+                mostrarLoader('esconder');
+                mostrarAlerta("Turma atualizada com sucesso!", "sucesso");
+
+                // Recarrega os dados
+                carregarInstituicoesFromDB();
+
+                // Fecha o modal
+                fecharModalEdicaoExpansivel(modal);
+            } else {
+                mostrarLoader('esconder');
+                mostrarAlerta(dados.erro || "Erro ao atualizar turma", "erro");
+            }
+        })
+        .catch(err => {
+            mostrarLoader('esconder');
+            mostrarAlerta("Erro ao atualizar turma", "erro");
+            console.error("❌ Erro:", err);
+        });
+}
+
 // ============================================
 
 document.addEventListener('DOMContentLoaded', () => {

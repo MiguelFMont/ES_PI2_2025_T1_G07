@@ -1,21 +1,24 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Exemplo de Modal Expansível</title>
     <link rel="stylesheet" href="../styles/modalExpansivo.css">
+    <link rel="stylesheet" href="../styles/pageMain.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" type="text/css"
         href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
     <link rel="stylesheet" type="text/css"
         href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css" />
-    
+
 </head>
+
 <body>
 
     <div class="modalEdicaoExpansivel show">
-        
+
         <div class="headerModalExpansivel">
             <h3><i class="ph ph-pencil-simple"></i> Editar Disciplina</h3>
             <button class="btnFecharExpansivel" aria-label="Fechar modal">
@@ -24,17 +27,17 @@
         </div>
 
         <div class="contentModalExpansivel">
-            
+
             <div class="campoEdicao">
                 <label for="editNomeDisciplina"><i class="ph ph-buildings"></i>Nome da Instituição</label>
                 <input type="text" id="editNomeDisciplina" value="">
             </div>
 
             <div class="campoEdicao">
-                <label><i class="ph ph-books"></i> Cursos Vinculados Atualmente</label>
-                
+                <label><i class="ph ph-books"></i> Disciplinas Vinculadas Atualmente</label>
+
                 <div class="listaCursosAtuais">
-                    
+
                     <div class="itemCursoAtual">
                         <span class="nomeCurso"></span>
                         <button class="btnDeletarCurso" aria-label="">
@@ -56,190 +59,107 @@
                         </button>
                     </div>
 
-                    </div>
+                </div>
             </div>
 
             <div class="campoEdicao">
-                <label for="addCursoInput"><i class="fas fa-plus-circle"></i> Adicionar Novo Curso à Disciplina</label>
-                
+                <label for="addCursoInput"><i class="fas fa-plus-circle"></i> Adicionar Nova Disciplina à Curso</label>
+
                 <div class="addCursoContainer">
-                    <input type="text" id="addCursoInput" placeholder="Nome do novo curso...">
+                    <input type="text" id="addCursoInput" placeholder="Nome da nova disciplina...">
                     <button class="btnAddCurso">
                         <i class="fas fa-plus"></i> Adicionar
                     </button>
                 </div>
 
-                <div class="cursosTemporarios">
-                    
-                    <div class="itemCursoTemp">
-                        <span></span>
-                        <button class="btnRemoverTemp" aria-label="Remover curso temporário">
-                            <i class="fas fa-times"></i>
-                        </button>
+                <div class="boxInfoDisciplinas">
+                    <div class="campoEdicao">
+                        <label for="inputSiglaDiciplina">Sigla</label>
+                        <input type="text" placeholder="Ex: PI" id="inputSiglaDiciplina">
+                        <label for="text"></label>
                     </div>
-                    
-                    <div class="itemCursoTemp">
-                        <span></span>
-                        <button class="btnRemoverTemp" aria-label="Remover curso temporário">
-                            <i class="fas fa-times"></i>
-                        </button>
+                    <div class="campoEdicao">
+                        <label for="inputCodigoDiciplina">Código</label>
+                        <input type="text" placeholder="Ex: PI-2025" id="inputCodigoDiciplina">
+                        <label for="text"></label>
+                    </div>
+                    <div class="campoEdicao">
+                        <label for="periodoSelect">Período</label>
+                        <select id="periodoSelect" required>
+                            <option value="" disabled selected>Selecione o período</option>
+                            <option value="1">1° Semestre</option>
+                            <option value="2">2° Semestre</option>
+                            <option value="3">3° Semestre</option>
+                            <option value="4">4° Semestre</option>
+                            <option value="5">5° Semestre</option>
+                            <option value="6">6° Semestre</option>
+                            <option value="7">7° Semestre</option>
+                            <option value="8">8° Semestre</option>
+                            <option value="9">9° Semestre</option>
+                            <option value="10">10° Semestre</option>
+                            <option value="11">11° Semestre</option>
+                            <option value="12">12° Semestre</option>
+                            <option value="13">13° Semestre</option>
+                            <option value="14">14° Semestre</option>
+                        </select>
+
+                        <label for="text"></label>
                     </div>
                 </div>
-            </div>
 
-        </div>
-
-        <div class="footerModalExpansivel">
-            <button class="btnCancelarEdicao">
-                <i class="fas fa-times-circle"></i> Cancelar
-            </button>
-            <button class="btnSalvarEdicao">
-                <i class="ph ph-check"></i> Salvar Alterações
-            </button>
-        </div>
-
-    </div>
-    <script>
-        // Espera o documento HTML ser completamente carregado
-        document.addEventListener('DOMContentLoaded', () => {
-
-            // --- 1. Seleção dos Elementos Principais ---
-            const modal = document.querySelector('.modalEdicaoExpansivel');
-            
-            // const btnAbrir = document.querySelector('#btnAbrirModal'); // CORREÇÃO 1: Comentado
-            
-            const btnFechar = document.querySelector('.btnFecharExpansivel');
-            const btnCancelar = document.querySelector('.btnCancelarEdicao');
-            const btnSalvar = document.querySelector('.btnSalvarEdicao');
-
-            // --- 2. Funções de Abrir/Fechar Modal ---
-            
-            // A função 'abrirModal' não é mais chamada, mas pode ficar aqui.
-            const abrirModal = () => {
-                modal.classList.add('show');
-            };
-
-            const fecharModal = () => {
-                modal.classList.remove('show');
-            };
-
-            // Adiciona os eventos de fechar
-            // btnAbrir.addEventListener('click', abrirModal); // CORREÇÃO 1: Comentado
-            btnFechar.addEventListener('click', fecharModal);
-            btnCancelar.addEventListener('click', fecharModal);
-
-
-            // --- 3. Lógica para Adicionar Cursos Temporários ---
-            const btnAddCurso = document.querySelector('.btnAddCurso');
-            const inputCurso = document.querySelector('#addCursoInput');
-            const containerCursosTemp = document.querySelector('.cursosTemporarios');
-
-            const handleAdicionarCurso = () => {
-                const nomeCurso = inputCurso.value.trim(); 
-
-                if (nomeCurso) {
-                    const tagHTML = `
+                <div class="tempAndButtons">
+                    <div class="cursosTemporarios">
+    
                         <div class="itemCursoTemp">
-                            <span>${nomeCurso}</span>
+                            <span></span>
                             <button class="btnRemoverTemp" aria-label="Remover curso temporário">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
-                    `;
-                    containerCursosTemp.insertAdjacentHTML('beforeend', tagHTML);
-                    
-                    inputCurso.value = '';
-                    inputCurso.focus();
-                }
-            };
-
-            btnAddCurso.addEventListener('click', handleAdicionarCurso);
-            inputCurso.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault(); 
-                    handleAdicionarCurso();
-                }
-            });
-
-
-            // --- 4. Lógica para Remover Cursos Temporários ---
-            containerCursosTemp.addEventListener('click', (e) => {
-                const btnRemover = e.target.closest('.btnRemoverTemp');
-                
-                if (btnRemover) {
-                    const itemParaRemover = btnRemover.closest('.itemCursoTemp');
-                    itemParaRemover.remove();
-                }
-            });
+    
+                        <div class="itemCursoTemp">
+                            <span></span>
+                            <button class="btnRemoverTemp" aria-label="Remover curso temporário">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+    
+                    <div class="footerModalExpansivel">
+                        <button class="btnCancelarEdicao">
+                            <i class="fas fa-times-circle"></i> Cancelar
+                        </button>
+                        <button class="btnSalvarEdicao">
+                            <i class="ph ph-check"></i> Salvar Alterações
+                        </button>
+                    </div>
+                </div>
 
 
-            // --- 5. Lógica para Marcar/Desmarcar Cursos Atuais ---
-            const containerCursosAtuais = document.querySelector('.listaCursosAtuais');
+            </div>
 
-            containerCursosAtuais.addEventListener('click', (e) => {
-                const btnToggle = e.target.closest('.btnDeletarCurso');
-                
-                if (!btnToggle) return; 
+        </div>
 
-                const itemCurso = btnToggle.closest('.itemCursoAtual');
-                const icone = btnToggle.querySelector('i');
+    </div>
 
-                if (btnToggle.classList.contains('btnDesfazer')) {
-                    itemCurso.classList.remove('marcadoParaDeletar');
-                    btnToggle.classList.remove('btnDesfazer');
-                    icone.classList.remove('fa-undo');
-                    icone.classList.add('fa-trash-alt');
-                    btnToggle.setAttribute('aria-label', 'Marcar para deletar');
-                } else {
-                    itemCurso.classList.add('marcadoParaDeletar');
-                    btnToggle.classList.add('btnDesfazer');
-                    icone.classList.remove('fa-trash-alt');
-                    icone.classList.add('fa-undo');
-                    btnToggle.setAttribute('aria-label', 'Desfazer marcação');
-                }
-            });
+    <script>
+        // Espera o documento HTML ser completamente carregado
+        document.addEventListener('DOMContentLoaded', () => {
 
-
-            // --- 6. Lógica de Salvar (CORRIGIDA) ---
-            btnSalvar.addEventListener('click', () => {
-                
-                // 1. Coletar dados dos inputs
-                const nomeCurso = document.querySelector('#editNomeDisciplina').value;
-                // const nomeProfessor = document.querySelector('#editNomeProfessor').value; // CORREÇÃO 2: Removido
-
-                // 2. Coletar cursos a deletar
-                const cursosParaDeletar = [];
-                document.querySelectorAll('.itemCursoAtual.marcadoParaDeletar .nomeCurso').forEach(cursoEl => {
-                    cursosParaDeletar.push(cursoEl.textContent);
+            // Espera o documento carregar
+            document.addEventListener('DOMContentLoaded', function () {
+                // Encontra o seu select pelo ID e "ativa" o Choices.js nele
+                const elementoSelect = document.getElementById('periodoSelect');
+                const choices = new Choices(elementoSelect, {
+                    searchEnabled: false, // Desabilita a busca (opcional)
+                    itemSelectText: 'Pressionar para selecionar', // Traduz (opcional)
                 });
-
-                // 3. Coletar cursos a adicionar
-                const cursosParaAdicionar = [];
-                document.querySelectorAll('.cursosTemporarios .itemCursoTemp span').forEach(cursoEl => {
-                    cursosParaAdicionar.push(cursoEl.textContent);
-                });
-
-                // 4. Montar o objeto de dados (simulando envio)
-                const dados = {
-                    curso: nomeCurso, // CORREÇÃO 2: 'disciplina' -> 'curso'
-                    // professor: nomeProfessor, // CORREÇÃO 2: Removido
-                    adicionar: cursosParaAdicionar,
-                    deletar: cursosParaDeletar
-                };
-
-                // 5. Exibir no console 
-                console.log("===== DADOS PARA SALVAR =====");
-                console.log(dados);
-                console.log("=============================");
-
-                alert('Alterações "salvas" com sucesso! Verifique o console (F12).');
-                
-                // 6. Fechar o modal
-                fecharModal();
             });
 
-        }); // Fim do DOMContentLoaded
+        });
+
     </script>
 
 </body>
+
 </html>

@@ -23,7 +23,7 @@
 </head>
 
 <body>
- 
+
     <div class="load" style="display: none;">
         <div class="loadCircle"></div>
     </div>
@@ -61,7 +61,7 @@
                 <li>
                     <a href="#">
                         <i class="ph ph-book-open" class="iconsSeacrchContent"></i>
-                        <p>Diciplinas</p>
+                        <p>Disciplinas</p>
                     </a>
                 </li>
                 <li>
@@ -119,9 +119,9 @@
                             <i class="ph ph-books"></i>
                         </div>
                     </a>
-                    <a href="#" class="itensOption" id="diciplinas">
+                    <a href="#" class="itensOption" id="disciplinas">
                         <div class="titleOptionDashboard">
-                            <h2>Diciplinas</h2>
+                            <h2>Disciplinas</h2>
                             <p>0</p>
                         </div>
                         <div class="logoOptions">
@@ -297,33 +297,36 @@
                                 </button>
                             </div>
 
-                            <div class="cursosTemporarios">
+                            <div class="tempAndButtons">
+                                <div class="cursosTemporarios">
 
-                                <div class="itemCursoTemp">
-                                    <span></span>
-                                    <button class="btnRemoverTemp" aria-label="Remover curso temporário">
-                                        <i class="fas fa-times"></i>
-                                    </button>
+                                    <div class="itemCursoTemp">
+                                        <span></span>
+                                        <button class="btnRemoverTemp" aria-label="Remover curso temporário">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="itemCursoTemp">
+                                        <span></span>
+                                        <button class="btnRemoverTemp" aria-label="Remover curso temporário">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
                                 </div>
 
-                                <div class="itemCursoTemp">
-                                    <span></span>
-                                    <button class="btnRemoverTemp" aria-label="Remover curso temporário">
-                                        <i class="fas fa-times"></i>
+                                <div class="footerModalExpansivel">
+                                    <button class="btnCancelarEdicao">
+                                        <i class="fas fa-times-circle"></i> Cancelar
+                                    </button>
+                                    <button class="btnSalvarEdicao">
+                                        <i class="ph ph-check"></i> Salvar
                                     </button>
                                 </div>
                             </div>
+
                         </div>
 
-                    </div>
-
-                    <div class="footerModalExpansivel">
-                        <button class="btnCancelarEdicao">
-                            <i class="fas fa-times-circle"></i> Cancelar
-                        </button>
-                        <button class="btnSalvarEdicao">
-                            <i class="ph ph-check"></i> Salvar Alterações
-                        </button>
                     </div>
 
                 </div>
@@ -388,12 +391,6 @@
                             <p>Nome do curso</p>
                             <input type="text" id="nomeDoCurso" placeholder="Ex: Engenharia de Software">
                             <label for="text"></label>
-                        </div>
-                        <div class="campIdt" id="disciplinasAdicionadosCamp">
-                            <p>Disciplinas Adicionadas</p>
-                            <div class="cursosEdidCamp">
-                                <div class="linkDatailsIdt"></div>
-                            </div>
                         </div>
                         <div class="campIdt" id="addCursoEdit">
                             <p>Adicionar Disciplina</p>
@@ -461,6 +458,7 @@
                             <label><i class="ph ph-books"></i> Disciplinas Vinculadas Atualmente</label>
 
                             <div class="listaCursosAtuais">
+                                <!-- Na verdade aqui seriam as disciplinas, mas para não causar conflito com o CSS. não alterei -->
 
                                 <div class="itemCursoAtual">
                                     <span class="nomeCurso"></span>
@@ -476,54 +474,85 @@
                                     </button>
                                 </div>
 
-                                <div class="itemCursoAtual">
-                                    <span class="nomeCurso"></span>
-                                    <button class="btnDeletarCurso" aria-label="Marcar para deletar">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </div>
-
                             </div>
                         </div>
 
                         <div class="campoEdicao">
-                            <label for="addCursoInput"><i class="fas fa-plus-circle"></i> Adicionar Novo Curso à
-                                Instituição</label>
+                            <label for="addDisciplinaInput"><i class="fas fa-plus-circle"></i> Adicionar Nova Disciplina
+                                à
+                                Curso</label>
 
                             <div class="addCursoContainer">
-                                <input type="text" id="addCursoInput" placeholder="Nome do novo curso...">
+                                <input type="text" id="addDisciplinaInput" placeholder="Nome da nova disciplina...">
                                 <button class="btnAddCurso">
                                     <i class="fas fa-plus"></i> Adicionar
                                 </button>
                             </div>
 
-                            <div class="cursosTemporarios">
+                            <div class="boxInfoDisciplinas">
+                                <div class="campoEdicao">
+                                    <label for="inputSiglaDisciplina">Sigla</label>
+                                    <input type="text" placeholder="Ex: PI" id="inputSiglaDisciplina">
+                                    <label for="text"></label>
+                                </div>
+                                <div class="campoEdicao">
+                                    <label for="inputCodigoDisciplina">Código</label>
+                                    <input type="text" placeholder="Ex: PI-2025" id="inputCodigoDisciplina">
+                                    <label for="text"></label>
+                                </div>
+                                <div class="campoEdicao">
+                                    <label for="periodoSelect">Período</label>
+                                    <select id="periodoSelect" required>
+                                        <option value="" disabled selected>Selecione</option>
+                                        <option value="1">1° Semestre</option>
+                                        <option value="2">2° Semestre</option>
+                                        <option value="3">3° Semestre</option>
+                                        <option value="4">4° Semestre</option>
+                                        <option value="5">5° Semestre</option>
+                                        <option value="6">6° Semestre</option>
+                                        <option value="7">7° Semestre</option>
+                                        <option value="8">8° Semestre</option>
+                                        <option value="9">9° Semestre</option>
+                                        <option value="10">10° Semestre</option>
+                                        <option value="11">11° Semestre</option>
+                                        <option value="12">12° Semestre</option>
+                                        <option value="13">13° Semestre</option>
+                                        <option value="14">14° Semestre</option>
+                                    </select>
 
-                                <div class="itemCursoTemp">
-                                    <span></span>
-                                    <button class="btnRemoverTemp" aria-label="Remover curso temporário">
-                                        <i class="fas fa-times"></i>
-                                    </button>
+                                    <label for="text"></label>
+                                </div>
+                            </div>
+
+                            <div class="tempAndButtons">
+                                <div class="cursosTemporarios">
+
+                                    <div class="itemCursoTemp">
+                                        <span></span>
+                                        <button class="btnRemoverTemp" aria-label="Remover curso temporário">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="itemCursoTemp">
+                                        <span></span>
+                                        <button class="btnRemoverTemp" aria-label="Remover curso temporário">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
                                 </div>
 
-                                <div class="itemCursoTemp">
-                                    <span></span>
-                                    <button class="btnRemoverTemp" aria-label="Remover curso temporário">
-                                        <i class="fas fa-times"></i>
+                                <div class="footerModalExpansivel">
+                                    <button class="btnCancelarEdicao">
+                                        <i class="fas fa-times-circle"></i> Cancelar
+                                    </button>
+                                    <button class="btnSalvarEdicao">
+                                        <i class="ph ph-check"></i> Salvar Alterações
                                     </button>
                                 </div>
                             </div>
                         </div>
 
-                    </div>
-
-                    <div class="footerModalExpansivel">
-                        <button class="btnCancelarEdicao">
-                            <i class="fas fa-times-circle"></i> Cancelar
-                        </button>
-                        <button class="btnSalvarEdicao">
-                            <i class="ph ph-check"></i> Salvar Alterações
-                        </button>
                     </div>
 
                 </div>
@@ -548,54 +577,55 @@
             </div>
         </div>
 
-        <div class="diciplinas">
-            <div class="idtBody" id="diciplinasBody">
+        <div class="disciplinas">
+            <div class="idtBody" id="disciplinasBody">
                 <div class="headerIdt">
                     <div class="titleIdt">
                         <div class="iconAndTitle">
                             <i class="ph ph-book-open"></i>
-                            <h1>Diciplinas</h1>
+                            <h1>Disciplinas</h1>
                         </div>
-                        <p>Gerencie as diciplinas que você leciona</p>
+                        <p>Gerencie as disciplinas que você leciona</p>
                     </div>
                     <button class="newIdt">
                         <i class="ph ph-plus"></i>
-                        Nova diciplina
+                        Nova disciplina
                     </button>
                 </div>
                 <div class="cardIdt">
                     <div class="iconIdt">
                         <i class="ph ph-book-open"></i>
                     </div>
-                    <h3>Nenhuma diciplina cadastrada</h3>
-                    <p>Clique no botão "Nova diciplina" para começar</p>
+                    <h3>Nenhuma disciplina cadastrada</h3>
+                    <p>Clique no botão "Nova disciplina" para começar</p>
                     <div class="createIdt">
                         <div class="titleCreateIdt">
-                            <h2>Nova diciplina</h2>
+                            <h2>Nova disciplina</h2>
                             <button>
                                 <i class="ph ph-x" id="xClosedCreate"></i>
                             </button>
                         </div>
                         <div class="campIdt">
                             <p>Curso</p>
-                            <input list="listCursos" type="text" placeholder="Selecione um curso" id="cursoSelect">
-                            <datalist id="listCursos"></datalist>
+                            <select id="curso" required>
+                                <option value="" disabled selected>Selecione o curso</option>
+                            </select>
                             <label for="text"></label>
                         </div>
                         <div class="campIdtToggle">
                             <div class="campIdt">
-                                <p>Nome da diciplina</p>
-                                <input type="text" placeholder="Ex: Projeto Integrador" id="inputNomeDiciplina">
+                                <p>Nome da disciplina</p>
+                                <input type="text" placeholder="Ex: Projeto Integrador" id="inputNomeDisciplina">
                                 <label for="text"></label>
                             </div>
                             <div class="campIdt">
                                 <p>Sigla</p>
-                                <input type="text" placeholder="Ex: PI" id="inputSiglaDiciplina">
+                                <input type="text" placeholder="Ex: PI" id="inputSiglaDisciplina">
                                 <label for="text"></label>
                             </div>
                             <div class="campIdt">
                                 <p>Código</p>
-                                <input type="text" placeholder="Ex: PI-2025" id="inputCodigoDiciplina">
+                                <input type="text" placeholder="Ex: PI-2025" id="inputCodigoDisciplina">
                                 <label for="text"></label>
                             </div>
                             <div class="campIdt">
@@ -628,7 +658,7 @@
                 </div>
                 <div class="cardsCreateIdt">
                     <div class="contentCardIdt">
-                        <i class="ph ph-book-open" id="diciplinasIcon"></i>
+                        <i class="ph ph-book-open" id="disciplinasIcon"></i>
                         <div class="textContentCardIdt">
                             <h2></h2>
                             <p></p>
@@ -647,6 +677,67 @@
                             </button>
                         </div>
                     </div>
+                </div>
+
+                <!-- MODAL PARA EDIÇÃO DE DISCIPLINAS -->
+                <div class="modalEdicaoExpansivel">
+
+                    <div class="headerModalExpansivel">
+                        <h3><i class="ph ph-pencil-simple"></i> Editar Disciplina</h3>
+                        <button class="btnFecharExpansivel" aria-label="Fechar modal">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <div class="contentModalExpansivel">
+
+                        <div class="boxInfoDisciplinas">
+                            <div class="campoEdicao">
+                                <label for="editNomeDisciplina"><i class="ph ph-book-open"></i>Nome da Disciplina</label>
+                                <input type="text" id="editNomeDisciplina" placeholder="">
+                            </div>
+                            <div class="campoEdicao">
+                                <label for="editSiglaDisciplina">Sigla</label>
+                                <input type="text" id="editSiglaDisciplina" placeholder="Ex: PI">
+                            </div>
+                            <div class="campoEdicao">
+                                <label for="editCodigoDisciplina">Código</label>
+                                <input type="text" id="editCodigoDisciplina" placeholder="Ex: PI-2025">
+                            </div>
+                        </div>
+
+                        <div class="campoEdicao">
+                            <label for="editPeriodoDisciplina"><i class="ph ph-calendar"></i>Período</label>
+                            <select id="editPeriodoDisciplina" required>
+                                <option value="" disabled selected>Selecione o período</option>
+                                <option value="1">1° Semestre</option>
+                                <option value="2">2° Semestre</option>
+                                <option value="3">3° Semestre</option>
+                                <option value="4">4° Semestre</option>
+                                <option value="5">5° Semestre</option>
+                                <option value="6">6° Semestre</option>
+                                <option value="7">7° Semestre</option>
+                                <option value="8">8° Semestre</option>
+                                <option value="9">9° Semestre</option>
+                                <option value="10">10° Semestre</option>
+                                <option value="11">11° Semestre</option>
+                                <option value="12">12° Semestre</option>
+                                <option value="13">13° Semestre</option>
+                                <option value="14">14° Semestre</option>
+                            </select>
+                        </div>
+
+                        <div class="footerModalExpansivel">
+                            <button class="btnCancelarEdicao">
+                                <i class="fas fa-times-circle"></i> Cancelar
+                            </button>
+                            <button class="btnSalvarEdicao">
+                                <i class="ph ph-check"></i> Salvar Alterações
+                            </button>
+                        </div>
+
+                    </div>
+
                 </div>
             </div>
 
@@ -697,7 +788,7 @@
                         <div class="campIdtToggle">
                             <div class="campIdt">
                                 <p>Código</p>
-                                <input type="text" placeholder="Ex: T1" id="inputSiglaDiciplina">
+                                <input type="text" placeholder="Ex: T1" id="inputSiglaDisciplina">
                                 <label for="text"></label>
                             </div>
                             <div class="campIdt">
@@ -743,6 +834,62 @@
                 olatest
             </div>
         </div> -->
+                </div>
+
+                <!-- MODAL PARA EDIÇÃO DE TURMAS -->
+                <div class="modalEdicaoExpansivel">
+
+                    <div class="headerModalExpansivel">
+                        <h3><i class="ph ph-pencil-simple"></i> Editar Turma</h3>
+                        <button class="btnFecharExpansivel" aria-label="Fechar modal">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <div class="contentModalExpansivel">
+
+                        <div class="boxInfoDisciplinas">
+                            <div class="campoEdicao">
+                                <label for="editNomeTurma"><i class="ph ph-users"></i>Nome da Turma</label>
+                                <input type="text" id="editNomeTurma" placeholder="">
+                            </div>
+                            <div class="campoEdicao">
+                                <label for="editCodigoTurma">Código</label>
+                                <input type="text" id="editCodigoTurma" placeholder="Ex: T1">
+                            </div>
+                            <div class="campoEdicao">
+                                <label for="editPeriodoTurma">Período</label>
+                                <select id="editPeriodoTurma" required>
+                                    <option value="" disabled selected>Selecione o período</option>
+                                    <option value="1">1° Semestre</option>
+                                    <option value="2">2° Semestre</option>
+                                    <option value="3">3° Semestre</option>
+                                    <option value="4">4° Semestre</option>
+                                    <option value="5">5° Semestre</option>
+                                    <option value="6">6° Semestre</option>
+                                    <option value="7">7° Semestre</option>
+                                    <option value="8">8° Semestre</option>
+                                    <option value="9">9° Semestre</option>
+                                    <option value="10">10° Semestre</option>
+                                    <option value="11">11° Semestre</option>
+                                    <option value="12">12° Semestre</option>
+                                    <option value="13">13° Semestre</option>
+                                    <option value="14">14° Semestre</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="footerModalExpansivel">
+                            <button class="btnCancelarEdicao">
+                                <i class="fas fa-times-circle"></i> Cancelar
+                            </button>
+                            <button class="btnSalvarEdicao">
+                                <i class="ph ph-check"></i> Salvar Alterações
+                            </button>
+                        </div>
+
+                    </div>
+
                 </div>
             </div>
         </div>

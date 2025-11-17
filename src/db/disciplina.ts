@@ -118,7 +118,6 @@ export async function getAllDisciplina(): Promise<Disciplina[]> {
     }
 }
 
-// Obter a disciplina pelo ID.
 // Obter a disciplina pelo CODIGO - CORRIGIDO
 export async function getDisciplinaByCodigo(codigo: number): Promise<Disciplina | null> {
     const conn = await open();

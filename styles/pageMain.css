@@ -372,8 +372,8 @@ body {
     color: var(--color4);
 }
 
-#diciplinas .logoOptions,
-#diciplinas .logoOptions i {
+#disciplinas .logoOptions,
+#disciplinas .logoOptions i {
     background: var(--color3Shadow);
     color: var(--color3);
 }
@@ -612,7 +612,7 @@ body {
     color: var(--color4);
 }
 
-#diciplinasBody .iconAndTitle i {
+#disciplinasBody .iconAndTitle i {
     color: var(--color3);
 }
 
@@ -643,7 +643,7 @@ body {
     background: linear-gradient(145deg, var(--color4), var(--color3));
 }
 
-#diciplinasBody .headerIdt button {
+#disciplinasBody .headerIdt button {
     background: linear-gradient(145deg, var(--color3), var(--color4));
 }
 
@@ -699,7 +699,7 @@ body {
     color: var(--color4);
 }
 
-#diciplinasBody .cardIdt i {
+#disciplinasBody .cardIdt i {
     color: var(--color3);
 }
 
@@ -881,7 +881,7 @@ body {
     justify-content: space-between;
     gap: 10px;
     width: 100%;
-    padding: 24px 20px;
+    padding: 20px 20px;
     border-radius: 8px;
     background: var(--white);
     box-shadow: 4px 5px 8px var(--shadow);
@@ -1016,7 +1016,7 @@ body {
     color: var(--color4);
 }
 
-#diciplinasIcon {
+#disciplinasIcon {
     background: var(--color3Shadow);
     color: var(--color3);
 }

@@ -255,7 +255,7 @@ if (botaoLogin) {
                     // ✅ LIMPAR O CACHE DO USUÁRIO ANTERIOR ANTES DE SALVAR O NOVO
                     localStorage.removeItem("instituicoesBody");
                     localStorage.removeItem("cursosBody");
-                    localStorage.removeItem("diciplinasBody");
+                    localStorage.removeItem("disciplinasBody");
                     localStorage.removeItem("turmasBody");
                     console.log("🗑️ Cache do usuário anterior limpo");
 
@@ -546,7 +546,7 @@ if (botaoVerify) {
                     // ✅ LIMPAR O CACHE ANTES DE SALVAR O NOVO USUÁRIO
                     localStorage.removeItem("instituicoesBody");
                     localStorage.removeItem("cursosBody");
-                    localStorage.removeItem("diciplinasBody");
+                    localStorage.removeItem("disciplinasBody");
                     localStorage.removeItem("turmasBody");
                     console.log("🗑️ Cache limpo para novo usuário");
 

@@ -151,7 +151,7 @@ app.post('/instituicao/verificar', async (req: Request, res: Response) => {
         }
 
         const instituicao = await verificarCadastroInstituicao(nome, id_docente);
-        
+
         if (instituicao) {
             console.log("❌ Instituição já cadastrada:", instituicao.nome);
             res.json({
@@ -179,7 +179,7 @@ app.post('/instituicao/verificar', async (req: Request, res: Response) => {
 app.post("/instituicao/cadastro", async (req, res) => {
     try {
         const { nomeInstituicao, nomeCurso, id_docente } = req.body;
-        
+
         if (!nomeInstituicao || !id_docente) {
             return res.status(400).json({
                 sucesso: false,
@@ -332,7 +332,7 @@ app.post('/curso/verificar', async (req: Request, res: Response) => {
         const { fk_id_instituicao, nome } = req.body;
         console.log("🔍 Verificando curso:", { fk_id_instituicao, nome });
 
-        const curso = await verificarCadastroCurso( nome, fk_id_instituicao );
+        const curso = await verificarCadastroCurso(nome, fk_id_instituicao);
         if (curso) {
             console.log("❌ Curso já cadastrado:", curso.nome);
             res.json({
@@ -361,14 +361,14 @@ app.post('/curso/cadastro', async (req: Request, res: Response) => {
     try {
         const { fk_id_instituicao, nome } = req.body;
 
-        if ( !fk_id_instituicao || !nome) {
+        if (!fk_id_instituicao || !nome) {
             console.log("❌ Campos obrigatórios faltando:", { fk_id_instituicao, nome });
             return res.status(400).json({
                 error: "Todos os campos são obrigatórios: docente, instituição e nome!"
             });
         }
 
-        const id = await addCurso( fk_id_instituicao, nome );
+        const id = await addCurso(fk_id_instituicao, nome);
         console.log("✅ Curso registrado com sucesso! ID:", id);
         res.status(201).json({
             sucesso: true,
@@ -473,7 +473,9 @@ app.get('/curso/all/:id_instituicao', async (req: Request, res: Response) => {
         const cursos = await getAllCurso(id_instituicao);
 
         if (cursos && cursos.length > 0) {
-            console.log(`✅ ${cursos.length} curso(s) encontrado(s) para a instituição ID: ${id_instituicao}`);
+            
+            console.log(`✅ ${cursos.length} curso(s) encontrados (sem disciplinas aninhadas)`);
+            
             res.json({
                 sucesso: true,
                 cursos: cursos
@@ -499,6 +501,7 @@ app.get('/curso/all/:id_instituicao', async (req: Request, res: Response) => {
 /*  DISCIPLINA */
 /*=============*/
 // Verificar se disciplina já existe
+// ✅ Verificar se disciplina já existe
 app.post('/disciplina/verificar', async (req: Request, res: Response) => {
     try {
         const { nome, id_curso } = req.body;
@@ -536,11 +539,12 @@ app.post('/disciplina/verificar', async (req: Request, res: Response) => {
 });
 
 // Cadastrar nova disciplina
+// ✅ Cadastrar nova disciplina
 app.post('/disciplina/cadastro', async (req: Request, res: Response) => {
     try {
-        const { codigo, id_curso, nome, periodo, sigla } = req.body; // ADICIONADO codigo
+        const { codigo, id_curso, nome, periodo, sigla } = req.body;
 
-        if (!codigo || !id_curso || !nome) { // VALIDAÇÃO DO CÓDIGO
+        if (!codigo || !id_curso || !nome) {
             console.log("❌ Campos obrigatórios faltando!");
             return res.status(400).json({
                 error: "Campos codigo, id_curso e nome são obrigatórios!"
@@ -603,6 +607,7 @@ app.post('/disciplina/atualizar', async (req: Request, res: Response) => {
         });
     }
 });
+
 
 // Deletar disciplina
 app.post('/disciplina/deletar', async (req: Request, res: Response) => {
@@ -697,16 +702,16 @@ app.post('/turma/verificar', async (req: Request, res: Response) => {
             });
         } else {
             console.log("✅ Turma ainda não cadastrada!")
-            res.status(200).json({ 
-                sucesso: true, 
-                message: "Turma disponível para cadastro!" 
+            res.status(200).json({
+                sucesso: true,
+                message: "Turma disponível para cadastro!"
             });
         }
     } catch (error) {
         console.error("❌ Erro ao verificar a turma:", error);
-        res.status(500).json({ 
-            sucesso: false, 
-            message: "Erro no servidor ao verificar turma" 
+        res.status(500).json({
+            sucesso: false,
+            message: "Erro no servidor ao verificar turma"
         });
     }
 });
@@ -715,24 +720,24 @@ app.post('/turma/verificar', async (req: Request, res: Response) => {
 app.post('/turma/cadastro', async (req: Request, res: Response) => {
     try {
         const { fk_disciplina_codigo, nome, local_aula, dia_semana, hora } = req.body;
-        
+
         if (!fk_disciplina_codigo || !nome) {
             console.log("❌ Campos obrigatórios faltando:", { fk_disciplina_codigo, nome });
-            return res.status(400).json({ 
-                error: "Os campos disciplina e nome são obrigatórios!" 
+            return res.status(400).json({
+                error: "Os campos disciplina e nome são obrigatórios!"
             });
         }
 
         const id = await addTurma(fk_disciplina_codigo, nome, local_aula, dia_semana, hora);
         console.log("✅ Turma registrada com sucesso! ID:", id);
-        res.status(201).json({ 
-            message: "Turma registrada com sucesso", 
-            id: id 
+        res.status(201).json({
+            message: "Turma registrada com sucesso",
+            id: id
         });
     } catch (error) {
         console.error("❌ Erro ao registrar a turma:", error);
-        res.status(500).json({ 
-            error: "Erro ao registrar a turma." 
+        res.status(500).json({
+            error: "Erro ao registrar a turma."
         });
     }
 });
@@ -741,23 +746,23 @@ app.post('/turma/cadastro', async (req: Request, res: Response) => {
 app.post('/turma/atualizar', async (req: Request, res: Response) => {
     try {
         const { id, fk_disciplina_codigo, nome, local_aula, dia_semana, hora } = req.body;
-        
+
         if (!id || !fk_disciplina_codigo || !nome) {
             console.log("❌ Campos obrigatórios faltando:", { id, fk_disciplina_codigo, nome });
-            return res.status(400).json({ 
-                error: "Os campos id, disciplina e nome são obrigatórios!" 
+            return res.status(400).json({
+                error: "Os campos id, disciplina e nome são obrigatórios!"
             });
         }
 
         await updateTurma(id, fk_disciplina_codigo, nome, local_aula, dia_semana, hora);
         console.log("✅ Turma atualizada com sucesso! ID:", id);
-        res.status(200).json({ 
-            message: "Turma atualizada com sucesso" 
+        res.status(200).json({
+            message: "Turma atualizada com sucesso"
         });
     } catch (error) {
         console.error("❌ Erro ao atualizar a turma:", error);
-        res.status(500).json({ 
-            error: "Erro ao atualizar a turma." 
+        res.status(500).json({
+            error: "Erro ao atualizar a turma."
         });
     }
 });
@@ -768,20 +773,20 @@ app.post('/turma/deletar', async (req: Request, res: Response) => {
         const { id } = req.body;
         if (!id) {
             console.log("❌ O campo ID é obrigatório!");
-            return res.status(400).json({ 
-                error: "O campo ID é obrigatório!" 
-            });   
+            return res.status(400).json({
+                error: "O campo ID é obrigatório!"
+            });
         }
 
         await deleteTurma(id);
         console.log("✅ Turma deletada com sucesso! ID:", id);
-        res.status(200).json({ 
-            message: "Turma deletada com sucesso" 
+        res.status(200).json({
+            message: "Turma deletada com sucesso"
         });
     } catch (error) {
         console.error("❌ Erro ao deletar a turma:", error);
-        res.status(500).json({ 
-            error: "Erro ao deletar a turma." 
+        res.status(500).json({
+            error: "Erro ao deletar a turma."
         });
     }
 });
@@ -794,14 +799,14 @@ app.get('/turma/id/:id', async (req: Request, res: Response) => {
         if (turma) {
             res.json(turma);
         } else {
-            res.status(404).json({ 
-                message: "Turma não encontrada com o ID fornecido" 
+            res.status(404).json({
+                message: "Turma não encontrada com o ID fornecido"
             });
         }
     } catch (error) {
         console.error("❌ Erro ao buscar turma por ID:", error);
-        res.status(500).json({ 
-            error: "Erro ao buscar a turma pelo ID fornecido." 
+        res.status(500).json({
+            error: "Erro ao buscar a turma pelo ID fornecido."
         });
     }
 });
@@ -813,14 +818,14 @@ app.get('/turma/all', async (req: Request, res: Response) => {
         if (turmas && turmas.length > 0) {
             res.json(turmas);
         } else {
-            res.status(404).json({ 
-                message: "Não há turmas cadastradas." 
+            res.status(404).json({
+                message: "Não há turmas cadastradas."
             });
         }
     } catch (error) {
         console.error("❌ Erro ao buscar todas as turmas:", error);
-        res.status(500).json({ 
-            error: "Erro ao buscar as turmas." 
+        res.status(500).json({
+            error: "Erro ao buscar as turmas."
         });
     }
 });
@@ -844,16 +849,16 @@ app.post('/estudante/verificar', async (req: Request, res: Response) => {
             });
         } else {
             console.log("✅ Estudante ainda não cadastrado!")
-            res.status(200).json({ 
-                sucesso: true, 
-                message: "Estudante disponível para cadastro!" 
+            res.status(200).json({
+                sucesso: true,
+                message: "Estudante disponível para cadastro!"
             });
         }
     } catch (error) {
         console.error("❌ Erro ao verificar o estudante:", error);
-        res.status(500).json({ 
-            sucesso: false, 
-            message: "Erro no servidor ao verificar estudante" 
+        res.status(500).json({
+            sucesso: false,
+            message: "Erro no servidor ao verificar estudante"
         });
     }
 });
@@ -862,24 +867,24 @@ app.post('/estudante/verificar', async (req: Request, res: Response) => {
 app.post('/estudante/cadastro', async (req: Request, res: Response) => {
     try {
         const { ra, nome } = req.body;
-        
+
         if (!ra || !nome) {
             console.log("❌ Campos obrigatórios faltando:", { ra, nome });
-            return res.status(400).json({ 
-                error: "Os campos RA e nome são obrigatórios!" 
+            return res.status(400).json({
+                error: "Os campos RA e nome são obrigatórios!"
             });
         }
 
         const id = await addEstudante(ra, nome);
         console.log("✅ Estudante registrado com sucesso! RA:", id);
-        res.status(201).json({ 
-            message: "Estudante registrado com sucesso", 
-            ra: id 
+        res.status(201).json({
+            message: "Estudante registrado com sucesso",
+            ra: id
         });
     } catch (error) {
         console.error("❌ Erro ao registrar o estudante:", error);
-        res.status(500).json({ 
-            error: "Erro ao registrar o estudante." 
+        res.status(500).json({
+            error: "Erro ao registrar o estudante."
         });
     }
 });
@@ -888,23 +893,23 @@ app.post('/estudante/cadastro', async (req: Request, res: Response) => {
 app.post('/estudante/atualizar', async (req: Request, res: Response) => {
     try {
         const { ra, nome } = req.body;
-        
+
         if (!ra || !nome) {
             console.log("❌ Campos obrigatórios faltando:", { ra, nome });
-            return res.status(400).json({ 
-                error: "Os campos RA e nome são obrigatórios!" 
+            return res.status(400).json({
+                error: "Os campos RA e nome são obrigatórios!"
             });
         }
 
         await updateEstudante(ra, nome);
         console.log("✅ Estudante atualizado com sucesso! RA:", ra);
-        res.status(200).json({ 
-            message: "Estudante atualizado com sucesso" 
+        res.status(200).json({
+            message: "Estudante atualizado com sucesso"
         });
     } catch (error) {
         console.error("❌ Erro ao atualizar o estudante:", error);
-        res.status(500).json({ 
-            error: "Erro ao atualizar o estudante." 
+        res.status(500).json({
+            error: "Erro ao atualizar o estudante."
         });
     }
 });
@@ -915,20 +920,20 @@ app.post('/estudante/deletar', async (req: Request, res: Response) => {
         const { ra } = req.body;
         if (!ra) {
             console.log("❌ O campo RA é obrigatório!");
-            return res.status(400).json({ 
-                error: "O campo RA é obrigatório!" 
-            });   
+            return res.status(400).json({
+                error: "O campo RA é obrigatório!"
+            });
         }
 
         await deleteEstudante(ra);
         console.log("✅ Estudante deletado com sucesso! RA:", ra);
-        res.status(200).json({ 
-            message: "Estudante deletado com sucesso" 
+        res.status(200).json({
+            message: "Estudante deletado com sucesso"
         });
     } catch (error) {
         console.error("❌ Erro ao deletar o estudante:", error);
-        res.status(500).json({ 
-            error: "Erro ao deletar o estudante." 
+        res.status(500).json({
+            error: "Erro ao deletar o estudante."
         });
     }
 });
@@ -941,14 +946,14 @@ app.get('/estudante/ra/:ra', async (req: Request, res: Response) => {
         if (estudante) {
             res.json(estudante);
         } else {
-            res.status(404).json({ 
-                message: "Estudante não encontrado com o RA fornecido" 
+            res.status(404).json({
+                message: "Estudante não encontrado com o RA fornecido"
             });
         }
     } catch (error) {
         console.error("❌ Erro ao buscar estudante por RA:", error);
-        res.status(500).json({ 
-            error: "Erro ao buscar o estudante pelo RA fornecido." 
+        res.status(500).json({
+            error: "Erro ao buscar o estudante pelo RA fornecido."
         });
     }
 });
@@ -960,14 +965,14 @@ app.get('/estudante/all', async (req: Request, res: Response) => {
         if (estudantes && estudantes.length > 0) {
             res.json(estudantes);
         } else {
-            res.status(404).json({ 
-                message: "Não há estudantes cadastrados." 
+            res.status(404).json({
+                message: "Não há estudantes cadastrados."
             });
         }
     } catch (error) {
         console.error("❌ Erro ao buscar todos os estudantes:", error);
-        res.status(500).json({ 
-            error: "Erro ao buscar os estudantes." 
+        res.status(500).json({
+            error: "Erro ao buscar os estudantes."
         });
     }
 });
@@ -991,16 +996,16 @@ app.post('/componente-nota/verificar', async (req: Request, res: Response) => {
             });
         } else {
             console.log("✅ Componente de nota ainda não cadastrado!")
-            res.status(200).json({ 
-                sucesso: true, 
-                message: "Componente de nota disponível para cadastro!" 
+            res.status(200).json({
+                sucesso: true,
+                message: "Componente de nota disponível para cadastro!"
             });
         }
     } catch (error) {
         console.error("❌ Erro ao verificar o componente de nota:", error);
-        res.status(500).json({ 
-            sucesso: false, 
-            message: "Erro no servidor ao verificar componente de nota" 
+        res.status(500).json({
+            sucesso: false,
+            message: "Erro no servidor ao verificar componente de nota"
         });
     }
 });
@@ -1009,24 +1014,24 @@ app.post('/componente-nota/verificar', async (req: Request, res: Response) => {
 app.post('/componente-nota/cadastro', async (req: Request, res: Response) => {
     try {
         const { fk_disciplina_codigo, nome } = req.body;
-        
+
         if (!fk_disciplina_codigo || !nome) {
             console.log("❌ Campos obrigatórios faltando:", { fk_disciplina_codigo, nome });
-            return res.status(400).json({ 
-                error: "Os campos fk_disciplina_codigo e nome são obrigatórios!" 
+            return res.status(400).json({
+                error: "Os campos fk_disciplina_codigo e nome são obrigatórios!"
             });
         }
 
         const id = await addComponenteNota(fk_disciplina_codigo, nome);
         console.log("✅ Componente de nota registrado com sucesso! ID:", id);
-        res.status(201).json({ 
-            message: "Componente de nota registrado com sucesso", 
-            id_componente: id 
+        res.status(201).json({
+            message: "Componente de nota registrado com sucesso",
+            id_componente: id
         });
     } catch (error) {
         console.error("❌ Erro ao registrar o componente de nota:", error);
-        res.status(500).json({ 
-            error: "Erro ao registrar o componente de nota." 
+        res.status(500).json({
+            error: "Erro ao registrar o componente de nota."
         });
     }
 });
@@ -1035,23 +1040,23 @@ app.post('/componente-nota/cadastro', async (req: Request, res: Response) => {
 app.post('/componente-nota/atualizar', async (req: Request, res: Response) => {
     try {
         const { id_componente, fk_disciplina_codigo, nome } = req.body;
-        
+
         if (!id_componente || !fk_disciplina_codigo || !nome) {
             console.log("❌ Campos obrigatórios faltando:", { id_componente, fk_disciplina_codigo, nome });
-            return res.status(400).json({ 
-                error: "Os campos id_componente, fk_disciplina_codigo e nome são obrigatórios!" 
+            return res.status(400).json({
+                error: "Os campos id_componente, fk_disciplina_codigo e nome são obrigatórios!"
             });
         }
 
         await updateComponenteNota(id_componente, fk_disciplina_codigo, nome);
         console.log("✅ Componente de nota atualizado com sucesso! ID:", id_componente);
-        res.status(200).json({ 
-            message: "Componente de nota atualizado com sucesso" 
+        res.status(200).json({
+            message: "Componente de nota atualizado com sucesso"
         });
     } catch (error) {
         console.error("❌ Erro ao atualizar o componente de nota:", error);
-        res.status(500).json({ 
-            error: "Erro ao atualizar o componente de nota." 
+        res.status(500).json({
+            error: "Erro ao atualizar o componente de nota."
         });
     }
 });
@@ -1062,20 +1067,20 @@ app.post('/componente-nota/deletar', async (req: Request, res: Response) => {
         const { id_componente } = req.body;
         if (!id_componente) {
             console.log("❌ O campo id_componente é obrigatório!");
-            return res.status(400).json({ 
-                error: "O campo id_componente é obrigatório!" 
-            });   
+            return res.status(400).json({
+                error: "O campo id_componente é obrigatório!"
+            });
         }
 
         await deleteComponenteNota(id_componente);
         console.log("✅ Componente de nota deletado com sucesso! ID:", id_componente);
-        res.status(200).json({ 
-            message: "Componente de nota deletado com sucesso" 
+        res.status(200).json({
+            message: "Componente de nota deletado com sucesso"
         });
     } catch (error) {
         console.error("❌ Erro ao deletar o componente de nota:", error);
-        res.status(500).json({ 
-            error: "Erro ao deletar o componente de nota." 
+        res.status(500).json({
+            error: "Erro ao deletar o componente de nota."
         });
     }
 });
@@ -1088,14 +1093,14 @@ app.get('/componente-nota/id/:id_componente', async (req: Request, res: Response
         if (componente) {
             res.json(componente);
         } else {
-            res.status(404).json({ 
-                message: "Componente de nota não encontrado com o ID fornecido" 
+            res.status(404).json({
+                message: "Componente de nota não encontrado com o ID fornecido"
             });
         }
     } catch (error) {
         console.error("❌ Erro ao buscar componente de nota por ID:", error);
-        res.status(500).json({ 
-            error: "Erro ao buscar o componente de nota pelo ID fornecido." 
+        res.status(500).json({
+            error: "Erro ao buscar o componente de nota pelo ID fornecido."
         });
     }
 });
@@ -1107,14 +1112,14 @@ app.get('/componente-nota/all', async (req: Request, res: Response) => {
         if (componentes && componentes.length > 0) {
             res.json(componentes);
         } else {
-            res.status(404).json({ 
-                message: "Não há componentes de nota cadastrados." 
+            res.status(404).json({
+                message: "Não há componentes de nota cadastrados."
             });
         }
     } catch (error) {
         console.error("❌ Erro ao buscar todos os componentes de nota:", error);
-        res.status(500).json({ 
-            error: "Erro ao buscar os componentes de nota." 
+        res.status(500).json({
+            error: "Erro ao buscar os componentes de nota."
         });
     }
 });
@@ -1126,23 +1131,23 @@ app.get('/componente-nota/all', async (req: Request, res: Response) => {
 app.post('/nota/cadastro', async (req: Request, res: Response) => {
     try {
         const { id_nota, fk_id_componente, fk_id_estudante, fk_id_turma, valor_nota } = req.body;
-        
+
         if (!fk_id_componente || !fk_id_estudante || !fk_id_turma || !valor_nota) {
             console.log("❌ Campos obrigatórios faltando:", { fk_id_componente, fk_id_estudante, fk_id_turma, valor_nota });
-            return res.status(400).json({ 
-                error: "Os campos fk_disciplina_codigo e nome são obrigatórios!" 
+            return res.status(400).json({
+                error: "Os campos fk_disciplina_codigo e nome são obrigatórios!"
             });
         }
 
         const id = await addNota(id_nota, fk_id_componente, fk_id_estudante, fk_id_turma, valor_nota);
         console.log("✅ Nota registrada com sucesso! ID:", id);
-        res.status(201).json({ 
-            message: "Nota registrada com sucesso", 
+        res.status(201).json({
+            message: "Nota registrada com sucesso",
             id_nota: id
         });
     } catch (error) {
         console.error("❌ Erro ao registrar nota:", error);
-        res.status(500).json({ 
+        res.status(500).json({
             error: "Erro ao registrar nota."
         });
     }
@@ -1213,7 +1218,7 @@ app.post('/docente', async (req: Request, res: Response) => {
 app.post('/atualizar/docente', async (req: Request, res: Response) => {
     try {
         const { id, nome, telefone } = req.body;
-        
+
         if (!id) {
             console.log("❌ ID do docente é obrigatório");
             return res.status(400).json({
@@ -1229,11 +1234,11 @@ app.post('/atualizar/docente', async (req: Request, res: Response) => {
                 error: "Forneça pelo menos um campo para atualizar (nome ou telefone)!"
             });
         }
-        
+
         console.log("📤 Recebido para atualização:", { id, nome, telefone });
-        
+
         const resultado = await modifyDocente(id, nome, telefone);
-        
+
         if (!resultado) {
             console.log("⚠️ Nenhuma linha foi atualizada");
             return res.status(404).json({
@@ -1241,13 +1246,13 @@ app.post('/atualizar/docente', async (req: Request, res: Response) => {
                 error: "Docente não encontrado ou nenhuma alteração realizada"
             });
         }
-        
+
         console.log(`✅ Informações do docente ${id} atualizadas com sucesso!`);
         res.status(200).json({
             sucesso: true,
             message: "Informações atualizadas com sucesso!"
         });
-        
+
     } catch (error) {
         console.error("❌ Erro ao atualizar docente:", error);
         res.status(500).json({

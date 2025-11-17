@@ -175,6 +175,7 @@ body {
     width: 100%;
     height: 40px;
     display: flex;
+    flex-direction: column;
 }
 
 .itemThree ul li a {
@@ -195,6 +196,14 @@ body {
 .itemThree ul li a:hover {
     transform: scale(1.01);
     background: var(--lightgrey2);
+}
+
+.infoAluno {
+    border: 1px solid red;
+    height: 300px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    width: 100%;
 }
 
 .nameAluno {
@@ -866,12 +875,12 @@ body {
 }
 
 .notasBody {
-    border: 1px solid red;
     background: var(--white);
-    height: 125px;
+    height: min-content;
     width: 100%;
     border-radius: 12px;
     display: flex;
+    flex-direction: column;
     padding: 15px;
     gap: 10px;
     box-shadow: 0 6px 5px var(--shadow2);
@@ -884,7 +893,9 @@ body {
     width: 100%;
     padding: 5px;
     height: min-content;
-    border: 1px solid blue;
+    padding-bottom: 15px;
+    border-bottom: 2px dashed var(--lightgrey);
+
 }
 
 .headerNotas h2 {
@@ -909,4 +920,120 @@ body {
 .headerNotas button:hover {
     background: var(--lightgrey);
     cursor: pointer;
+}
+
+/*==============================================
+    STYLES - Tabela de Lançamento de Notas
+==============================================*/
+
+/* Container da Tabela */
+.itensNotas {
+    width: 100%;
+    margin-top: 15px;
+    overflow-x: auto; 
+    border: 1px solid var(--lightgrey2);
+    border-radius: 12px;
+    background: var(--white);
+    box-shadow: 0 6px 5px var(--shadow2); 
+}
+
+.itensNotas table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px; 
+}
+
+/* Cabeçalho da Tabela */
+.itensNotas thead tr {
+    border-bottom: 2px solid var(--lightgrey); 
+}
+
+.itensNotas th {
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap; 
+}
+
+.itensNotas tbody tr {
+    border-bottom: 1px solid var(--lightgrey2); 
+    transition: background 0.2s ease;
+    cursor: pointer;
+}
+
+.itensNotas tbody tr:last-child {
+    border-bottom: none;
+}
+
+.itensNotas tbody tr:hover {
+    background-color: var(--white2); 
+}
+
+.itensNotas td {
+    padding: 14px 16px;
+    font-size: 0.95rem;
+    color: var(--black);
+    vertical-align: middle;
+}
+
+.itensNotas .raTable {
+    font-weight: 500;
+    color: var(--color6);
+    font-size: 0.9rem;
+}
+
+/* Coluna do Nome */
+.itensNotas .nameTable {
+    font-weight: 500;
+    min-width: 200px;
+}
+
+.itensNotas .siglaProvaTable {
+    text-align: center;
+    width: 100px;
+}
+
+.itensNotas .notaSiglaTable {
+    text-align: center;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--color5);
+    cursor: text;
+    border: 1px solid var(--grey);
+    width: min-content;
+}
+
+.itensNotas .notaSiglaTable input {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2px 10px;
+    background: var(--white);
+    max-width: 60px;
+    border-radius: 4px;
+    border: none;
+    font-size: 1rem;
+}
+
+.itensNotas .input-nota.baixa {
+    color: var(--color4); 
+}
+
+.itensNotas .mediaNotaTable {
+    text-align: center;
+    font-weight: 700;
+}
+
+.itensNotas .mediaNotaTable.baixa {
+    color: var(--color4);
+    background-color: var(--color4Shadow);
+}
+
+.itensNotas .mediaNotaTable.alta {
+    color: var(--color8);
+    background-color: var(--color8Shadow);
 }

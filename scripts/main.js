@@ -166,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setupModalControls("#instituicoesBody");
     setupModalControls("#cursosBody");
-    setupModalControls("#diciplinasBody");
+    setupModalControls("#disciplinasBody");
     setupModalControls("#turmasBody");
 
     // ===================================================
@@ -402,10 +402,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } else if (btn.classList.contains("deletCard")) {
                 console.log("🗑️ Botão deletar curso clicado");
-                if (confirm("Tem certeza que deseja deletar este curso?")) {
-                    const idInstituicao = card.getAttribute("data-instituicao-id");
-                    deletarCursoDB(idCurso, idInstituicao);
-                }
+                mostrarConfirm("Tem certeza que deseja deletar este curso?", (confirmado) => {
+                    if (confirmado) {
+                        const idInstituicao = card.getAttribute("data-instituicao-id");
+                        deletarCursoDB(idCurso, idInstituicao);
+                    }
+                });
             }
         });
 
@@ -520,4 +522,156 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 100);
         });
     }
+    //==================================================
+    //       BOTÕES DE DISCIPLINAS
+    //==================================================
+
+    const btnNovoDisciplina = document.querySelector('#disciplinasBody .newIdt');
+    if (btnNovoDisciplina) {
+        btnNovoDisciplina.addEventListener('click', preencherSelectCursos);
+    }
+
+    const criarDisciplinaBtn = document.querySelector('#createBtnDisciplina');
+    if (criarDisciplinaBtn) {
+        criarDisciplinaBtn.addEventListener('click', () => {
+            salvarDisciplina();
+        });
+    }
+
+    /**
+     * Vincula eventos aos botões dos cards de disciplinas (VERSÃO CORRETA)
+     */
+    function vincularEventosCardsDisciplinas() {
+        console.log("🔗 Vinculando eventos aos cards de disciplinas...");
+        const container = document.querySelector("#disciplinasBody .cardsCreateIdt");
+
+        if (!container) {
+            console.warn("⚠️ Container de cards de disciplinas não encontrado");
+            return;
+        }
+
+        // Remove listeners antigos
+        container.replaceWith(container.cloneNode(true));
+        const novoContainer = document.querySelector("#disciplinasBody .cardsCreateIdt");
+
+        // Adiciona listener único no container
+        novoContainer.addEventListener("click", (e) => {
+            const btn = e.target.closest("button");
+            if (!btn) return;
+
+            const card = btn.closest(".contentCardIdt");
+            if (!card) return;
+
+            // CORREÇÃO: Usar data-codigo, que vem do banco
+            const codigoDisciplina = card.getAttribute("data-codigo");
+            console.log("🎯 Código da disciplina:", codigoDisciplina);
+
+            if (btn.classList.contains("editCard")) {
+                console.log("✏️ Botão editar disciplina clicado");
+                requestAnimationFrame(() => {
+                    editarDisciplina(codigoDisciplina); // Envia o código
+                });
+
+            } else if (btn.classList.contains("deletCard")) {
+                console.log("🗑️ Botão deletar disciplina clicado");
+                mostrarConfirm("Tem certeza que deseja deletar esta disciplina?", (confirmado) => {
+                    if (confirmado) {
+                        deletarDisciplinaDB(codigoDisciplina); // Envia o código
+                    }
+                });
+            }
+        });
+
+        console.log("✅ Eventos dos cards de disciplinas vinculados!");
+    }
+
+    // Escuta quando os cards são renderizados
+    document.addEventListener("cardsDisciplinasRenderizados", () => {
+        console.log("📢 Cards de disciplinas renderizados! Vinculando eventos...");
+        vincularEventosCardsDisciplinas();
+    });
+
+    // Vincula na primeira carga (com delay para garantir que tudo está carregado)
+    setTimeout(() => {
+        vincularEventosCardsDisciplinas();
+    }, 1500);
+
+    //==================================================
+    //       BOTÕES DE TURMAS
+    //==================================================
+
+    const btnNovaRurma = document.querySelector('#turmasBody .newIdt');
+    if (btnNovaRurma) {
+        btnNovaRurma.addEventListener('click', () => {
+            console.log("➕ Botão Nova Turma clicado");
+            // Preencher datalist de cursos se necessário
+        });
+    }
+
+    const criarTurmaBtn = document.querySelector('#createBtnTurma');
+    if (criarTurmaBtn) {
+        criarTurmaBtn.addEventListener('click', () => {
+            console.log("💾 Botão Criar Turma clicado");
+            // Implementar salvarTurma se necessário
+        });
+    }
+
+    /**
+     * Vincula eventos aos botões dos cards de turmas
+     */
+    function vincularEventosCardsTurmas() {
+        console.log("🔗 Vinculando eventos aos cards de turmas...");
+
+        const container = document.querySelector("#turmasBody .cardsCreateIdt");
+
+        if (!container) {
+            console.warn("⚠️ Container de cards de turmas não encontrado");
+            return;
+        }
+
+        // Remove listeners antigos
+        container.replaceWith(container.cloneNode(true));
+        const novoContainer = document.querySelector("#turmasBody .cardsCreateIdt");
+
+        // Adiciona listener único no container
+        novoContainer.addEventListener("click", (e) => {
+            const btn = e.target.closest("button");
+            if (!btn) return;
+
+            const card = btn.closest(".contentCardIdt");
+            if (!card) return;
+
+            const idTurma = card.getAttribute("data-id");
+            console.log("🎯 ID da turma:", idTurma);
+
+            if (btn.classList.contains("editCard")) {
+                console.log("✏️ Botão editar turma clicado");
+                requestAnimationFrame(() => {
+                    editarTurma(idTurma);
+                });
+
+            } else if (btn.classList.contains("deletCard")) {
+                console.log("🗑️ Botão deletar turma clicado");
+                mostrarConfirm("Tem certeza que deseja deletar esta turma?", (confirmado) => {
+                    if (confirmado) {
+                        deletarTurmaDB(idTurma);
+                    }
+                });
+            }
+        });
+
+        console.log("✅ Eventos dos cards de turmas vinculados!");
+    }
+
+    // Escuta quando os cards são renderizados
+    document.addEventListener("cardsTurmasRenderizados", () => {
+        console.log("📢 Cards de turmas renderizados! Vinculando eventos...");
+        vincularEventosCardsTurmas();
+    });
+
+    // Vincula na primeira carga (com delay para garantir que tudo está carregado)
+    setTimeout(() => {
+        vincularEventosCardsTurmas();
+    }, 2000);
+
 });

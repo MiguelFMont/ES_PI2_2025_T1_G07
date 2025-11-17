@@ -68,12 +68,27 @@
 .modalEdicaoExpansivel.show {
     /* futuramente mudar ou tirar o z-index, a ideia é que o modal expansível não fique sobreposto ao modal de criação
     ele deve "empurrar" os cards abaixo dele (se existirem) */
-    z-index: 100; 
+    z-index: 100;
     max-height: 700px;
     opacity: 1;
     margin-bottom: 20px;
     transform: scale(0.99);
+    overflow-y: auto;
 }
+
+.modalEdicaoExpansivel.show::-webkit-scrollbar {
+    height: 5px;
+    background: var(--color1);
+    border: none;
+    border-radius: 8px;
+}
+
+.modalEdicaoExpansivel.show::-webkit-scrollbar-thumb {
+    background: var(--lightgrey);
+    border-radius: 50px;
+    cursor: pointer;
+}
+
 
 .headerModalExpansivel {
     color: var(--black);
@@ -243,7 +258,7 @@
     outline: none;
 }
 
-.btnDeletarCurso:focus{
+.btnDeletarCurso:focus {
     background: var(--red);
     color: white;
     outline: none;
@@ -306,11 +321,29 @@
 
 /* Cursos Temporários (adicionados mas não salvos) */
 .cursosTemporarios {
+    background-color: var(--lightwhite);
     display: flex;
-    flex-wrap: wrap;
     gap: 10px;
     margin-top: 10px;
-    min-height: 0;
+    min-height: 50px;
+    min-width: 100px;
+    padding: 10px;
+    border-radius: 8px;
+    overflow-x: auto;
+    width: 100%;
+}
+
+.cursosTemporarios::-webkit-scrollbar {
+    height: 5px;
+    background: var(--color1);
+    border: none;
+    border-radius: 8px;
+}
+
+.cursosTemporarios::-webkit-scrollbar-thumb {
+    background: var(--lightgrey);
+    border-radius: 50px;
+    cursor: pointer;
 }
 
 .itemCursoTemp {
@@ -371,19 +404,22 @@
 
 /* Footer do Modal */
 .footerModalExpansivel {
-    padding: 15px 20px;
     display: flex;
-    justify-content: flex-end;
-    gap: 12px;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+    min-height: 0;
+    padding: 10px;
+    border-radius: 8px;
 }
 
 .btnCancelarEdicao,
 .btnSalvarEdicao {
-    padding: 10px 20px;
+    padding: 5px 7px;
     border: none;
     border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.9rem;
+    font-weight: 500;
+    font-size: 1rem;
     cursor: pointer;
     transition: all 0.2s;
     font-family: 'Poppins', sans-serif;
@@ -437,4 +473,64 @@
 
 .listaCursosAtuais::-webkit-scrollbar-thumb:hover {
     background: var(--);
+}
+
+/* 
+============================================
+Style das Infos de Disciplina no Modal de Edição
+============================================
+*/
+.tempAndButtons {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;    
+}
+
+.boxInfoDisciplinas {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    padding: 15px;
+    border: none;
+    box-shadow: 1px -1px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    background: var(--lightwhite);
+}
+
+.boxInfoDisciplinas .campoEdicao {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.boxInfoDisciplinas .campoEdicao label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--black);
+    display: block;
+}
+
+.boxInfoDisciplinas input,
+.boxInfoDisciplinas select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid var(--lightgrey);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    font-family: 'Poppins', sans-serif;
+    box-sizing: border-box;
+}
+
+.boxInfoDisciplinas input:focus,
+.boxInfoDisciplinas select:focus {
+    outline: none;
+    border-color: var(--color5);
+}
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
 }
