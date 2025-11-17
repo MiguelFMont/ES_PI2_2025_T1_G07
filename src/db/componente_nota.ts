@@ -5,22 +5,27 @@ export interface ComponenteNota {
     id_componente: number;
     fk_disciplina_codigo: number;
     nome: string;
+    sigla?: string;
+    descricao?: string;
 }
 
 // Adicionar um componente de nota
 export async function addComponenteNota(
     fk_disciplina_codigo: number,
     nome: string
+    , sigla: string, descricao?: string
 ): Promise<number> {
     const conn = await open();
     try {
         const result = await conn.execute(
-            `INSERT INTO webapp.COMPONENTE_NOTA (FK_DISCIPLINA_CODIGO, NOME)
-             VALUES (:fk_disciplina_codigo, :nome)
+            `INSERT INTO webapp.COMPONENTE_NOTA (FK_DISCIPLINA_CODIGO, NOME, SIGLA, DESCRICAO)
+             VALUES (:fk_disciplina_codigo, :nome, :sigla, :descricao)
              RETURNING ID_COMPONENTE INTO :id`,
             {
                 fk_disciplina_codigo,
                 nome,
+                sigla,
+                descricao,
                 id: { dir: OracleDB.BIND_OUT, type: OracleDB.NUMBER }
             },
             { autoCommit: true }
@@ -51,15 +56,18 @@ export async function updateComponenteNota(
     id_componente: number,
     fk_disciplina_codigo: number,
     nome: string
+    , sigla: string, descricao?: string
 ) {
     const conn = await open();
     try {
         await conn.execute(
             `UPDATE webapp.COMPONENTE_NOTA 
              SET FK_DISCIPLINA_CODIGO = :fk_disciplina_codigo,
-                 NOME = :nome
+                 NOME = :nome,
+                 SIGLA = :sigla,
+                 DESCRICAO = :descricao
              WHERE ID_COMPONENTE = :id_componente`,
-            { fk_disciplina_codigo, nome, id_componente },
+            { fk_disciplina_codigo, nome, sigla, descricao, id_componente },
             { autoCommit: true }
         );
     } finally {
@@ -77,7 +85,9 @@ export async function verificarComponenteNotaExistente(
         const result = await conn.execute(
             `SELECT ID_COMPONENTE as "id_componente",
                     FK_DISCIPLINA_CODIGO as "fk_disciplina_codigo",
-                    NOME as "nome"
+                    NOME as "nome",
+                    SIGLA as "sigla",
+                    DESCRICAO as "descricao"
              FROM webapp.COMPONENTE_NOTA  
              WHERE FK_DISCIPLINA_CODIGO = :fk_disciplina_codigo AND NOME = :nome
              FETCH FIRST 1 ROWS ONLY`,
@@ -98,7 +108,9 @@ export async function getComponenteNotaById(id_componente: number): Promise<Comp
         const result = await conn.execute(
             `SELECT ID_COMPONENTE as "id_componente",
                     FK_DISCIPLINA_CODIGO as "fk_disciplina_codigo",
-                    NOME as "nome"
+                    NOME as "nome",
+                    SIGLA as "sigla",
+                    DESCRICAO as "descricao"
              FROM webapp.COMPONENTE_NOTA
              WHERE ID_COMPONENTE = :id_componente`,
             { id_componente },
@@ -118,8 +130,12 @@ export async function getAllComponentesNota(): Promise<ComponenteNota[]> {
         const result = await conn.execute(
             `SELECT ID_COMPONENTE as "id_componente",
                     FK_DISCIPLINA_CODIGO as "fk_disciplina_codigo",
-                    NOME as "nome"
-             FROM webapp.COMPONENTE_NOTA`
+                    NOME as "nome",
+                    SIGLA as "sigla",
+                    DESCRICAO as "descricao"
+             FROM webapp.COMPONENTE_NOTA`,
+            {},
+            { outFormat: OracleDB.OUT_FORMAT_OBJECT }
         );
 
         return result.rows as ComponenteNota[];
