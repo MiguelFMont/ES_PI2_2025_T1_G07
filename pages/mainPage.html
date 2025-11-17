@@ -777,28 +777,35 @@
                             </button>
                         </div>
                         <div class="campIdt">
-                            <p>Curso</p>
-                            <input list="listTurma" type="text" placeholder="Selecione o curso" id="inputCursoTurma">
+                            <p>Disciplina</p>
+                            <input list="listTurma" type="text" placeholder="Selecione a disciplina" id="inputDisciplinaTurma">
                             <datalist id="listTurma"></datalist>
                         </div>
                         <div class="campIdt">
                             <p>Nome da Turma</p>
                             <input type="text" placeholder="Ex: Turma 1" id="inputNomeTurma">
                         </div>
+                        <div class="campIdt">
+                                <p>Local da Aula</p>
+                                <input type="text" placeholder="Ex: T1" id="inputLocalAula">
+                                <label for="text"></label>
+                            </div>
                         <div class="campIdtToggle">
                             <div class="campIdt">
-                                <p>Código</p>
-                                <input type="text" placeholder="Ex: T1" id="inputSiglaDisciplina">
+                                <p>Dia da Semana</p>
+                                <select id="diaSemanaSelect" required>
+                                    <option value="" disabled selected>Selecione o dia da semana</option>
+                                    <option value="1">Segunda-Feira</option>
+                                    <option value="2">Terça-Feira</option>
+                                    <option value="2">Quarta-Feira</option>
+                                    <option value="2">Quinta-Feira</option>
+                                    <option value="2">Sexta-Feira</option>
+                                </select>
                                 <label for="text"></label>
                             </div>
                             <div class="campIdt">
-                                <p>Período</p>
-                                <select id="periodoSelect" required>
-                                    <option value="" disabled selected>Selecione o período</option>
-                                    <option value="1">1° Semestre</option>
-                                    <option value="2">2° Semestre</option>
-                                </select>
-                                <label for="text"></label>
+                                <p>Horário da Aula</p>
+                                <input type="text" placeholder="Ex: 10h00" id="inputHoraAula">
                             </div>
                         </div>
                         <div class="buttonsCheck">
