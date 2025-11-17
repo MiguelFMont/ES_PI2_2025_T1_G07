@@ -382,3 +382,183 @@ function filtrarAlunos() {
 //       importação aluno csv           //
 ////////////////////////////////////////*/
 
+document.addEventListener('DOMContentLoaded', () => {
+    configurarBotoesImportacao();
+});
+
+function configurarBotoesImportacao() {
+    const btnImportar = document.querySelector('.btnImportFile');
+    const inputFile = document.getElementById('inputFileAlunos');
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    const btnCancel = document.querySelector('.btnCancelFile');
+
+    // 1. Feedback visual ao selecionar arquivo
+    if (inputFile) {
+        inputFile.addEventListener('change', function() {
+            if (this.files && this.files.length > 0) {
+                if (fileNameDisplay) {
+                    fileNameDisplay.innerText = this.files[0].name;
+                    fileNameDisplay.style.color = "#333";
+                }
+            } else {
+                if (fileNameDisplay) fileNameDisplay.innerText = "Nenhum arquivo selecionado";
+            }
+        });
+    }
+
+    // 2. Ação do Botão IMPORTAR
+    if (btnImportar) {
+        btnImportar.addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            if (!inputFile || !inputFile.files || inputFile.files.length === 0) {
+                alert("Por favor, selecione um arquivo CSV.");
+                return;
+            }
+
+            await processarArquivoCSV(inputFile.files[0]);
+        });
+    }
+
+    // 3. Botão Cancelar
+    if (btnCancel) {
+        btnCancel.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (inputFile) inputFile.value = '';
+            if (fileNameDisplay) fileNameDisplay.innerText = "Nenhum arquivo selecionado";
+            
+            const modal = document.querySelector('.fileBody');
+            if (modal) modal.style.display = 'none';
+        });
+    }
+}
+
+async function processarArquivoCSV(file) {
+    const load = document.querySelector('.load');
+    if (load) load.style.display = 'flex';
+
+    try {
+        // --- PASSO 1: Identificar a Turma ---
+        const turmaEl = document.querySelector('.tumaLogin') || document.querySelector('.turmaLogin');
+        if (!turmaEl) throw new Error("Não foi possível identificar a turma na tela.");
+        
+        const nomeTurmaAtual = turmaEl.innerText.trim();
+        
+        const respTurmas = await fetch('/turma/all');
+        if(!respTurmas.ok) throw new Error("Erro ao buscar turmas.");
+        
+        const dadosTurmas = await respTurmas.json();
+        const listaTurmas = Array.isArray(dadosTurmas) ? dadosTurmas : (dadosTurmas.turmas || []);
+        
+        const turmaObj = listaTurmas.find(t => t.nome && (t.nome.trim() === nomeTurmaAtual || t.nome.includes(nomeTurmaAtual)));
+        
+        if (!turmaObj) throw new Error(`Turma "${nomeTurmaAtual}" não encontrada no sistema.`);
+        const idTurma = turmaObj.id;
+
+        // --- PASSO 2: Ler e Processar ---
+        const texto = await lerArquivo(file);
+        const linhas = texto.split('\n');
+
+        let countCriados = 0;
+        let countMatriculados = 0;
+        let countErros = 0;
+
+        for (let i = 1; i < linhas.length; i++) {
+            const linha = linhas[i].trim();
+            if (!linha) continue;
+
+            const colunas = linha.includes(';') ? linha.split(';') : linha.split(',');
+            
+            const ra = colunas[0] ? colunas[0].replace(/["']/g, "").trim() : null;
+            const nome = colunas[1] ? colunas[1].replace(/["']/g, "").trim() : null;
+
+            if (ra && nome) {
+                const res = await importarUnico(ra, nome, idTurma);
+                if (res.sucesso) {
+                    if (res.novo) countCriados++;
+                    countMatriculados++;
+                } else {
+                    console.warn(`Falha linha ${i+1}: ${res.msg}`);
+                    countErros++;
+                }
+            }
+        }
+
+        // --- PASSO 3: Finalização ---
+        alert(`Importação Concluída!\n\n🆕 Novos Alunos: ${countCriados}\n✅ Matriculados: ${countMatriculados}\n❌ Erros: ${countErros}`);
+        
+        listarAlunos(); 
+
+        // Fecha modal e limpa inputs (CORREÇÃO AQUI: Buscando os elementos novamente)
+        const modal = document.querySelector('.fileBody');
+        if(modal) modal.style.display = 'none';
+        
+        const inputEl = document.getElementById('inputFileAlunos');
+        if(inputEl) inputEl.value = '';
+        
+        const displayEl = document.getElementById('fileNameDisplay');
+        if(displayEl) displayEl.innerText = "Nenhum arquivo selecionado";
+
+    } catch (erro) {
+        console.error(erro);
+        alert("Erro na importação: " + erro.message);
+    } finally {
+        if (load) load.style.display = 'none';
+    }
+}
+
+function lerArquivo(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = (e) => reject(e);
+        reader.readAsText(file);
+    });
+}
+
+async function importarUnico(ra, nome, idTurma) {
+    try {
+        let novoUsuario = false;
+
+        // 1. Verificar/Criar Estudante
+        const check = await fetch('/estudante/verificar', {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ ra: ra })
+        });
+        const checkData = await check.json();
+
+        if (checkData.sucesso !== false) {
+            const create = await fetch('/estudante/cadastro', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ ra: ra, nome: nome })
+            });
+            if (!create.ok) return { sucesso: false, msg: "Erro ao criar estudante" };
+            novoUsuario = true;
+        }
+
+        // 2. Matricular
+        const verMat = await fetch('/matricula/verificar', {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ fk_id_turma: idTurma, fk_id_estudante: ra })
+        });
+        const verMatData = await verMat.json();
+
+        if (verMatData.sucesso === false) {
+            return { sucesso: true, novo: novoUsuario, msg: "Já matriculado" };
+        }
+
+        const cadMat = await fetch('/matricula/cadastro', {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ fk_id_turma: idTurma, fk_id_estudante: ra })
+        });
+
+        if (cadMat.ok || cadMat.status === 409) {
+            return { sucesso: true, novo: novoUsuario };
+        } else {
+            return { sucesso: false, msg: "Erro ao matricular" };
+        }
+
+    } catch (e) {
+        return { sucesso: false, msg: e.message };
+    }
+}
