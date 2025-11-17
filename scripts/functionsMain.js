@@ -1254,6 +1254,119 @@ function salvarDisciplina() {
         });
 }
 
+/**
+ * Salva uma nova turma (vinculada a uma disciplina existente) no DB.
+ */
+function salvarTurma() {
+    const modal = document.querySelector("#turmasBody .createIdt");
+    if (!modal) {
+        console.error("Modal não encontrado!");
+        return;
+    }
+
+    const selectDisciplina = modal.querySelector("#inputDisciplinaTurma");
+    const inputNomeTurma = modal.querySelector("#inputNomeTurma");
+    const inputLocalAula = modal.querySelector("#inputLocalAula");
+    const inputDiaSemana = modal.querySelector("#diaSemanaSelect");
+    const inputHora = modal.querySelector("#inputHoraAula");
+
+    if (!selectDisciplina || !inputNomeTurma) {
+        console.error("Inputs obrigatórios não encontrados!");
+        return;
+    }
+
+    const nomeDisciplina = selectDisciplina.value.trim();
+    const nomeTurma = inputNomeTurma.value.trim();
+    const localAula = inputLocalAula?.value.trim() || "";
+    const diaSemana = inputDiaSemana?.value.trim() || "";
+    const hora = inputHora?.value.trim() || "";
+
+    // Validações
+    if (nomeDisciplina === "") {
+        mostrarAlerta("Selecione uma disciplina", "aviso");
+        return;
+    }
+
+    if (nomeTurma === "") {
+        mostrarAlerta("Preencha o campo \"Nome da Turma\"", "aviso");
+        return;
+    }
+
+    // Busca a disciplina no AppState para obter o código
+    const disciplina = AppState.disciplinas.find(d => d.nome === nomeDisciplina);
+    if (!disciplina) {
+        mostrarAlerta("Disciplina selecionada não encontrada", "erro");
+        return;
+    }
+
+    const fk_disciplina_codigo = disciplina.codigo;
+    console.log("📚 Disciplina selecionada:", { nome: nomeDisciplina, codigo: fk_disciplina_codigo });
+
+    mostrarLoader("mostrar");
+
+    // Verifica se a turma já existe
+    fetch("/turma/verificar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            fk_disciplina_codigo: fk_disciplina_codigo,
+            nome: nomeTurma
+        })
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.sucesso) {
+                // Pode cadastrar
+                return fetch("/turma/cadastro", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        fk_disciplina_codigo: fk_disciplina_codigo,
+                        nome: nomeTurma,
+                        local_aula: localAula,
+                        dia_semana: diaSemana,
+                        hora: hora
+                    })
+                });
+            } else {
+                mostrarLoader('esconder');
+                mostrarAlerta("Esta turma já está cadastrada nesta disciplina!", "aviso");
+                throw new Error("Turma duplicada");
+            }
+        })
+        .then(res => res.json())
+        .then(dados => {
+            if (dados.message || dados.id) {
+                mostrarLoader('esconder');
+                mostrarAlerta("Turma cadastrada com sucesso!", "sucesso");
+
+                // Limpa inputs
+                selectDisciplina.value = "";
+                inputNomeTurma.value = "";
+                if (inputLocalAula) inputLocalAula.value = "";
+                if (inputDiaSemana) inputDiaSemana.value = "";
+                if (inputHora) inputHora.value = "";
+                modal.classList.remove("show");
+
+                // Recarrega as turmas
+                carregarTurmasFromDB().then(() => {
+                    renderizarCardsTurmas();
+                    atualizarDashboardView();
+                });
+            } else {
+                mostrarLoader('esconder');
+                mostrarAlerta("Erro ao cadastrar a turma!", "erro");
+            }
+        })
+        .catch(err => {
+            if (err.message !== "Turma duplicada") {
+                mostrarLoader('esconder');
+                mostrarAlerta("Ocorreu um erro. Verifique o console.", "erro");
+                console.error("Erro:", err);
+            }
+        });
+}
+
 
 /**
  * Vincula um curso já existente a uma instituição (via modal "Adicionar Curso").
@@ -2457,6 +2570,54 @@ function preencherSelectCursos() {
     console.log("✅ Select de cursos preenchido com", selectCurso.options.length - 1, "opções");
 }
 
+/**
+ * Preenche o <select> ou <datalist> de disciplinas no modal de Turmas
+ */
+function preencherSelectDisciplinas() {
+    const inputDisciplina = document.querySelector("#turmasBody #inputDisciplinaTurma");
+    const datalist = document.querySelector("#turmasBody #listTurma");
+
+    if (!inputDisciplina && !datalist) {
+        console.warn("⚠️ Input de disciplina ou datalist não encontrados");
+        return;
+    }
+
+    // Limpa opções anteriores se for um select
+    if (inputDisciplina && inputDisciplina.tagName === "SELECT") {
+        inputDisciplina.innerHTML = '<option value="">Selecione uma disciplina</option>';
+    }
+
+    // Limpa opções anteriores se for um datalist
+    if (datalist) {
+        datalist.innerHTML = "";
+    }
+
+    // Preenche com as disciplinas do AppState
+    const disciplinas = AppState.disciplinas || [];
+
+    if (disciplinas.length === 0) {
+        console.warn("⚠️ Nenhuma disciplina carregada");
+        return;
+    }
+
+    disciplinas.forEach(disciplina => {
+        if (inputDisciplina && inputDisciplina.tagName === "SELECT") {
+            // Se for um select
+            const option = document.createElement("option");
+            option.value = disciplina.nome;
+            option.textContent = `${disciplina.nome} (${disciplina.sigla})`;
+            inputDisciplina.appendChild(option);
+        } else if (datalist) {
+            // Se for um datalist
+            const option = document.createElement("option");
+            option.value = disciplina.nome;
+            datalist.appendChild(option);
+        }
+    });
+
+    console.log("✅ Disciplinas carregadas no select/datalist");
+}
+
 // ============================================
 // 8. FUNÇÕES AUXILIARES E GETTERS DO ESTADO
 // (Funções que leem o AppState ou manipulam o estado local)
@@ -3105,29 +3266,27 @@ function salvarEdicaoTurma(idTurma, novoNome, novoCodigo, novoPeriodo, modal) {
     }
 
     fetch("/turma/atualizar", {
-        method: "PUT",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             id: parseInt(idTurma),
-            nome: novoNome,
-            codigo: novoCodigo,
-            periodo: parseInt(novoPeriodo)
+            nome: novoNome
         })
     })
         .then(res => res.json())
         .then(dados => {
-            if (dados.sucesso) {
+            if (dados.message) {
                 mostrarLoader('esconder');
                 mostrarAlerta("Turma atualizada com sucesso!", "sucesso");
 
                 // Recarrega os dados
-                carregarInstituicoesFromDB();
+                carregarTurmasFromDB();
 
                 // Fecha o modal
                 fecharModalEdicaoExpansivel(modal);
             } else {
                 mostrarLoader('esconder');
-                mostrarAlerta(dados.erro || "Erro ao atualizar turma", "erro");
+                mostrarAlerta(dados.error || "Erro ao atualizar turma", "erro");
             }
         })
         .catch(err => {
