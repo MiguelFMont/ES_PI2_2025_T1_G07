@@ -78,19 +78,15 @@ export async function deleteCurso(id: number, id_instituicao: number): Promise<b
 // Atualizar um curso
 export async function updateCurso(
     id: number,
-    fk_id_docente: number,
-    fk_id_instituicao: number,
     nome: string
 ) {
     const conn = await open();
     try {
         await conn.execute(
             `UPDATE Curso 
-             SET FK_ID_Docente = :fk_id_docente,
-                 FK_ID_Instituicao = :fk_id_instituicao,
-                 Nome = :nome
+             SET Nome = :nome
              WHERE ID_Curso = :id`,
-            { fk_id_docente, fk_id_instituicao, nome, id },
+            { nome, id },
             { autoCommit: true }
         );
     } finally {

@@ -387,16 +387,16 @@ app.post('/curso/cadastro', async (req: Request, res: Response) => {
 // Atualizar curso existente
 app.post('/curso/atualizar', async (req: Request, res: Response) => {
     try {
-        const { id, fk_id_docente, fk_id_instituicao, nome } = req.body;
+        const { id, nome } = req.body;
 
-        if (!id || !fk_id_docente || !fk_id_instituicao || !nome) {
-            console.log("❌ Campos obrigatórios faltando:", { id, fk_id_docente, fk_id_instituicao, nome });
+        if (!id || !nome) {
+            console.log("❌ Campos obrigatórios faltando:", { id, nome });
             return res.status(400).json({
-                error: "Todos os campos são obrigatórios: id, docente, instituição e nome!"
+                error: "Todos os campos são obrigatórios: id, nome!"
             });
         }
 
-        await updateCurso(id, fk_id_docente, fk_id_instituicao, nome);
+        await updateCurso(id, nome);
         console.log("✅ Curso atualizado com sucesso! ID:", id);
         res.status(200).json({
             message: "Curso atualizado com sucesso"

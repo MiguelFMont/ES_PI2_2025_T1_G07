@@ -170,6 +170,17 @@
     font-family: 'Poppins', sans-serif;
 }
 
+.campoEdicao select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid var(--lightgrey);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    font-family: 'Poppins', sans-serif;
+    box-sizing: border-box;
+}
+
 .campoEdicao input[type="text"]:focus {
     outline: none;
     border-color: var(--color5);
@@ -483,7 +494,7 @@ Style das Infos de Disciplina no Modal de Edição
 .tempAndButtons {
     display: grid;
     grid-template-columns: 1fr auto;
-    align-items: center;    
+    align-items: center;
 }
 
 .boxInfoDisciplinas {
@@ -527,10 +538,25 @@ Style das Infos de Disciplina no Modal de Edição
     outline: none;
     border-color: var(--color5);
 }
+
 @keyframes shake {
-    0% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    50% { transform: translateX(5px); }
-    75% { transform: translateX(-5px); }
-    100% { transform: translateX(0); }
+    0% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    50% {
+        transform: translateX(5px);
+    }
+
+    75% {
+        transform: translateX(-5px);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
 }
