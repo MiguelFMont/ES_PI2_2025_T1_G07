@@ -359,12 +359,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (card.closest('#cursosBody')) {
                     const id = card.dataset.id;
                     const idInstituicao = card.dataset.instituicaoId;
+                    const disciplinasEmCurso = get.getDisciplinasPorCurso(id);
+                    if (disciplinasEmCurso.length > 0) {
+                        mostrarAlerta("Não é possível deletar um curso que possui disciplinas vinculadas.", "erro");
+                        return;
+                    }
                     mostrarConfirm("Tem certeza que deseja deletar este curso?", (confirmado) => {
                          if (confirmado) deletarCursoDB(id, idInstituicao);
                     });
 
                 } else if (card.closest('#disciplinasBody')) {
                     const codigo = card.dataset.codigo;
+                    const turmasEmDisciplina = get.getTurmasPorDisciplina(codigo);
+                    if (turmasEmDisciplina.length > 0) {
+                        mostrarAlerta("Não é possível deletar uma disciplina que possui turmas vinculadas.", "erro");
+                        return;
+                    }
                     mostrarConfirm("Tem certeza que deseja deletar esta disciplina?", (confirmado) => {
                         if (confirmado) deletarDisciplinaDB(codigo);
                     });

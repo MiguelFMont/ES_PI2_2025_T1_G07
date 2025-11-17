@@ -402,18 +402,6 @@ function mostrarCardVazioDisciplinas() {
 }
 
 /**
- * Renderiza os cards de turmas na interface
- */
-function renderizarCardsTurmas() {
-    console.log("🎨 Renderizando cards de turmas...");
-    // ... Sua lógica de renderização de turmas (com DocumentFragment) ...
-
-    // Dispara evento customizado (se o main.js ainda depender dele)
-    document.dispatchEvent(new CustomEvent('cardsTurmasRenderizados'));
-    console.log(`✅ Evento de turmas disparado`);
-}
-
-/**
  * Atualiza a visualização principal do Dashboard (atividades recentes)
  */
 function atualizarDashboardView() {
@@ -478,9 +466,257 @@ function atualizarDashboardView() {
             }
         }
     }
-    console.log(`✅ Dashboard atualizado`);
 }
 
+/**
+ * Atualiza o contador visual de disciplinas no dashboard
+ */
+function atualizarContadorDisciplinas(quantidade) {
+    const counter = document.querySelector("#disciplinas .titleOptionDashboard p");
+    if (counter) {
+        counter.textContent = quantidade;
+        console.log("📊 Contador de Disciplinas atualizado:", quantidade);
+    }
+}
+
+/**
+ * Mostra o card vazio quando não há disciplinas
+ */
+function mostrarCardVazioDisciplinas() {
+    const containerCards = document.querySelector("#disciplinasBody .cardsCreateIdt");
+    const cardVazio = document.querySelector("#disciplinasBody .cardIdt");
+
+    if (containerCards) {
+        containerCards.style.display = "none";
+        containerCards.style.opacity = "0";
+        containerCards.style.pointerEvents = "none";
+    }
+
+    if (cardVazio) {
+        const iconIdt = cardVazio.querySelector('.iconIdt');
+        const h3 = cardVazio.querySelector('h3');
+        const p = cardVazio.querySelector('p');
+
+        if (iconIdt) iconIdt.style.display = "flex";
+        if (h3) h3.style.display = "block";
+        if (p) p.style.display = "block";
+
+        cardVazio.style.display = "flex";
+        cardVazio.style.border = "1px dashed var(--lightgrey)";
+        cardVazio.style.borderWidth = "2px";
+        cardVazio.style.height = "250px";
+        cardVazio.style.padding = "";
+
+        const modal = cardVazio.querySelector('.createIdt');
+        if (modal) {
+            modal.classList.remove('show');
+        }
+    }
+}
+
+/**
+ * Renderiza os cards de disciplinas na interface
+ */
+function renderizarCardsDisciplinas() {
+    console.log("🎨 Renderizando cards de disciplinas...");
+
+    const containerCards = document.querySelector("#disciplinasBody .cardsCreateIdt");
+    const cardVazio = document.querySelector("#disciplinasBody .cardIdt");
+
+    if (!containerCards) {
+        console.error("❌ Container de cards de disciplinas não encontrado!");
+        return;
+    }
+
+    containerCards.innerHTML = "";
+
+    // ✅ USA DIRETAMENTE AppState.disciplinas
+    const todasDisciplinas = AppState.disciplinas || [];
+
+    console.log(`📚 Total de disciplinas no AppState: ${todasDisciplinas.length}`);
+
+    atualizarContadorDisciplinas(todasDisciplinas.length);
+
+    if (todasDisciplinas.length === 0) {
+        mostrarCardVazioDisciplinas();
+        return;
+    }
+
+    // Esconde o card vazio
+    if (cardVazio) {
+        const iconIdt = cardVazio.querySelector('.iconIdt');
+        const h3 = cardVazio.querySelector('h3');
+        const p = cardVazio.querySelector('p');
+
+        if (iconIdt) iconIdt.style.display = "none";
+        if (h3) h3.style.display = "none";
+        if (p) p.style.display = "none";
+
+        cardVazio.style.border = "none";
+        cardVazio.style.height = "0";
+        cardVazio.style.padding = "0";
+        cardVazio.style.overflow = "visible";
+
+        const modal = cardVazio.querySelector('.createIdt');
+        if (modal) {
+            modal.classList.remove('show');
+        }
+    }
+
+    containerCards.style.display = "grid";
+    containerCards.style.opacity = "1";
+    containerCards.style.pointerEvents = "all";
+
+    // Cria um card para cada disciplina
+    todasDisciplinas.forEach(disciplina => {
+        // Busca informações do curso
+        const curso = AppState.cursos.find(c => c.id == disciplina.id_curso);
+        const nomeCurso = curso ? curso.curso : "Curso não encontrado";
+        const nomeInstituicao = curso ? get.getNomeInstituicaoPorId(curso.fk_id_instituicao) : "Instituição não encontrada";
+
+        const card = document.createElement("div");
+        card.className = "contentCardIdt";
+        card.setAttribute("data-codigo", disciplina.codigo);
+        card.setAttribute("data-curso-id", disciplina.id_curso);
+
+        card.innerHTML = `
+            <i class="ph ph-book-open" id="disciplinasIcon"></i>
+            <div class="textContentCardIdt">
+                <h2>${disciplina.nome}</h2>
+                <p style="font-size: 0.85rem; color: var(--color6); margin: 5px 0;">
+                    ${nomeCurso} - ${nomeInstituicao}
+                </p>
+                <div class="viewDetails">
+                    <div class="code">${disciplina.codigo || 'N/A'}</div>
+                    <div class="acronym">${disciplina.sigla || 'N/A'}</div>
+                    <div class="period">${disciplina.periodo || '?'}°</div>
+                </div>
+            </div>
+            <div class="editAndDelet">
+                <button class="editCard" data-disciplina-codigo="${disciplina.codigo}">
+                    <i class="ph ph-pencil-simple"></i>
+                </button>
+                <button class="deletCard" data-disciplina-codigo="${disciplina.codigo}">
+                    <i class="ph ph-trash"></i>
+                </button>
+            </div>
+        `;
+
+        containerCards.appendChild(card);
+    });
+
+    console.log(`✅ ${todasDisciplinas.length} cards de disciplinas renderizados`);
+
+    document.dispatchEvent(new CustomEvent('cardsDisciplinasRenderizados'));
+}
+
+/**
+ * Renderiza os cards de turmas na interface
+ * Nota: Esta função dispara um evento para que os listeners de turmas sejam ativados
+ */
+function renderizarCardsTurmas() {
+    console.log("🎨 Renderizando cards de turmas...");
+
+    const containerCards = document.querySelector("#turmasBody .cardsCreateIdt");
+    const cardVazio = document.querySelector("#turmasBody .cardIdt");
+
+    if (!containerCards) {
+        console.error("❌ Container de cards de turmas não encontrado!");
+        return;
+    }
+
+    // Limpa os cards existentes
+    containerCards.innerHTML = "";
+
+    if (!AppState.turmas || AppState.turmas.length === 0) {
+        // Restaura/mostra o card vazio (se existir)
+        if (cardVazio) {
+            const iconIdt = cardVazio.querySelector('.iconIdt');
+            const h3 = cardVazio.querySelector('h3');
+            const p = cardVazio.querySelector('p');
+
+            if (iconIdt) iconIdt.style.display = "block";
+            if (h3) h3.style.display = "block";
+            if (p) p.style.display = "block";
+
+            cardVazio.style.border = "1px solid var(--border)";
+            cardVazio.style.height = "auto";
+            cardVazio.style.padding = "1.25rem";
+            cardVazio.style.overflow = "visible";
+
+            const modal = cardVazio.querySelector('.createIdt');
+            if (modal) modal.classList.remove('show');
+        }
+
+        containerCards.style.display = "none";
+        containerCards.style.opacity = "0";
+        containerCards.style.pointerEvents = "none";
+
+        // Ainda disparar o evento para garantir que listeners saibam que não há cards
+        document.dispatchEvent(new CustomEvent('cardsTurmasRenderizados'));
+        console.log("ℹ️ Nenhuma turma para renderizar");
+        return;
+    }
+
+    // Esconde o card vazio
+    if (cardVazio) {
+        const iconIdt = cardVazio.querySelector('.iconIdt');
+        const h3 = cardVazio.querySelector('h3');
+        const p = cardVazio.querySelector('p');
+
+        if (iconIdt) iconIdt.style.display = "none";
+        if (h3) h3.style.display = "none";
+        if (p) p.style.display = "none";
+
+        cardVazio.style.border = "none";
+        cardVazio.style.height = "0";
+        cardVazio.style.padding = "0";
+        cardVazio.style.overflow = "visible";
+
+        const modal = cardVazio.querySelector('.createIdt');
+        if (modal) modal.classList.remove('show');
+    }
+
+    containerCards.style.display = "grid";
+    containerCards.style.opacity = "1";
+    containerCards.style.pointerEvents = "all";
+
+    const fragmento = document.createDocumentFragment();
+    // Cria um card para cada turma
+    AppState.turmas.forEach(turma => {
+        const card = document.createElement("div");
+        card.className = "contentCardIdt";
+        card.setAttribute("data-id", turma.id);
+
+        const codigo = turma.codigo || "";
+        const periodo = turma.periodo || "Período não definido";
+
+        card.innerHTML = `
+            <i class="ph ph-users" id="turmasIcon"></i>
+            <div class="textContentCardIdt">
+                <h2>${turma.nome_turma}</h2>
+                <p style="font-size: 0.85rem; color: var(--color6); margin: 5px 0;">${codigo}</p>
+                <div class="viewDetails">
+                    <div class="code">${codigo}</div>
+                    <div class="period">${periodo}</div>
+                </div>
+            </div>
+            <div class="editAndDelet">
+                <button class="editCard" data-turma-id="${turma.id}">
+                    <i class="ph ph-pencil-simple"></i>
+                </button>
+                <button class="deletCard" data-turma-id="${turma.id}">
+                    <i class="ph ph-trash"></i>
+                </button>
+            </div>
+        `;
+
+        fragmento.appendChild(card);
+    });
+
+    // ✅ OTIMIZAÇÃO: Adiciona ao DOM de uma vez
+    containerCards.appendChild(fragmento);
+}
 /**
  * Atualiza o contador visual de instituições no dashboard
  */
@@ -1007,6 +1243,11 @@ function salvarTurma() {
             if (inputDiaSemana) inputDiaSemana.value = "";
             if (inputHora) inputHora.value = "";
             modal.classList.remove("show");
+            AppState.turmas.push({
+                id: dados.id.toString(),
+                nome_turma: nomeTurma,
+                fk_disciplina_codigo: fk_disciplina_codigo,
+            });
 
             // ✅ MODIFICADO: Chama o orquestrador central
             carregarTodaAplicacao();
@@ -1409,12 +1650,22 @@ function salvarEdicaoInstituicao(id, novoNome, modal) {
 
     EdicaoState.cursosParaDeletar.forEach(idCurso => {
         promiseChain = promiseChain.then(() => {
+            const disciplinasEmCurso = get.getDisciplinasPorCurso(idCurso);
+            if (disciplinasEmCurso.length > 0) {
+                mostrarAlerta(`Não foi possível deletar o curso ID ${idCurso} pois ele possui disciplinas vinculadas!`, "erro");
+                return Promise.resolve(); // Skip deletion if there are linked disciplines
+            }
+
             return fetch("/curso/deletar", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id: parseInt(idCurso), id_instituicao: parseInt(id) })
             }).then(res => res.json()).then(dados => {
                 if (dados.sucesso) console.log(`✅ Curso deletado: ${idCurso}`);
+                else if (dados.cursoComFks) {
+                    mostrarAlerta(`Não foi possível deletar o curso ID ${idCurso} pois ele possui disciplinas vinculadas!`, "erro");
+                    console.warn(`⚠️ Curso ID ${idCurso} possui disciplinas vinculadas, não foi deletado.`);
+                }
             });
         });
     });
@@ -1478,12 +1729,14 @@ function vincularCursoInstituicaoDB_Edicao(idInstituicao, nomeCurso) {
             });
         } else {
             console.warn(`Curso "${nomeCurso}" já existe.`);
+            mostrarAlerta(`Curso "${nomeCurso}" já está cadastrado!`, "aviso");
             throw new Error("Curso duplicado");
         }
     })
     .then(res => res.json())
     .then(dados => {
         if (dados.sucesso) {
+            mostrarAlerta(`Modificações alteradas com sucesso!`, "sucesso");
             console.log(`Curso "${nomeCurso}" cadastrado.`);
         } else {
             throw new Error("Erro ao cadastrar o curso!");
@@ -1579,7 +1832,7 @@ function salvarEdicaoCurso(idCurso, novoNome, modal) {
                 // ✅ ATUALIZA A UI CENTRALIZADA
                 renderizarTodaInterface();
                 
-                mostrarAlerta("Curso atualizado com sucesso!", "sucesso");
+                mostrarAlerta("Alterações salvas com sucesso!", "sucesso");
             }
         })
         .catch(err => {
@@ -2272,6 +2525,9 @@ const get = (() => {
     }
     function getDisciplinasPorCurso(idCurso) {
         return AppState.disciplinas.filter(disc => disc.id_curso == idCurso);
+    }
+    function getTurmasPorDisciplina(idDisciplina) {
+        return AppState.turmas.filter(turma => turma.fk_id_disciplina == idDisciplina);
     }
     return {
         getDisciplinasPorCurso,

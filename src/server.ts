@@ -1224,6 +1224,7 @@ app.get('/nota/all', async (req: Request, res: Response) => {
 /* MATRICULA */
 /*===========*/
 
+
 // Verificar se matrícula já existe (turma + estudante)
 app.post('/matricula/verificar', async (req: Request, res: Response) => {
     try {
@@ -1255,6 +1256,7 @@ app.post('/matricula/verificar', async (req: Request, res: Response) => {
     }
 });
 
+
 // Cadastrar nova matrícula
 app.post('/matricula/cadastro', async (req: Request, res: Response) => {
     try {
@@ -1266,12 +1268,14 @@ app.post('/matricula/cadastro', async (req: Request, res: Response) => {
                 error: "Os campos fk_id_turma e fk_id_estudante são obrigatórios"
             });
         }
-
+        
+        
         const existente = await verificarMatriculaExistente(fk_id_turma, fk_id_estudante);
         if (existente) {
             console.log("❌ Matrícula já existente para estudante na turma", existente.id_matricula);
             return res.status(409).json({ sucesso: false, message: "Matrícula já existe", id: existente.id_matricula });
         }
+        
 
         const id = await addMatricula(fk_id_turma, fk_id_estudante);
         console.log("✅ Matrícula registrada com sucesso! ID:", id);

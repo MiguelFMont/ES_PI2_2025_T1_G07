@@ -49,10 +49,14 @@ export async function addInstituicao(nome_curso: string, nome_instituicao: strin
             },
             {autoCommit: false}
         );
-        await conn.execute(
+        const resultCurso = await conn.execute<{outBinds : {id: number}}>(
             `INSERT INTO CURSO (Nome)
-            VALUES (:nome)`,
-            { nome: nome_curso },
+            VALUES (:nome)
+            RETURNING ID_CURSO INTO :id`,
+            { 
+                nome: nome_curso,
+                id: {dir: OracleDB.BIND_OUT, type: OracleDB.NUMBER}
+            },
             { autoCommit: false }
         );
         
@@ -64,6 +68,15 @@ export async function addInstituicao(nome_curso: string, nome_instituicao: strin
 
         const id_instituicao = outBinds.id[0];
 
+        // Captura o ID do curso
+        const outBindsCurso = resultCurso.outBinds as {id?: number[]} | undefined;
+        
+        if (!outBindsCurso || !outBindsCurso.id || outBindsCurso.id.length === 0) {
+            throw new Error("Erro ao obter o ID retornado na inserção do Curso.");
+        }
+
+        const id_curso = outBindsCurso.id[0];
+
         await conn.execute(
             `INSERT INTO DOCENTE_INSTITUICAO (FK_ID_DOCENTE, FK_ID_INSTITUICAO)
             VALUES (:id_docente, :id_instituicao)`,
@@ -71,10 +84,11 @@ export async function addInstituicao(nome_curso: string, nome_instituicao: strin
             { autoCommit: false }
         );
 
+        // Usa o ID capturado ao invés de uma subconsulta
         await conn.execute(
             `INSERT INTO INSTITUICAO_CURSO (FK_ID_INSTITUICAO, FK_ID_CURSO)
-            VALUES (:id_instituicao, (SELECT ID_CURSO FROM CURSO WHERE NOME = :nome_curso))`,
-            { id_instituicao, nome_curso },
+            VALUES (:id_instituicao, :id_curso)`,
+            { id_instituicao, id_curso },
             { autoCommit: false }
         );
 
