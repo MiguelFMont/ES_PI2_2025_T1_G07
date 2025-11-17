@@ -884,25 +884,31 @@ function carregarTurmasFromDB() {
 
     const idsCursos = cursos.map(curso => curso.id);
 
-    const fetchTurmasPromises = idsCursos.map(id =>
-        fetch(`/turma/all/${id}`).then(res => res.json())
-    );
+    // Faz uma única requisição para obter todas as turmas
+    fetch('/turma/all')
+        .then(res => {
+            if (!res.ok) {
+                if (res.status === 404) throw new Error('Nenhuma turma encontrada (404)');
+                throw new Error(`Erro ao buscar turmas: ${res.status}`);
+            }
+            return res.json();
+        })
+        .then(turmasServidor => {
+            // A API retorna um array de turmas. Protegemos contra formatos inesperados.
+            const todasTurmas = Array.isArray(turmasServidor) ? turmasServidor : (turmasServidor.turmas || []);
 
-    Promise.all(fetchTurmasPromises)
-        .then(resultados => {
-            const todasTurmas = resultados.flatMap(resultado => resultado.turmas || []);
-
-            if (todasTurmas.length === 0) {
+            if (!todasTurmas || todasTurmas.length === 0) {
                 console.log("⚠️ Nenhuma turma cadastrada");
                 AppState.turmas = [];
                 mostrarAlerta("Cadastre uma turma!", "aviso");
             } else {
+                // Mapeia os campos de forma defensiva para evitar erros se propriedades estiverem faltando
                 AppState.turmas = todasTurmas.map(turma => ({
-                    id: turma.id.toString(),
-                    nome_turma: turma.nome || "Nome Turma",
-                    periodo: turma.periodo ? `${turma.periodo}° Semestre` : "Período não definido",
-                    fk_id_curso: turma.fk_id_curso,
-                    codigo: turma.codigo || ""
+                    id: (turma.id !== undefined && turma.id !== null) ? turma.id.toString() : String(Date.now()),
+                    nome_turma: turma.nome || turma.nome_turma || "Nome Turma",
+                    periodo: turma.periodo ? `${turma.periodo}° Semestre` : (turma.periodo || "Período não definido"),
+                    fk_id_curso: turma.fk_id_curso || turma.fk_disciplina_codigo || null,
+                    codigo: turma.codigo || turma.cod || ""
                 }));
                 console.log("✅ Turmas formatadas:", AppState.turmas);
             }
