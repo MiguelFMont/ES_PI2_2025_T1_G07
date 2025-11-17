@@ -3183,8 +3183,14 @@ function editarTurma(idTurma) {
     }
     if (selectPeriodo) {
         // Extrai apenas o número do período (ex: "1° Semestre" -> "1")
-        const periodoNum = turma.periodo ? turma.periodo.toString().match(/\d+/)[0] : "";
-        selectPeriodo.value = periodoNum || "";
+        // Usa checagem defensiva: match() pode retornar null se não houver dígitos
+        let periodoNum = "";
+        if (turma.periodo != null) {
+            const periodoStr = turma.periodo.toString();
+            const match = periodoStr.match(/\d+/);
+            if (match && match[0]) periodoNum = match[0];
+        }
+        selectPeriodo.value = periodoNum;
     }
 
     // Vincula eventos (apenas uma vez)
