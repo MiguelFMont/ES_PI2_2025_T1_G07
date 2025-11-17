@@ -54,13 +54,13 @@ async function listarAlunos() {
                         <div class="iconAluno">${iniciais}</div>
                     </a>
                     <div class="infoAluno" style="display: none;">
-                        <div class="info-content" style="padding: 15px; background-color: #f4f4f4; border-radius: 8px;">
+                        <div class="info-content">
                             <p><strong>Ações para:</strong> ${aluno.nome}</p>
-                            <div class="info-actions" style="margin-top: 10px;">
-                                <button onclick="prepararEdicao(${aluno.ra}, '${aluno.nome}')" style="margin-right: 10px; cursor: pointer; padding: 5px 10px;">
+                            <div class="info-actions">
+                                <button onclick="prepararEdicao(${aluno.ra}, '${aluno.nome}')" class="editAluno">
                                     <i class="ph ph-pencil-simple"></i> Editar
                                 </button>
-                                <button onclick="deletarAluno(${aluno.ra})" style="cursor: pointer; padding: 5px 10px; color: white; background-color: #ff4d4d; border: none; border-radius: 4px;">
+                                <button onclick="deletarAluno(${aluno.ra})" class="deletAluno">
                                     <i class="ph ph-trash"></i> Excluir
                                 </button>
                             </div>
@@ -131,9 +131,12 @@ async function cadastrarAluno(ra, nome) {
         const checkResult = await checkResponse.json();
 
         if (checkResult.sucesso === false) { // Aluno já existe
-            alert(`Erro: O RA ${ra} já pertence ao aluno(a) ${checkResult.estudante.nome}.`);
-            if (load) load.style.display = 'none';
-            return;
+                // Aluno já existe localmente — não recria, mas segue para matricular na turma atual
+                console.log(`ℹ️ Estudante com RA ${ra} já existe:`, checkResult.estudante);
+                if (load) load.style.display = 'none';
+                // Prossegue para matricular o aluno existente
+                await matricularAluno(ra);
+                return;
         }
 
         // 2. Realiza o Cadastro
@@ -147,6 +150,8 @@ async function cadastrarAluno(ra, nome) {
             alert('Aluno cadastrado com sucesso!');
             limparFormulario();
             listarAlunos(); // Atualiza a tabela
+            // Depois de criar o estudante, matricula-o na turma atual
+            await matricularAluno(ra);
         } else {
             const errorData = await response.json();
             alert('Erro ao cadastrar: ' + errorData.error);
@@ -202,12 +207,103 @@ async function atualizarAluno(ra, nome) {
             alert('Aluno atualizado com sucesso!');
             limparFormulario();
             listarAlunos();
+            // Após atualizar, tenta matricular o aluno na turma atual
+            await matricularAluno(ra);
         } else {
             alert('Erro ao atualizar.');
         }
     } catch (error) {
         console.error(error);
         alert('Erro de conexão.');
+    } finally {
+        if (load) load.style.display = 'none';
+    }
+}
+
+// ============================================================
+// MATRÍCULA
+// ============================================================
+async function matricularAluno(ra) {
+    const load = document.querySelector('.load');
+    if (load) load.style.display = 'flex';
+
+    try {
+        // 1. Identifica a turma atual pela classe 'turmaLogin' (usa o texto)
+        const turmaEl = document.querySelector('.turmaLogin');
+        if (!turmaEl) {
+            alert('Não foi possível identificar a turma atual (elemento .turmaLogin não encontrado).');
+            return;
+        }
+
+        const turmaNome = turmaEl.textContent.trim();
+
+        // 2. Busca todas as turmas e tenta encontrar a que possui o mesmo nome
+        const respTurmas = await fetch('/turma/all');
+        if (!respTurmas.ok) {
+            console.error('Erro ao obter turmas:', respTurmas.status);
+            alert('Erro ao buscar turmas no servidor.');
+            return;
+        }
+
+        const turmas = await respTurmas.json();
+        const listaTurmas = Array.isArray(turmas) ? turmas : (turmas.turmas || []);
+
+        // Tenta achar correspondência exata, senão por inclusão
+        let turmaObj = listaTurmas.find(t => (t.nome && t.nome.trim() === turmaNome));
+        if (!turmaObj) {
+            turmaObj = listaTurmas.find(t => (t.nome && turmaNome.includes(t.nome)) || (t.nome && t.nome.includes(turmaNome)));
+        }
+
+        if (!turmaObj) {
+            alert(`Turma com nome "${turmaNome}" não encontrada no servidor.`);
+            return;
+        }
+
+        const fk_id_turma = Number(turmaObj.id);
+        const fk_id_estudante = Number(ra);
+
+        // 3. Verifica se matrícula já existe
+        const verifyResp = await fetch('/matricula/verificar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fk_id_turma, fk_id_estudante })
+        });
+
+        if (!verifyResp.ok) {
+            const err = await verifyResp.json().catch(() => ({}));
+            console.error('Erro ao verificar matrícula:', verifyResp.status, err);
+            alert('Erro ao verificar matrícula.');
+            return;
+        }
+
+        const verifyData = await verifyResp.json();
+        if (verifyData.sucesso === false) {
+            alert('Aluno já matriculado nesta turma.');
+            return;
+        }
+
+        // 4. Cadastra a matrícula
+        const cadastroResp = await fetch('/matricula/cadastro', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fk_id_turma, fk_id_estudante })
+        });
+
+        if (cadastroResp.ok) {
+            const data = await cadastroResp.json();
+            alert('Matrícula realizada com sucesso! ID: ' + (data.id_matricula || data.id || '---'));
+        } else if (cadastroResp.status === 409) {
+            const d = await cadastroResp.json().catch(() => ({}));
+            alert(d.message || 'Matrícula já existe.');
+        } else {
+            const d = await cadastroResp.json().catch(() => ({}));
+            console.error('Erro ao cadastrar matrícula:', cadastroResp.status, d);
+            alert('Erro ao cadastrar matrícula.');
+        }
+
+    } catch (error) {
+        console.error('Erro na matrícula:', error);
+        alert('Erro ao realizar matrícula.');
     } finally {
         if (load) load.style.display = 'none';
     }
@@ -281,3 +377,8 @@ function filtrarAlunos() {
         }
     });
 }
+
+/*////////////////////////////////////////
+//       importação aluno csv           //
+////////////////////////////////////////*/
+

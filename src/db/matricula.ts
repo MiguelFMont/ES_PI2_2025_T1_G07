@@ -38,6 +38,7 @@ export async function addMatricula(
 	}
 }
 
+
 // Verificar se matrícula já existe
 export async function verificarMatriculaExistente(
 	fk_id_turma: number,
@@ -46,8 +47,7 @@ export async function verificarMatriculaExistente(
 	const conn = await open();
 	try {
 		const result = await conn.execute(
-			`SELECT ID_MATRICULA as "id_matricula",
-					FK_ID_TURMA as "fk_id_turma",
+			`SELECT FK_ID_TURMA as "fk_id_turma",
 					FK_ID_ESTUDANTE as "fk_id_estudante"
 			 FROM webapp.MATRICULA
 			 WHERE FK_ID_TURMA = :fk_id_turma
@@ -62,6 +62,7 @@ export async function verificarMatriculaExistente(
 		await close(conn);
 	}
 }
+
 
 // Obter matrícula pelo ID
 export async function getMatriculaById(id_matricula: number): Promise<Matricula | null> {
