@@ -567,10 +567,106 @@ function renderizarCardsDisciplinas() {
 function renderizarCardsTurmas() {
     console.log("🎨 Renderizando cards de turmas...");
 
+    const containerCards = document.querySelector("#turmasBody .cardsCreateIdt");
+    const cardVazio = document.querySelector("#turmasBody .cardIdt");
+
+    if (!containerCards) {
+        console.error("❌ Container de cards de turmas não encontrado!");
+        return;
+    }
+
+    // Limpa os cards existentes
+    containerCards.innerHTML = "";
+
+    if (!AppState.turmas || AppState.turmas.length === 0) {
+        // Restaura/mostra o card vazio (se existir)
+        if (cardVazio) {
+            const iconIdt = cardVazio.querySelector('.iconIdt');
+            const h3 = cardVazio.querySelector('h3');
+            const p = cardVazio.querySelector('p');
+
+            if (iconIdt) iconIdt.style.display = "block";
+            if (h3) h3.style.display = "block";
+            if (p) p.style.display = "block";
+
+            cardVazio.style.border = "1px solid var(--border)";
+            cardVazio.style.height = "auto";
+            cardVazio.style.padding = "1.25rem";
+            cardVazio.style.overflow = "visible";
+
+            const modal = cardVazio.querySelector('.createIdt');
+            if (modal) modal.classList.remove('show');
+        }
+
+        containerCards.style.display = "none";
+        containerCards.style.opacity = "0";
+        containerCards.style.pointerEvents = "none";
+
+        // Ainda disparar o evento para garantir que listeners saibam que não há cards
+        document.dispatchEvent(new CustomEvent('cardsTurmasRenderizados'));
+        console.log("ℹ️ Nenhuma turma para renderizar");
+        return;
+    }
+
+    // Esconde o card vazio
+    if (cardVazio) {
+        const iconIdt = cardVazio.querySelector('.iconIdt');
+        const h3 = cardVazio.querySelector('h3');
+        const p = cardVazio.querySelector('p');
+
+        if (iconIdt) iconIdt.style.display = "none";
+        if (h3) h3.style.display = "none";
+        if (p) p.style.display = "none";
+
+        cardVazio.style.border = "none";
+        cardVazio.style.height = "0";
+        cardVazio.style.padding = "0";
+        cardVazio.style.overflow = "visible";
+
+        const modal = cardVazio.querySelector('.createIdt');
+        if (modal) modal.classList.remove('show');
+    }
+
+    containerCards.style.display = "grid";
+    containerCards.style.opacity = "1";
+    containerCards.style.pointerEvents = "all";
+
+    // Cria um card para cada turma
+    AppState.turmas.forEach(turma => {
+        const card = document.createElement("div");
+        card.className = "contentCardIdt";
+        card.setAttribute("data-id", turma.id);
+
+        const codigo = turma.codigo || "";
+        const periodo = turma.periodo || "Período não definido";
+
+        card.innerHTML = `
+            <i class="ph ph-users" id="turmasIcon"></i>
+            <div class="textContentCardIdt">
+                <h2>${turma.nome_turma}</h2>
+                <p style="font-size: 0.85rem; color: var(--color6); margin: 5px 0;">${codigo}</p>
+                <div class="viewDetails">
+                    <div class="code">${codigo}</div>
+                    <div class="period">${periodo}</div>
+                </div>
+            </div>
+            <div class="editAndDelet">
+                <button class="editCard" data-turma-id="${turma.id}">
+                    <i class="ph ph-pencil-simple"></i>
+                </button>
+                <button class="deletCard" data-turma-id="${turma.id}">
+                    <i class="ph ph-trash"></i>
+                </button>
+            </div>
+        `;
+
+        containerCards.appendChild(card);
+    });
+
+    console.log(`✅ ${AppState.turmas.length} cards de turmas renderizados`);
+
     // Dispara evento customizado para vincular eventos
     document.dispatchEvent(new CustomEvent('cardsTurmasRenderizados'));
-
-    console.log(`✅ Evento de turmas disparado`);
 }
 
 /**
