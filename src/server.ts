@@ -399,11 +399,13 @@ app.post('/curso/atualizar', async (req: Request, res: Response) => {
         await updateCurso(id, nome);
         console.log("✅ Curso atualizado com sucesso! ID:", id);
         res.status(200).json({
+            sucesso: true,
             message: "Curso atualizado com sucesso"
         });
     } catch (error) {
         console.error("❌ Erro ao atualizar o curso:", error);
         res.status(500).json({
+            sucesso: false, 
             error: "Erro ao atualizar o curso."
         });
     }
@@ -417,6 +419,7 @@ app.post('/curso/deletar', async (req: Request, res: Response) => {
         if (!id || !id_instituicao) {
             console.log("❌ Os campos ID e ID da instituição são obrigatórios!");
             return res.status(400).json({
+                sucesso: false,
                 error: "Os campos ID e ID da instituição são obrigatórios!"
             });
         }
@@ -442,15 +445,20 @@ app.get('/curso/id/:id', async (req: Request, res: Response) => {
         const id = Number(req.params.id);
         const curso = await getCursoById(id);
         if (curso) {
-            res.json(curso);
+            res.json({
+                sucesso: true,
+                curso: curso
+            });
         } else {
             res.status(404).json({
+                sucesso: false,
                 message: "Curso não encontrado com o ID fornecido"
             });
         }
     } catch (error) {
         console.error("❌ Erro ao buscar curso por ID:", error);
         res.status(500).json({
+            sucesso: false,
             error: "Erro ao buscar o curso pelo ID fornecido."
         });
     }
@@ -554,8 +562,11 @@ app.post('/disciplina/cadastro', async (req: Request, res: Response) => {
         // Verificar se o código já existe
         const disciplinaExistente = await getDisciplinaByCodigo(codigo);
         if (disciplinaExistente) {
-            return res.status(400).json({
-                error: "Já existe uma disciplina com este código!"
+
+            return res.status(409).json({
+                disciplinaExistente:true,
+                sucesso: false,
+                error: "Já existe uma disciplina cadastrada com este código."
             });
         }
 

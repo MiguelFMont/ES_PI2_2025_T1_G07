@@ -641,7 +641,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = btn.closest(".contentCardIdt");
             if (!card) return;
 
-            const idTurma = card.getAttribute("data-id");
+            const idTurma = card.getAttribute("data-turma-id");
             console.log("🎯 ID da turma:", idTurma);
 
             if (btn.classList.contains("editCard")) {

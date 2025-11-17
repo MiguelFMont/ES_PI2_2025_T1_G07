@@ -618,7 +618,7 @@ function atualizarContadorTurmas(quantidade) {
  */
 function carregarDisciplinasFromDB() {
     console.log("📚 Carregando disciplinas dos cursos do usuário...");
-    
+
     // Verifica se há cursos carregados
     if (!AppState.cursos || AppState.cursos.length === 0) {
         console.log("⚠️ Nenhum curso carregado. Pulando carregamento de disciplinas.");
@@ -638,21 +638,21 @@ function carregarDisciplinasFromDB() {
     })
         .then(res => {
             console.log("📥 Status da resposta /disciplina/all:", res.status);
-            
+
             if (res.status === 404) {
                 console.log("ℹ️ Nenhuma disciplina cadastrada no sistema");
                 return [];
             }
-            
+
             if (!res.ok) {
                 throw new Error(`Erro HTTP ${res.status}`);
             }
-            
+
             return res.json();
         })
         .then(data => {
             console.log("📦 Dados recebidos do servidor:", data);
-            
+
             // Extrai o array de disciplinas
             let todasDisciplinas = [];
             if (Array.isArray(data)) {
@@ -660,9 +660,9 @@ function carregarDisciplinasFromDB() {
             } else if (data.disciplinas && Array.isArray(data.disciplinas)) {
                 todasDisciplinas = data.disciplinas;
             }
-            
+
             console.log(`📊 Total de disciplinas no banco: ${todasDisciplinas.length}`);
-            
+
             if (todasDisciplinas.length === 0) {
                 console.log("⚠️ Nenhuma disciplina cadastrada no sistema");
                 AppState.disciplinas = [];
@@ -670,24 +670,24 @@ function carregarDisciplinasFromDB() {
                 renderizarCardsDisciplinas();
                 return [];
             }
-            
+
             // ✅ FILTRA apenas disciplinas dos cursos do usuário
             const disciplinasDoUsuario = todasDisciplinas.filter(disc => {
                 // Converte para string para comparar corretamente
                 const idCursoDisc = disc.id_curso ? disc.id_curso.toString() : null;
                 const pertence = idsCursos.includes(idCursoDisc);
-                
+
                 if (pertence) {
                     console.log(`   ✅ Disciplina "${disc.nome}" pertence ao usuário (curso ${idCursoDisc})`);
                 } else {
                     console.log(`   ❌ Disciplina "${disc.nome}" NÃO pertence ao usuário (curso ${idCursoDisc})`);
                 }
-                
+
                 return pertence;
             });
-            
+
             console.log(`📊 Total de disciplinas DO USUÁRIO: ${disciplinasDoUsuario.length}`);
-            
+
             if (disciplinasDoUsuario.length === 0) {
                 console.log("⚠️ O usuário não tem disciplinas cadastradas nos seus cursos");
                 AppState.disciplinas = [];
@@ -695,7 +695,7 @@ function carregarDisciplinasFromDB() {
                 renderizarCardsDisciplinas();
                 return [];
             }
-            
+
             // Formata as disciplinas
             AppState.disciplinas = disciplinasDoUsuario.map(disc => ({
                 id: disc.id ? disc.id.toString() : null,
@@ -705,13 +705,13 @@ function carregarDisciplinasFromDB() {
                 periodo: disc.periodo,
                 id_curso: disc.id_curso ? disc.id_curso.toString() : null
             }));
-            
+
             console.log(`✅ ${AppState.disciplinas.length} disciplinas salvas no AppState`);
             console.log("📋 Disciplinas do usuário:", AppState.disciplinas);
-            
+
             // Vincula disciplinas aos cursos
             vincularDisciplinasAosCursos();
-            
+
             // Atualiza contador e renderiza
             atualizarContadorDisciplinas(AppState.disciplinas.length);
             renderizarCardsDisciplinas();
@@ -818,7 +818,7 @@ function carregarCursosFromDB() {
     Promise.all(fetchCursosPromises)
         .then(resultados => {
             console.log("DADOS BRUTOS DOS CURSOS:", JSON.stringify(resultados, null, 2));
-            
+
             const todosCursos = resultados.flatMap(({ instituicaoId, data }) => {
                 const cursos = data.cursos || [];
                 return cursos.map(curso => ({
@@ -850,16 +850,16 @@ function carregarCursosFromDB() {
                 console.log("✅ AppState.cursos atualizado:", AppState.cursos);
                 vincularCursosNasInstituicoes();
             }
-            
+
             vincularCursosNasInstituicoes();
             atualizarContadorCursos(AppState.cursos.length);
-            
+
             carregarDisciplinasFromDB()
-                .then(() => {
-                    renderizarCardsCursos();
-                    atualizarDashboardView();
-                    carregarTurmasFromDB();
-                });
+                .then(() => {
+                    renderizarCardsCursos();
+                    atualizarDashboardView();
+                    carregarTurmasFromDB();
+                });
         })
         .catch(err => {
             console.error("❌ Erro ao carregar cursos:", err);
@@ -1407,7 +1407,7 @@ function vincularEventosModalCursoExpansivel(modal) {
     if (btnSalvar) {
         btnSalvar.addEventListener("click", () => {
             console.log("💾 Botão salvar clicado");
-            
+
             const idCurso = modal.getAttribute("data-curso-id");
             const inputNome = modal.querySelector("#editNomeCurso");
             const novoNome = inputNome?.value.trim() || "";
@@ -1486,17 +1486,6 @@ function vincularEventosModalCursoExpansivel(modal) {
     }
 
     console.log("✅ Todos os eventos do modal de curso vinculados com sucesso!");
-}
-
-function salvarEdicaoCurso(idCurso, novoNome, modal) {
-    console.log("💾 Salvando edição do curso...");
-    console.log("ID:", idCurso);
-    console.log("Novo Nome:", novoNome);
-    console.log("Disciplinas para adicionar:", EdicaoStateCurso.disciplinasParaAdicionar);
-    console.log("Disciplinas para deletar:", EdicaoStateCurso.disciplinasParaDeletar);
-
-    // TODO: Implementar lógica de salvamento no backend
-    mostrarAlerta("Função de salvar curso ainda não implementada no backend", "aviso");
 }
 
 //instituicao
@@ -1688,7 +1677,7 @@ function adicionarDisciplinaTemporario(modal) {
     }
 
     let erro = false;
-    
+
     if (nomeDisciplina === "") {
         marcarErroCampo(inputNomeEl);
         erro = true;
@@ -1714,7 +1703,7 @@ function adicionarDisciplinaTemporario(modal) {
     const duplicado = EdicaoStateCurso.disciplinasParaAdicionar.find(
         d => d.codigo === codigo || d.nome === nomeDisciplina
     );
-    
+
     if (duplicado) {
         mostrarAlerta("Disciplina já está na lista para adicionar", "aviso");
         return;
@@ -1832,14 +1821,14 @@ function salvarEdicaoInstituicao(id, novoNome, modal) {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     id: parseInt(id),
-                    nome: novoNome,
+                    novo_nome: novoNome,
                 })
             });
         })
             .then(res => res.json())
             .then(dados => {
+                console.log(id, novoNome, dados);
                 if (!dados.sucesso && !dados.message) {
-                    throw new Error("Erro ao atualizar nome");
                 }
                 console.log("✅ Nome atualizado");
             });
@@ -1972,26 +1961,22 @@ function salvarEdicaoCurso(idCurso, novoNome, modal) {
     // 1. Atualiza o nome do curso (se mudou)
     if (novoNome !== EdicaoStateCurso.cursoOriginal.curso) {
         promiseChain = promiseChain.then(() => {
-            const curso = get.getCursoPorId(idCurso);
-            
             return fetch("/curso/atualizar", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     id: parseInt(idCurso),
-                    fk_id_docente: parseInt(usuarioLogado.id),
-                    fk_id_instituicao: parseInt(curso.fk_id_instituicao),
                     nome: novoNome
                 })
             });
         })
-        .then(res => res.json())
-        .then(dados => {
-            if (!dados.message) {
-                throw new Error("Erro ao atualizar nome do curso");
-            }
-            console.log("✅ Nome do curso atualizado");
-        });
+            .then(res => res.json())
+            .then(dados => {
+                if (!dados.message) {
+                    throw new Error("Erro ao atualizar nome do curso");
+                }
+                console.log("✅ Nome do curso atualizado");
+            });
     }
 
     // 2. Adiciona novas disciplinas
@@ -2001,61 +1986,84 @@ function salvarEdicaoCurso(idCurso, novoNome, modal) {
         EdicaoStateCurso.disciplinasParaAdicionar.forEach(disciplina => {
             disciplinaPromise = disciplinaPromise.then(() => {
                 console.log("➕ Adicionando disciplina:", disciplina.nome);
-                
-                return fetch("/disciplina/cadastro", {
+
+                return fetch("/disciplina/verificar", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        codigo: disciplina.codigo,
-                        id_curso: parseInt(idCurso),
                         nome: disciplina.nome,
-                        periodo: parseInt(disciplina.periodo),
-                        sigla: disciplina.sigla
+                        id_curso: parseInt(idCurso)
                     })
                 })
-                .then(res => res.json())
-                .then(dados => {
-                    if (dados.message || dados.codigo) {
-                        console.log("✅ Disciplina adicionada:", disciplina.nome);
-                    } else {
-                        console.warn("⚠️ Resposta inesperada ao adicionar disciplina:", dados);
-                    }
-                });
-            });
-        });
+                    .then(res => res.json())
+                    .then(verificacao => {
+                        // 2️⃣ Se JÁ EXISTE, pula
+                        if (!verificacao.sucesso) {
+                            console.warn("⚠️ Disciplina já existe, pulando:", disciplina.nome);
+                            return Promise.resolve({ jaExiste: true });
+                        }
 
+                        // 3️⃣ Se NÃO EXISTE, cadastra
+                        console.log("➕ Cadastrando disciplina:", disciplina.nome);
+
+                        return fetch("/disciplina/cadastro", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                codigo: disciplina.codigo,
+                                id_curso: parseInt(idCurso),
+                                nome: disciplina.nome,
+                                periodo: disciplina.periodo,
+                                sigla: disciplina.sigla
+                            })
+                        })
+                            .then(res => res.json())
+                            .then(dados => {
+                                if (dados.disciplinaExistente) {
+                                    console.warn("⚠️ Disciplina já existe:", disciplina.nome);
+                                } else if (dados.sucesso || dados.codigo) {
+                                    console.log(`✅ Disciplina "${disciplina.nome}" cadastrada`);
+                                }
+                            });
+                    });
+            });
+
+        });
         return disciplinaPromise;
     });
-
     // 3. Deleta disciplinas marcadas
-    EdicaoStateCurso.disciplinasParaDeletar.forEach(codigoDisciplina => {
+    EdicaoStateCurso.disciplinasParaDeletar.forEach(idDisciplina => {
         promiseChain = promiseChain.then(() => {
-            console.log("🗑️ Deletando disciplina código:", codigoDisciplina);
-            
+            console.log("🗑️ Deletando disciplina ID:", idDisciplina);
+
             return fetch("/disciplina/deletar", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ codigo: codigoDisciplina })
+                body: JSON.stringify({ codigo: idDisciplina })
             });
         })
-        .then(res => res.json())
-        .then(dados => {
-            if (dados.message) {
-                console.log(`✅ Disciplina deletada: ${codigoDisciplina}`);
-            }
-        });
+            .then(res => res.json())
+            .then(dados => {
+                if (dados.message) {
+                    console.log(`✅ Disciplina deletada: ${idDisciplina}`);
+                }
+            });
     });
 
-    // 4. Finaliza e atualiza o modal
+    // 4. Finaliza e atualiza TUDO
     promiseChain
         .then(() => {
             console.log("🔄 Recarregando dados do banco...");
-            
-            // Recarrega disciplinas do banco
+
+            // ✅ CORREÇÃO PRINCIPAL: Recarregar cursos ANTES das disciplinas
+            return carregarCursosParaModal(AppState.cursos.find(c => c.id == idCurso)?.fk_id_instituicao);
+        })
+        .then(() => {
+            // Depois recarrega disciplinas
             return carregarDisciplinasFromDB();
         })
         .then(() => {
-            // Busca o curso atualizado no AppState
+            // Busca o curso atualizado
             const cursoAtualizado = get.getCursoPorId(idCurso);
 
             if (cursoAtualizado) {
@@ -2064,14 +2072,16 @@ function salvarEdicaoCurso(idCurso, novoNome, modal) {
                 EdicaoStateCurso.disciplinasParaAdicionar = [];
                 EdicaoStateCurso.disciplinasParaDeletar = [];
 
-                // Atualiza os campos do modal
+                // ✅ ATUALIZA O MODAL COM OS DADOS CORRETOS
                 atualizarCamposModalEdicaoCurso(modal, cursoAtualizado);
 
-                // Atualiza os cards em background (sem fechar o modal)
+                // Atualiza os cards em background
+                renderizarCardsInstituicoes();
                 renderizarCardsCursos();
+                renderizarCardsDisciplinas();
                 atualizarContadorCursos(AppState.cursos.length);
                 atualizarDashboardView();
-                
+
                 mostrarAlerta("Curso atualizado com sucesso!", "sucesso");
             }
         })
@@ -2083,6 +2093,7 @@ function salvarEdicaoCurso(idCurso, novoNome, modal) {
             mostrarLoader('esconder');
         });
 }
+
 
 /**
  * Carrega cursos específicos para atualização do modal
@@ -2172,6 +2183,58 @@ function atualizarCamposModalEdicao(modal, instituicao) {
 }
 
 
+function atualizarCamposModalEdicaoCurso(modal, curso) {
+    console.log("🔄 Atualizando campos do modal de curso...");
+
+    const inputNome = modal.querySelector("#editNomeCurso");
+    if (inputNome) {
+        inputNome.value = curso.nome;
+        inputNome.placeholder = curso.nome;
+    }
+
+    //Busca os cursos diretamente do AppState.cursos ao invés de usar get
+    const disciplinasDoCurso = get.getDisciplinasPorCurso(curso.id);
+
+    // Atualiza a lista de cursos atuais
+    const containerCursos = modal.querySelector(".listaCursosAtuais");
+    if (containerCursos) {
+        containerCursos.innerHTML = "";
+
+        if (disciplinasDoCurso.length === 0) {
+            containerCursos.innerHTML = '<p class="semCursos"><i class="ph ph-info"></i> Nenhum curso cadastrado</p>';
+        } else {
+            disciplinasDoCurso.forEach(disciplina => {
+                const disciplinaEl = document.createElement("div");
+                disciplinaEl.className = "itemCursoAtual";
+                disciplinaEl.setAttribute("data-disciplina-codigo", disciplina.codigo);
+
+                disciplinaEl.innerHTML = `
+                    <span class="nomeCurso">${disciplina.nome}</span>
+                    <button class="btnDeletarCurso" data-disciplina-codigo="${disciplina.codigo}" data-disciplina-nome="${disciplina.nome}" title="Deletar curso">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                `;
+
+                containerCursos.appendChild(disciplinaEl);
+            });
+        }
+    }
+
+    // Limpa os cursos temporários
+    const containerTemp = modal.querySelector(".cursosTemporarios");
+    if (containerTemp) {
+        containerTemp.innerHTML = "";
+    }
+
+    // Limpa o input de adicionar curso
+    const inputAddCurso = modal.querySelector("#addCursoInput");
+    if (inputAddCurso) {
+        inputAddCurso.value = "";
+    }
+
+    console.log("✅ Modal atualizado com sucesso!");
+}
+
 // ============================================
 // 6. FUNÇÕES DE DELEÇÃO DE DADOS (DELETE)
 // (Funções que removem dados do DB)
@@ -2194,12 +2257,12 @@ function deletarDisciplinaDB(codigo) {
             console.log("✅ Resposta do servidor:", dados);
             if (dados.sucesso || dados.message) {
                 mostrarAlerta("Disciplina deletada com sucesso!", "sucesso");
-                
+
                 // ✅ MODIFICADO: Recarrega apenas disciplinas
                 carregarDisciplinasFromDB().then(() => {
                     renderizarCardsCursos(); // Atualiza cursos
                 });
-                
+
                 fecharModalEdicaoExpansivel(document.querySelector("#disciplinasBody .modalEdicaoExpansivel"));
             } else {
                 throw new Error(dados.error || "Erro ao deletar");
@@ -2260,12 +2323,12 @@ function deletarDisciplinaDB(codigo) {
             console.log("✅ Resposta do servidor:", dados);
             if (dados.sucesso || dados.message) {
                 mostrarAlerta("Disciplina deletada com sucesso!", "sucesso");
-                
+
                 // ✅ MODIFICADO: Recarrega apenas disciplinas
                 carregarDisciplinasFromDB().then(() => {
                     renderizarCardsCursos(); // Atualiza cursos
                 });
-                
+
                 fecharModalEdicaoExpansivel(document.querySelector("#disciplinasBody .modalEdicaoExpansivel"));
             } else {
                 throw new Error(dados.error || "Erro ao deletar");
@@ -2514,7 +2577,12 @@ const get = (() => {
         return getNomeInstituicaoPorId(curso.fk_id_instituicao);
     }
 
+    function getDisciplinasPorCurso(idCurso) {
+        return AppState.disciplinas.filter(disc => disc.id_curso == idCurso);
+    }
+
     return {
+        getDisciplinasPorCurso,
         getNomeInstituicaoPorId,
         getNomeCursoPorId,
         getInstituicaoPorId,
@@ -2609,7 +2677,7 @@ function preencherDisciplinasAtuaisCursoExpansivel(curso, modal) {
         const disciplinaEl = document.createElement("div");
         disciplinaEl.className = "itemCursoAtual";
         disciplinaEl.setAttribute("data-disciplina-id", disciplina.id || disciplina.codigo);
-        
+
         disciplinaEl.innerHTML = `
             <span class="nomeCurso">${disciplina.nome}</span>
             <button class="btnDeletarCurso" 
@@ -2708,7 +2776,7 @@ function editarCurso(idCurso) {
     console.log("✏️ Abrindo edição para curso ID:", idCurso);
 
     const curso = get.getCursoPorId(idCurso);
-    
+
     if (!curso) {
         mostrarAlerta("Curso não encontrado!", "erro");
         return;
@@ -2948,63 +3016,6 @@ function editarTurma(idTurma) {
 }
 
 /**
- * Vincula eventos do modal de edição de DISCIPLINAS
- */
-function vincularEventosModalDisciplina(modal) {
-    // Botão de fechar (X)
-    const btnFechar = modal.querySelector(".btnFecharExpansivel");
-    if (btnFechar) {
-        btnFechar.addEventListener("click", () => fecharModalEdicaoExpansivel(modal));
-    }
-
-    // Botão cancelar
-    const btnCancelar = modal.querySelector(".btnCancelarEdicao");
-    if (btnCancelar) {
-        btnCancelar.addEventListener("click", () => fecharModalEdicaoExpansivel(modal));
-    }
-
-    // Botão salvar
-    const btnSalvar = modal.querySelector(".btnSalvarEdicao");
-    if (btnSalvar) {
-        btnSalvar.addEventListener("click", () => {
-            const codigoDisciplina = modal.getAttribute("data-disciplina-id");
-            const idCurso = modal.getAttribute("data-curso-id");
-            const inputNome = modal.querySelector("#editNomeDisciplina");
-            const inputSigla = modal.querySelector("#editSiglaDisciplina");
-            const inputCodigo = modal.querySelector("#editCodigoDisciplina");
-            const selectPeriodo = modal.querySelector("#editPeriodoDisciplina");
-
-            const novoNome = inputNome?.value.trim() || "";
-            const novaSigla = inputSigla?.value.trim() || "";
-            const novoCodigo = inputCodigo?.value.trim() || "";
-            const novoPeriodo = selectPeriodo?.value || "";
-
-            if (novoNome === "") {
-                mostrarAlerta("Preencha o nome da disciplina", "aviso");
-                return;
-            }
-
-            if (novaSigla === "") {
-                mostrarAlerta("Preencha a sigla", "aviso");
-                return;
-            }
-
-            if (novoCodigo === "") {
-                mostrarAlerta("Preencha o código", "aviso");
-                return;
-            }
-
-            if (novoPeriodo === "") {
-                mostrarAlerta("Selecione o período", "aviso");
-                return;
-            }
-
-            salvarEdicaoDisciplina(codigoDisciplina, idCurso, novoNome, novaSigla, novoCodigo, novoPeriodo, modal);
-        });
-    }
-}
-
-/**
  * Vincula eventos do modal de edição de TURMAS
  */
 function vincularEventosModalTurma(modal) {
@@ -3066,28 +3077,28 @@ function salvarEdicaoDisciplina(codigo, idCurso, novoNome, novaSigla, novoPeriod
             periodo: parseInt(novoPeriodo)
         })
     })
-    .then(res => res.json())
-    .then(dados => {
-        if (dados.message) {
+        .then(res => res.json())
+        .then(dados => {
+            if (dados.message) {
+                mostrarLoader('esconder');
+                mostrarAlerta("Disciplina atualizada com sucesso!", "sucesso");
+
+                // ✅ MODIFICADO: Recarrega apenas disciplinas
+                carregarDisciplinasFromDB().then(() => {
+                    renderizarCardsCursos();
+                });
+
+                fecharModalEdicaoExpansivel(modal);
+            } else {
+                mostrarLoader('esconder');
+                mostrarAlerta(dados.error || "Erro ao atualizar disciplina", "erro");
+            }
+        })
+        .catch(err => {
             mostrarLoader('esconder');
-            mostrarAlerta("Disciplina atualizada com sucesso!", "sucesso");
-            
-            // ✅ MODIFICADO: Recarrega apenas disciplinas
-            carregarDisciplinasFromDB().then(() => {
-                renderizarCardsCursos();
-            });
-            
-            fecharModalEdicaoExpansivel(modal);
-        } else {
-            mostrarLoader('esconder');
-            mostrarAlerta(dados.error || "Erro ao atualizar disciplina", "erro");
-        }
-    })
-    .catch(err => {
-        mostrarLoader('esconder');
-        mostrarAlerta("Erro ao atualizar disciplina", "erro");
-        console.error("❌ Erro:", err);
-    });
+            mostrarAlerta("Erro ao atualizar disciplina", "erro");
+            console.error("❌ Erro:", err);
+        });
 }
 
 /**
