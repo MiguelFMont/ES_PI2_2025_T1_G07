@@ -84,6 +84,13 @@ import {
 } from "./db/nota";
 
 import {
+    addMatricula,
+    verificarMatriculaExistente,
+    getMatriculaById,
+    getAllMatriculas
+} from "./db/matricula";
+
+import {
     gerarCodigoVericacao,
     enviarCodigoVerificacao,
     enviarLinkAlterarSenha
@@ -628,6 +635,7 @@ app.post('/disciplina/deletar', async (req: Request, res: Response) => {
         if (!codigo) {
             console.log("❌ O campo código é obrigatório!");
             return res.status(400).json({
+                sucesso: false,
                 error: "O campo código é obrigatório!"
             });
         }
@@ -643,11 +651,13 @@ app.post('/disciplina/deletar', async (req: Request, res: Response) => {
         await deleteDisciplina(codigo);
         console.log("✅ Disciplina deletada com sucesso!")
         res.json({
+            sucesso: true,
             message: "Disciplina deletada com sucesso"
         });
     } catch (error) {
         console.error("❌ Erro ao deletar a disciplina:", error);
         res.status(500).json({
+            sucesso: false,
             error: "Erro ao deletar a disciplina."
         });
     }
@@ -1207,6 +1217,106 @@ app.get('/nota/all', async (req: Request, res: Response) => {
         res.status(500).json({
             error: "Erro ao buscar as notas."
         });
+    }
+});
+
+/*===========*/
+/* MATRICULA */
+/*===========*/
+
+// Verificar se matrícula já existe (turma + estudante)
+app.post('/matricula/verificar', async (req: Request, res: Response) => {
+    try {
+        const { fk_id_turma, fk_id_estudante } = req.body;
+
+        if (!fk_id_turma || !fk_id_estudante) {
+            return res.status(400).json({
+                sucesso: false,
+                message: "Os campos fk_id_turma e fk_id_estudante são obrigatórios"
+            });
+        }
+
+        const matricula = await verificarMatriculaExistente(fk_id_turma, fk_id_estudante);
+        if (matricula) {
+            res.json({
+                sucesso: false,
+                message: "A Matrícula já está cadastrada",
+                matricula
+            });
+        } else {
+            res.json({
+                sucesso: true,
+                message: "Matrícula disponível para cadastro"
+            });
+        }
+    } catch (error) {
+        console.error("❌ Erro ao verificar matrícula:", error);
+        res.status(500).json({ sucesso: false, message: "Erro no servidor" });
+    }
+});
+
+// Cadastrar nova matrícula
+app.post('/matricula/cadastro', async (req: Request, res: Response) => {
+    try {
+        const { fk_id_turma, fk_id_estudante } = req.body;
+
+        if (!fk_id_turma || !fk_id_estudante) {
+            console.log("❌ Campos obrigatórios faltando:", { fk_id_turma, fk_id_estudante });
+            return res.status(400).json({
+                error: "Os campos fk_id_turma e fk_id_estudante são obrigatórios"
+            });
+        }
+
+        const existente = await verificarMatriculaExistente(fk_id_turma, fk_id_estudante);
+        if (existente) {
+            console.log("❌ Matrícula já existente para estudante na turma", existente.id_matricula);
+            return res.status(409).json({ sucesso: false, message: "Matrícula já existe", id: existente.id_matricula });
+        }
+
+        const id = await addMatricula(fk_id_turma, fk_id_estudante);
+        console.log("✅ Matrícula registrada com sucesso! ID:", id);
+        res.status(201).json({
+            message: "Matrícula registrada com sucesso",
+            id_matricula: id
+        });
+    } catch (error) {
+        console.error("❌ Erro ao registrar matrícula:", error);
+        res.status(500).json({ error: "Erro ao registrar matrícula." });
+    }
+});
+
+// Obter matrícula pelo ID
+app.get('/matricula/id/:id_matricula', async (req: Request, res: Response) => {
+    try {
+        const id_matricula = Number(req.params.id_matricula);
+        if (!id_matricula) {
+            return res.status(400).json({ error: "O campo id_matricula é obrigatório e deve ser um número válido" });
+        }
+
+        const matricula = await getMatriculaById(id_matricula);
+        if (matricula) {
+            res.json(matricula);
+        } else {
+            res.status(404).json({ message: "Matrícula não encontrada com o ID fornecido" });
+        }
+    } catch (error) {
+        console.error("❌ Erro ao buscar matrícula por ID:", error);
+        res.status(500).json({ error: "Erro ao buscar a matrícula pelo ID fornecido." });
+    }
+});
+
+// Obter todas as matrículas
+app.get('/matricula/all', async (req: Request, res: Response) => {
+    try {
+        const matriculas = await getAllMatriculas();
+        if (matriculas && matriculas.length > 0) {
+            res.json(matriculas);
+        } else {
+            res.status(404).json({ message: "Não há matrículas cadastradas." });
+        }
+    } catch (error) {
+        console.error("❌ Erro ao buscar todas as matrículas:", error);
+        res.status(500).json({ error: "Erro ao buscar as matrículas." });
     }
 });
 

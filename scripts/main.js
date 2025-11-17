@@ -1,5 +1,3 @@
-
-
 document.addEventListener('DOMContentLoaded', () => {
 
     const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
@@ -61,13 +59,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ===================================================
-    //               NAVEGAÇÃO PRINCIPAL
+    //               NAVEGAÇÃO PRINCIPAL
     // ===================================================
 
     // 1. Seleciona todos os LINKS de navegação
-    const navLinks = document.querySelectorAll('.sideBar .content ul li a'); // identifica as paginas pelo elemento <a>
-    // OBS: o index do showPage() corresponde ao index do link (a) clicado
-
+    const navLinks = document.querySelectorAll('.sideBar .content ul li a');
     // 2. Seleciona todos os contêineres de página
     const pageContents = document.querySelectorAll('.pagesContent > div');
 
@@ -89,74 +85,74 @@ document.addEventListener('DOMContentLoaded', () => {
     navLinks.forEach((link, index) => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
-            showPage(index);  //basicamente 
+            showPage(index);
         });
     });
 
-    showPage(0);
+    showPage(0); // Mostra a primeira página (Dashboard)
+
+    // ===================================================
+    //               CONTROLES DE MODAL (CRIAÇÃO)
+    // ===================================================
 
     function fecharModal(modal) {
         if (modal) {
             modal.classList.remove('show');
-
-            setTimeout(() => {
-                modal.style.position = '';
-                modal.style.top = '';
-                modal.style.left = '';
-                modal.style.width = '';
-            }, 300); // Tempo para a animação de fechamento
+            // Reseta o estilo do card "Nenhum..."
+            const cardIdt = modal.closest('.cardIdt');
+            if (cardIdt) {
+                cardIdt.classList.remove('modal-open');
+            }
         }
     }
+    
     function abrirModal(modal) {
         if (modal) {
             modal.classList.add('show');
+            // Adiciona classe ao card "Nenhum..."
+            const cardIdt = modal.closest('.cardIdt');
+            if (cardIdt) {
+                cardIdt.classList.add('modal-open');
+            }
         }
     }
 
-    // função para configurar os controles do modal em uma página específica
+    // Configura os modais de *criação* para cada página
     function setupModalControls(pageSelector) {
         const page = document.querySelector(pageSelector);
-        if (!page) return; // Se a página não existir, não faz nada
+        if (!page) return;
 
         const btnNovo = page.querySelector('.newIdt');
         const modal = page.querySelector('.createIdt');
         const btnCancelar = page.querySelector('#cancelBtnIdt');
         const btnFecharX = page.querySelector('#xClosedCreate');
-        const cardIdt = page.querySelector('.cardIdt');
-
-        // Ajusta o estilo do cardIdt quando o modal é aberto ou fechado
-        if (cardIdt && modal && btnNovo) {
-            btnNovo.addEventListener('click', () => {
-                cardIdt.classList.add('modal-open');
-                abrirModal(modal);
-            });
-        }
 
         // Botão "Novo..." (para ABRIR o modal)
         if (btnNovo && modal) {
             btnNovo.addEventListener('click', () => {
                 abrirModal(modal);
 
-                // Se for o modal de cursos, preenche o select
+                // Lógica específica para pré-popular selects
                 if (pageSelector === "#cursosBody") {
                     preencherSelectInstituicoes();
+                }
+                if (pageSelector === "#disciplinasBody") {
+                    preencherSelectCursos();
+                }
+                if (pageSelector === "#turmasBody") {
+                    preencherSelectDisciplinas();
                 }
             });
         }
 
-        if (cardIdt && modal && btnCancelar || btnFecharX) {
-            cardIdt.classList.remove('modal-open');
-            fecharModal(modal);
-        }
-
-        //  Botão "Cancelar" (para FECHAR o modal)
+        // Botão "Cancelar" (para FECHAR o modal)
         if (btnCancelar && modal) {
             btnCancelar.addEventListener('click', () => {
                 fecharModal(modal);
             });
         }
 
-        //  Botão "X" (para FECHAR o modal)
+        // Botão "X" (para FECHAR o modal)
         if (btnFecharX && modal) {
             btnFecharX.addEventListener('click', () => {
                 fecharModal(modal);
@@ -170,12 +166,12 @@ document.addEventListener('DOMContentLoaded', () => {
     setupModalControls("#turmasBody");
 
     // ===================================================
-    //          BOTÕES UTILIZADOS NO DASHBOARD
+    //          BOTÕES UTILIZADOS NO DASHBOARD
     // ===================================================
 
     const dashboardCardInstituicoes = document.querySelector('#instituicoes.itensOption');
     const dashboardCardCursos = document.querySelector('#cursos.itensOption');
-    const dashboardCardDisciplinas = document.querySelector('#diciplinas.itensOption');
+    const dashboardCardDisciplinas = document.querySelector('#disciplinas.itensOption');
     const dashboardCardTurmas = document.querySelector('#turmas.itensOption');
     const dashboardBtnCadastrar = document.querySelector('.viewTurmaInstituicao a');
 
@@ -196,9 +192,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ===================================================
-    //                BOTÕES DE INSTITUIÇÕES
+    //                BOTÕES DE CRIAÇÃO
     // ===================================================
 
+    // --- Botão Criar Instituição ---
     const criarInstituicaoBtn = document.querySelector('#createBtnInstituicao');
     if (criarInstituicaoBtn) {
         criarInstituicaoBtn.addEventListener('click', () => {
@@ -206,331 +203,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Função para vincular eventos aos botões dos cards
-    // ===================================================
-    //    EVENTOS DOS CARDS DE INSTITUIÇÕES
-    // ===================================================
-
-    function vincularEventosCardsInstituicoes() {
-        console.log("🔗 Vinculando eventos aos cards...");
-
-        // Delegação de eventos no container
-        const container = document.querySelector("#instituicoesBody .cardsCreateIdt");
-
-        if (!container) {
-            console.warn("⚠️ Container de cards não encontrado");
-            return;
-        }
-
-        // Remove listeners antigos (se existirem)
-        container.replaceWith(container.cloneNode(true));
-        const novoContainer = document.querySelector("#instituicoesBody .cardsCreateIdt");
-
-        // Adiciona listener único no container (delegação de eventos)
-        novoContainer.addEventListener("click", (e) => {
-            const btn = e.target.closest("button");
-            if (!btn) return;
-
-            const card = btn.closest(".contentCardIdt");
-            if (!card) return;
-
-            const idInstituicao = card.getAttribute("data-id");
-            console.log("🎯 ID da instituição:", idInstituicao);
-
-            if (btn.classList.contains("addCurso")) {
-                console.log("➕ Botão adicionar clicado");
-                abrirModalAdicionarCurso(idInstituicao);
-            } else if (btn.classList.contains("deletCard")) {
-                console.log("🗑️ Botão deletar clicado");
-                if (confirm("Tem certeza que deseja deletar esta instituição?")) {
-                    deletarInstituicaoDB(idInstituicao);
-                }
-            }
-        });
-
-        console.log("✅ Eventos vinculados com sucesso!");
-    }
-
-    // Escuta quando os cards são renderizados
-    document.addEventListener("cardsInstituicoesRenderizados", () => {
-        console.log("📢 Cards renderizados! Vinculando eventos...");
-        vincularEventosCardsInstituicoes();
-    });
-
-    // Vincula na primeira carga
-    setTimeout(() => {
-        vincularEventosCardsInstituicoes();
-    }, 1000);
-
-    // O modal em questão é o de LINKAR CURSO À INSTITUIÇÃO 
-    // obs: só é possível linkar cursos já existentes na base de dados
-    // Botão "X" para fechar o modal de adicionar curso
-    const btnFecharAddInstituicao = document.querySelector("#instituicoesBody #closedAdd");
-    if (btnFecharAddInstituicao) {
-        btnFecharAddInstituicao.addEventListener("click", fecharModalAdicionarCurso);
-    }
-
-    // Botão "Cancelar" do modal de adicionar curso
-    const btnCancelarAddInstituicao = document.querySelector("#instituicoesBody #cancelAddIdt");
-    if (btnCancelarAddInstituicao) {
-        btnCancelarAddInstituicao.addEventListener("click", fecharModalAdicionarCurso);
-    }
-
-    // Botão "Adicionar" do modal de adicionar curso
-    const btnSalvarAddInstituicao = document.querySelector("#instituicoesBody #saveAddIdt");
-    if (btnSalvarAddInstituicao) {
-        btnSalvarAddInstituicao.addEventListener("click", () => {
-            const modalAdd = document.querySelector("#instituicoesBody .containerAddIdt");
-            const idInstituicao = modalAdd?.getAttribute("data-instituicao-id");
-            const inputCurso = modalAdd?.querySelector("input[list='listCursosLink']");
-
-            if (!idInstituicao || !inputCurso) {
-                mostrarAlerta("Erro ao adicionar curso", "erro");
-                return;
-            }
-
-            const nomeCurso = inputCurso.value.trim();
-
-            if (!nomeCurso) {
-                mostrarAlerta("Selecione um curso", "aviso");
-                return;
-            }
-
-            // Encontra o curso selecionado
-            const curso = AppState.cursos.find(c => c.curso === nomeCurso);
-
-            if (!curso) {
-                mostrarAlerta("Curso não encontrado", "erro");
-                return;
-            }
-
-            // Aqui você implementaria a lógica para vincular o curso à instituição no backend
-            console.log(`Vinculando curso ${nomeCurso} à instituição ${idInstituicao}`);
-            vincularCursoInstituicaoDB(idInstituicao, nomeCurso);
-
-            // Fecha o modal
-            fecharModalAdicionarCurso();
-        });
-    }
-    //==================================================
-    //        BOTÕES DE CURSOS
-    //==================================================
-
-    console.log("🔧 Configurando eventos de cursos...");
-
-    // Botão "Criar" do modal de cursos
-    const btnCriarCurso = document.querySelector("#cursosBody .createBtnIdt");
+    // --- Botão Criar Curso ---
+    const btnCriarCurso = document.querySelector("#cursosBody .createBtnIdt"); // ID corrigido
     if (btnCriarCurso) {
         btnCriarCurso.addEventListener("click", salvarCurso);
     }
-
-    // Botões do modal de adicionar disciplina
-    const btnFecharAddDisciplina = document.querySelector("#cursosBody #closedAdd");
-    if (btnFecharAddDisciplina) {
-        btnFecharAddDisciplina.addEventListener("click", fecharModalAdicionarDisciplina);
-    }
-
-    const btnCancelarAddDisciplina = document.querySelector("#cursosBody #cancelAddIdt");
-    if (btnCancelarAddDisciplina) {
-        btnCancelarAddDisciplina.addEventListener("click", fecharModalAdicionarDisciplina);
-    }
-
-    const btnSalvarAddDisciplina = document.querySelector("#cursosBody #saveAddIdt");
-    if (btnSalvarAddDisciplina) {
-        btnSalvarAddDisciplina.addEventListener("click", () => {
-            const modalAdd = document.querySelector("#cursosBody .containerAddIdt");
-            const idCurso = modalAdd?.getAttribute("data-curso-id");
-            const inputDisciplina = modalAdd?.querySelector("input[list='listDisciplinasLink']");
-
-            if (!idCurso || !inputDisciplina) {
-                mostrarAlerta("Erro ao adicionar disciplina", "erro");
-                return;
-            }
-
-            const nomeDisciplina = inputDisciplina.value.trim();
-
-            if (!nomeDisciplina) {
-                mostrarAlerta("Selecione uma disciplina", "aviso");
-                return;
-            }
-
-            console.log(`Vinculando disciplina ${nomeDisciplina} ao curso ${idCurso}`);
-
-            // Aqui você implementaria a lógica para vincular a disciplina ao curso
-            // vincularDisciplinaCursoDB(idCurso, nomeDisciplina);
-
-            fecharModalAdicionarDisciplina();
-        });
-    }
-
-
-    /**
-     * Vincula eventos aos botões dos cards de cursos
-     */
-    function vincularEventosCardsCursos() {
-        console.log("🔗 Vinculando eventos aos cards de cursos...");
-
-        const container = document.querySelector("#cursosBody .cardsCreateIdt");
-
-        if (!container) {
-            console.warn("⚠️ Container de cards de cursos não encontrado");
-            return;
-        }
-
-        // Remove listeners antigos
-        container.replaceWith(container.cloneNode(true));
-        const novoContainer = document.querySelector("#cursosBody .cardsCreateIdt");
-
-        // Adiciona listener único no container
-        novoContainer.addEventListener("click", (e) => {
-            const btn = e.target.closest("button");
-            if (!btn) return;
-
-            const card = btn.closest(".contentCardIdt");
-            if (!card) return;
-
-            const idCurso = card.getAttribute("data-id");
-            console.log("🎯 ID do curso:", idCurso);
-
-            if (btn.classList.contains("addCurso")) {
-                console.log("➕ Botão adicionar disciplina clicado");
-                abrirModalAdicionarDisciplina(idCurso);
-
-            } else if (btn.classList.contains("editCard")) {
-                console.log("✏️ Botão editar curso clicado");
-                editarCurso(idCurso);
-
-            } else if (btn.classList.contains("deletCard")) {
-                console.log("🗑️ Botão deletar curso clicado");
-                mostrarConfirm("Tem certeza que deseja deletar este curso?", (confirmado) => {
-                    if (confirmado) {
-                        const idInstituicao = card.getAttribute("data-instituicao-id");
-                        deletarCursoDB(idCurso, idInstituicao);
-                    }
-                });
-            }
-        });
-
-        console.log("✅ Eventos dos cards de cursos vinculados!");
-    }
-
-    // Escuta quando os cards são renderizados
-    document.addEventListener("cardsCursosRenderizados", () => {
-        console.log("📢 Cards de cursos renderizados! Vinculando eventos...");
-        vincularEventosCardsCursos();
-    });
-
-    // Vincula na primeira carga (com delay para garantir que tudo está carregado)
-    setTimeout(() => {
-        vincularEventosCardsCursos();
-    }, 1500);
-
-    //==================================================
-    //       MODAL DE EDIÇÃO EXPANSÍVEL
-    //==================================================
-
-    /**
-     * Vincula todos os eventos de clique para o modal expansível de INSTITUIÇÕES.
-     * Esta função é chamada por 'renderizarCardsInstituicoes'.
-     */
-    function vincularEventosCardsInstituicoes() {
-        console.log("🔗 Vinculando eventos aos cards de instituições...");
-
-        const container = document.querySelector("#instituicoesBody .cardsCreateIdt");
-
-        if (!container) {
-            console.warn("⚠️ Container de cards não encontrado");
-            return;
-        }
-
-        // IMPORTANTE: Remove listeners antigos (evita duplicação)
-        const novoContainer = container.cloneNode(true);
-        container.parentNode.replaceChild(novoContainer, container);
-
-        // Adiciona listener único no container (delegação de eventos)
-        novoContainer.addEventListener("click", (e) => {
-            const btn = e.target.closest("button");
-            if (!btn) return;
-
-            const card = btn.closest(".contentCardIdt");
-            if (!card) return;
-
-            const idInstituicao = card.getAttribute("data-id");
-
-            if (btn.classList.contains("addCurso")) {
-                console.log("➕ Executando: Adicionar Curso");
-                e.preventDefault();
-                e.stopPropagation();
-                abrirModalAdicionarCurso(idInstituicao);
-
-            } else if (btn.classList.contains("editCard")) {
-                console.log("✏️ Executando: Editar Instituição");
-                e.preventDefault();
-                e.stopPropagation();
-
-                // CORREÇÃO: Aguarda um frame antes de abrir (evita conflitos)
-                requestAnimationFrame(() => {
-                    editarInstituicao(idInstituicao);
-                });
-
-            } else if (btn.classList.contains("deletCard")) {
-                console.log("🗑️ Executando: Deletar Instituição");
-                e.preventDefault();
-                e.stopPropagation();
-                const idInstituicao = card.getAttribute("data-id");
-                const cursosEmInstituicao = get.getCursosPorInstituicao(idInstituicao);
-
-                if (cursosEmInstituicao.length > 0) {
-                    mostrarAlerta("Não é possível deletar uma instituição que possui cursos vinculados.", "erro");
-                    return;
-                }
-
-                mostrarConfirm(`Tem certeza que deseja deletar a instituição ${get.getNomeInstituicaoPorId(idInstituicao)}?`, (confirmado) => {
-                    if (confirmado) {
-                        deletarInstituicaoDB(idInstituicao);
-                    }
-                });
-            }
-        });
-
-        console.log("✅ Eventos vinculados com sucesso!");
-    }
-
-    // Escuta quando os cards são renderizados
-    document.addEventListener("cardsInstituicoesRenderizados", () => {
-        console.log("📢 Evento: Cards renderizados! Vinculando eventos...");
-
-        // Aguarda um frame para garantir que o DOM está pronto
-        requestAnimationFrame(() => {
-            vincularEventosCardsInstituicoes();
-        });
-    });
-
-    // Vincula na primeira carga COM DELAY
-    setTimeout(() => {
-        console.log("⏰ Vinculação inicial (timeout)");
-        vincularEventosCardsInstituicoes();
-    }, 1000);
-
-    // NOVO: Vincula também quando a página de instituições fica visível
-    const instituicoesNav = document.querySelectorAll('.sideBar .content ul li a')[1];
-    if (instituicoesNav) {
-        instituicoesNav.addEventListener('click', () => {
-            setTimeout(() => {
-                console.log("🔄 Re-vinculando eventos após navegação");
-                vincularEventosCardsInstituicoes();
-            }, 100);
-        });
-    }
-    //==================================================
-    //       BOTÕES DE DISCIPLINAS
-    //==================================================
-
-    const btnNovoDisciplina = document.querySelector('#disciplinasBody .newIdt');
-    if (btnNovoDisciplina) {
-        btnNovoDisciplina.addEventListener('click', preencherSelectCursos);
-    }
-
+    
+    // --- Botão Criar Disciplina ---
     const criarDisciplinaBtn = document.querySelector('#createBtnDisciplina');
     if (criarDisciplinaBtn) {
         criarDisciplinaBtn.addEventListener('click', () => {
@@ -538,140 +217,193 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /**
-     * Vincula eventos aos botões dos cards de disciplinas (VERSÃO CORRETA)
-     */
-    function vincularEventosCardsDisciplinas() {
-        console.log("🔗 Vinculando eventos aos cards de disciplinas...");
-        const container = document.querySelector("#disciplinasBody .cardsCreateIdt");
-
-        if (!container) {
-            console.warn("⚠️ Container de cards de disciplinas não encontrado");
-            return;
-        }
-
-        // Remove listeners antigos
-        container.replaceWith(container.cloneNode(true));
-        const novoContainer = document.querySelector("#disciplinasBody .cardsCreateIdt");
-
-        // Adiciona listener único no container
-        novoContainer.addEventListener("click", (e) => {
-            const btn = e.target.closest("button");
-            if (!btn) return;
-
-            const card = btn.closest(".contentCardIdt");
-            if (!card) return;
-
-            // CORREÇÃO: Usar data-codigo, que vem do banco
-            const codigoDisciplina = card.getAttribute("data-codigo");
-            console.log("🎯 Código da disciplina:", codigoDisciplina);
-
-            if (btn.classList.contains("editCard")) {
-                console.log("✏️ Botão editar disciplina clicado");
-                requestAnimationFrame(() => {
-                    editarDisciplina(codigoDisciplina); // Envia o código
-                });
-
-            } else if (btn.classList.contains("deletCard")) {
-                console.log("🗑️ Botão deletar disciplina clicado");
-                mostrarConfirm("Tem certeza que deseja deletar esta disciplina?", (confirmado) => {
-                    if (confirmado) {
-                        deletarDisciplinaDB(codigoDisciplina); // Envia o código
-                    }
-                });
-            }
-        });
-
-        console.log("✅ Eventos dos cards de disciplinas vinculados!");
-    }
-
-    // Escuta quando os cards são renderizados
-    document.addEventListener("cardsDisciplinasRenderizados", () => {
-        console.log("📢 Cards de disciplinas renderizados! Vinculando eventos...");
-        vincularEventosCardsDisciplinas();
-    });
-
-    // Vincula na primeira carga (com delay para garantir que tudo está carregado)
-    setTimeout(() => {
-        vincularEventosCardsDisciplinas();
-    }, 1500);
-
-    //==================================================
-    //       BOTÕES DE TURMAS
-    //==================================================
-
-    const btnNovaRurma = document.querySelector('#turmasBody .newIdt');
-    if (btnNovaRurma) {
-        btnNovaRurma.addEventListener('click', () => {
-            console.log("➕ Botão Nova Turma clicado");
-            // Preencher datalist de cursos se necessário
-        });
-    }
-
+    // --- Botão Criar Turma ---
     const criarTurmaBtn = document.querySelector('#createBtnTurma');
     if (criarTurmaBtn) {
         criarTurmaBtn.addEventListener('click', () => {
-            console.log("💾 Botão Criar Turma clicado");
-            // Implementar salvarTurma se necessário
+            salvarTurma();
         });
     }
 
+    // ===================================================
+    //            MODAIS DE "LINKAR" (Adicionar)
+    // ===================================================
+
+    // --- Modal: Linkar Curso (em Instituições) ---
+    const btnFecharAddInstituicao = document.querySelector("#instituicoesBody #closedAdd");
+    if (btnFecharAddInstituicao) {
+        btnFecharAddInstituicao.addEventListener("click", fecharModalAdicionarCurso);
+    }
+    const btnCancelarAddInstituicao = document.querySelector("#instituicoesBody #cancelAddIdt");
+    if (btnCancelarAddInstituicao) {
+        btnCancelarAddInstituicao.addEventListener("click", fecharModalAdicionarCurso);
+    }
+    const btnSalvarAddInstituicao = document.querySelector("#instituicoesBody #saveAddIdt");
+    if (btnSalvarAddInstituicao) {
+        btnSalvarAddInstituicao.addEventListener("click", () => {
+            const modalAdd = document.querySelector("#instituicoesBody .containerAddIdt");
+            const idInstituicao = modalAdd?.getAttribute("data-instituicao-id");
+            const inputCurso = modalAdd?.querySelector("input[list='listCursosLink']");
+            if (!idInstituicao || !inputCurso) return;
+            const nomeCurso = inputCurso.value.trim();
+            if (!nomeCurso) {
+                mostrarAlerta("Selecione um curso", "aviso");
+                return;
+            }
+            const curso = AppState.cursos.find(c => c.curso === nomeCurso);
+            if (!curso) {
+                mostrarAlerta("Curso não encontrado", "erro");
+                return;
+            }
+            vincularCursoInstituicaoDB(idInstituicao, nomeCurso);
+            fecharModalAdicionarCurso();
+        });
+    }
+
+    // --- Modal: Linkar Disciplina (em Cursos) ---
+    const btnFecharAddDisciplina = document.querySelector("#cursosBody #closedAdd");
+    if (btnFecharAddDisciplina) {
+        btnFecharAddDisciplina.addEventListener("click", fecharModalAdicionarDisciplina);
+    }
+    const btnCancelarAddDisciplina = document.querySelector("#cursosBody #cancelAddIdt");
+    if (btnCancelarAddDisciplina) {
+        btnCancelarAddDisciplina.addEventListener("click", fecharModalAdicionarDisciplina);
+    }
+    const btnSalvarAddDisciplina = document.querySelector("#cursosBody #saveAddIdt");
+    if (btnSalvarAddDisciplina) {
+        btnSalvarAddDisciplina.addEventListener("click", () => {
+            const modalAdd = document.querySelector("#cursosBody .containerAddIdt");
+            const idCurso = modalAdd?.getAttribute("data-curso-id");
+            const inputDisciplina = modalAdd?.querySelector("input[list='listDisciplinasLink']");
+            if (!idCurso || !inputDisciplina) return;
+            const nomeDisciplina = inputDisciplina.value.trim();
+            if (!nomeDisciplina) {
+                mostrarAlerta("Selecione uma disciplina", "aviso");
+                return;
+            }
+            console.log(`Vinculando disciplina ${nomeDisciplina} ao curso ${idCurso}`);
+            // Lógica de vincular disciplina aqui...
+            // vincularDisciplinaCursoDB(idCurso, nomeDisciplina);
+            fecharModalAdicionarDisciplina();
+        });
+    }
+    
+    // ===================================================
+    //          DELEGAÇÃO DE EVENTOS (Otimizado)
+    // ===================================================
+
     /**
-     * Vincula eventos aos botões dos cards de turmas
+     * ✅ NOVO: Vincula todos os eventos de clique principais usando delegação.
      */
-    function vincularEventosCardsTurmas() {
-        console.log("🔗 Vinculando eventos aos cards de turmas...");
+    function vincularEventosGlobais() {
+        console.log("🔗 Vinculando eventos globais (Delegação)...");
+        
+        const cardsContainer = document.querySelector(".pagesContent");
+        if (!cardsContainer) return;
 
-        const container = document.querySelector("#turmasBody .cardsCreateIdt");
+        cardsContainer.addEventListener('click', (e) => {
+            
+            // --- Eventos de Edição ---
+            const btnEdit = e.target.closest('.editCard');
+            if (btnEdit) {
+                e.preventDefault();
+                e.stopPropagation();
 
-        if (!container) {
-            console.warn("⚠️ Container de cards de turmas não encontrado");
-            return;
-        }
+                const card = btnEdit.closest('.contentCardIdt');
+                if (!card) return;
 
-        // Remove listeners antigos
-        container.replaceWith(container.cloneNode(true));
-        const novoContainer = document.querySelector("#turmasBody .cardsCreateIdt");
+                // Verifica em qual página estamos
+                if (card.closest('#instituicoesBody')) {
+                    const id = card.dataset.id;
+                    console.log(`DELEGAÇÃO: Editar Instituição ${id}`);
+                    requestAnimationFrame(() => editarInstituicao(id));
 
-        // Adiciona listener único no container
-        novoContainer.addEventListener("click", (e) => {
-            const btn = e.target.closest("button");
-            if (!btn) return;
+                } else if (card.closest('#cursosBody')) {
+                    const id = card.dataset.id;
+                    console.log(`DELEGAÇÃO: Editar Curso ${id}`);
+                    requestAnimationFrame(() => editarCurso(id));
 
-            const card = btn.closest(".contentCardIdt");
-            if (!card) return;
+                } else if (card.closest('#disciplinasBody')) {
+                    const codigo = card.dataset.codigo;
+                    console.log(`DELEGAÇÃO: Editar Disciplina ${codigo}`);
+                    requestAnimationFrame(() => editarDisciplina(codigo));
+                
+                } else if (card.closest('#turmasBody')) {
+                    const id = card.dataset.turmaId; // Assumindo data-turma-id no card
+                    console.log(`DELEGAÇÃO: Editar Turma ${id}`);
+                    requestAnimationFrame(() => editarTurma(id));
+                }
+                return;
+            }
+            
+            // --- Eventos de Deleção ---
+            const btnDelete = e.target.closest('.deletCard');
+            if (btnDelete) {
+                e.preventDefault();
+                e.stopPropagation();
 
-            const idTurma = card.getAttribute("data-turma-id");
-            console.log("🎯 ID da turma:", idTurma);
+                const card = btnDelete.closest('.contentCardIdt');
+                if (!card) return;
 
-            if (btn.classList.contains("editCard")) {
-                console.log("✏️ Botão editar turma clicado");
-                requestAnimationFrame(() => {
-                    editarTurma(idTurma);
-                });
-
-            } else if (btn.classList.contains("deletCard")) {
-                console.log("🗑️ Botão deletar turma clicado");
-                mostrarConfirm("Tem certeza que deseja deletar esta turma?", (confirmado) => {
-                    if (confirmado) {
-                        deletarTurmaDB(idTurma);
+                if (card.closest('#instituicoesBody')) {
+                    const id = card.dataset.id;
+                    const cursosEmInstituicao = get.getCursosPorInstituicao(id);
+                    if (cursosEmInstituicao.length > 0) {
+                        mostrarAlerta("Não é possível deletar uma instituição que possui cursos vinculados.", "erro");
+                        return;
                     }
-                });
+                    mostrarConfirm(`Tem certeza que deseja deletar a instituição ${get.getNomeInstituicaoPorId(id)}?`, (confirmado) => {
+                        if (confirmado) deletarInstituicaoDB(id);
+                    });
+
+                } else if (card.closest('#cursosBody')) {
+                    const id = card.dataset.id;
+                    const idInstituicao = card.dataset.instituicaoId;
+                    mostrarConfirm("Tem certeza que deseja deletar este curso?", (confirmado) => {
+                         if (confirmado) deletarCursoDB(id, idInstituicao);
+                    });
+
+                } else if (card.closest('#disciplinasBody')) {
+                    const codigo = card.dataset.codigo;
+                    mostrarConfirm("Tem certeza que deseja deletar esta disciplina?", (confirmado) => {
+                        if (confirmado) deletarDisciplinaDB(codigo);
+                    });
+                
+                } else if (card.closest('#turmasBody')) {
+                    const id = card.dataset.turmaId; // Assumindo data-turma-id no card
+                    mostrarConfirm("Tem certeza que deseja deletar esta turma?", (confirmado) => {
+                        if (confirmado) deletarTurmaDB(id);
+                    });
+                }
+                return;
+            }
+
+            // --- Eventos de Adicionar (Linkar) ---
+            const btnAdd = e.target.closest('.addCurso'); // Usado para "Adicionar Curso" e "Adicionar Disciplina"
+            if (btnAdd) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const card = btnAdd.closest('.contentCardIdt');
+                if (!card) return;
+
+                if (card.closest('#instituicoesBody')) {
+                    const id = card.dataset.id;
+                    console.log(`DELEGAÇÃO: Abrir modal 'Adicionar Curso' para Instituição ${id}`);
+                    abrirModalAdicionarCurso(id);
+                } else if (card.closest('#cursosBody')) {
+                    const id = card.dataset.id;
+                    console.log(`DELEGAÇÃO: Abrir modal 'Adicionar Disciplina' para Curso ${id}`);
+                    abrirModalAdicionarDisciplina(id);
+                }
+                return;
             }
         });
 
-        console.log("✅ Eventos dos cards de turmas vinculados!");
+        console.log("✅ Eventos globais (Delegação) vinculados com sucesso!");
     }
 
-    // Escuta quando os cards são renderizados
-    document.addEventListener("cardsTurmasRenderizados", () => {
-        console.log("📢 Cards de turmas renderizados! Vinculando eventos...");
-        vincularEventosCardsTurmas();
-    });
-
-    // Vincula na primeira carga (com delay para garantir que tudo está carregado)
-    setTimeout(() => {
-        vincularEventosCardsTurmas();
-    }, 2000);
+    // ✅ NOVO: Chama a função de delegação de eventos UMA VEZ.
+    vincularEventosGlobais();
 
 });
