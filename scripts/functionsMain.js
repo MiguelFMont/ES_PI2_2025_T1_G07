@@ -5,7 +5,8 @@ const AppState = {
     instituicoes: [],
     cursos: [],
     disciplinas: [],
-    turmas: []
+    turmas: [],
+    turmaSelecionada: null
 };
 
 const EdicaoState = {
@@ -292,16 +293,16 @@ function renderizarCardsDisciplinas() {
                 </button>
             </div>
         `;
-        
+
         // ✅ OTIMIZAÇÃO: Adiciona ao fragmento
         fragmento.appendChild(card);
     });
 
     console.log(`✅ ${todasDisciplinas.length} cards de disciplinas renderizados`);
-    
+
     // ✅ OTIMIZAÇÃO: Adiciona ao DOM de uma vez
     containerCards.appendChild(fragmento);
-    
+
     // ❌ REMOVIDO: Evento 'cardsDisciplinasRenderizados'
 }
 
@@ -456,11 +457,11 @@ function atualizarDashboardView() {
             for (let i = 0; i < maxTurmas; i++) {
                 const turma = turmas[i];
                 const nome = turma.nome_turma || turma.nome || "Turma sem nome";
-                const periodo = turma.periodo || "Período não definido";
+                const nomeDisciplina = get.getNomeDisciplinaPorCodigo(turma.fk_disciplina_codigo) || "Disciplina não encontrada";
                 listaTurmasEl.innerHTML += `
                     <div class="recentItem">
                         <h4>${nome}</h4>
-                        <p>${periodo}</p>
+                        <p>${nomeDisciplina}</p>
                     </div>
                 `;
             }
@@ -614,6 +615,124 @@ function renderizarCardsDisciplinas() {
  * Renderiza os cards de turmas na interface
  * Nota: Esta função dispara um evento para que os listeners de turmas sejam ativados
  */
+// Função para criar card de turma
+function criarCardTurma(turma) {
+    // Busca informações relacionadas
+    const disciplina = AppState.disciplinas.find(d => d.codigo == turma.fk_disciplina_codigo);
+    const nomeDisciplina = disciplina ? disciplina.nome : "Disciplina não encontrada";
+    
+    const nomeTurma = turma.nome_turma || "Turma sem nome";
+    const localAula = turma.local_aula || "Local não definido";
+    const diaSemana = turma.dia_semana || "Dia não definido";
+    const hora = turma.hora || "Hora não definida";
+    const qtdAlunos = turma.qtd_alunos || "0";
+
+    // Cria o elemento do card
+    const card = document.createElement("div");
+    card.className = "turma-card";
+    card.setAttribute("data-id", turma.id);
+
+    // Monta o HTML do card
+    card.innerHTML = `
+        <div class="turma-header">
+            <div class="turma-info">
+                <div class="turma-icon">
+                    <i class="ph ph-users"></i>
+                </div>
+                <div class="turma-text">
+                    <h2>${nomeTurma}</h2>
+                    <p>${nomeDisciplina}</p>
+                </div>
+            </div>
+            <div class="turma-actions">
+                <button class="btn-action btn-edit" data-turma-id="${turma.id}">
+                    <i class="ph ph-pencil-simple"></i>
+                </button>
+                <button class="btn-action btn-delete" data-turma-id="${turma.id}">
+                    <i class="ph ph-trash"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="turma-details">
+            <div class="detail-badge detail-local">
+                <i class="ph ph-map-pin"></i>
+                <span>${localAula}</span>
+            </div>
+            <div class="detail-badge detail-dia">
+                <i class="ph ph-calendar"></i>
+                <span>${diaSemana}</span>
+            </div>
+            <div class="detail-badge detail-hora">
+                <i class="ph ph-clock"></i>
+                <span>${hora}</span>
+            </div>
+        </div>
+
+        <div class="turma-info-badges">
+            <div class="info-badge badge-alunos">
+                <i class="ph ph-users-three"></i>
+                ${qtdAlunos} alunos
+            </div>
+        </div>
+
+        <div class="turma-footer">
+            <button class="btn-notas" data-turma-id="${turma.id}">
+                <i class="ph ph-note"></i>
+                Gerenciar Notas
+            </button>
+        </div>
+    `;
+
+    return card;
+}
+
+function deletarTurmaCard(idTurma) {
+    const turma = AppState.turmas.find(t => t.id == idTurma);
+    
+    if (!turma) {
+        mostrarAlerta("Turma não encontrada!", "erro");
+        return;
+    }
+
+    const nomeTurma = turma.nome_turma || "esta turma";
+    
+    mostrarConfirm(`Tem certeza que deseja deletar ${nomeTurma}?`, (confirmado) => {
+        if (confirmado) {
+            deletarTurmaDB(idTurma);
+        }
+    });
+}
+
+function selecionarTurmaParaNotas(idTurma) {
+    console.log(`📝 Selecionando turma para gerenciamento de notas: ${idTurma}`);
+    
+    const turmaCompleta = get.getTurmaCompletaPorId(idTurma);
+    
+    if (!turmaCompleta) {
+        mostrarAlerta("Turma não encontrada!", "erro");
+        return;
+    }
+
+    // Armazena no AppState
+    AppState.turmaSelecionada = turmaCompleta;
+    
+    console.log("✅ Turma selecionada no AppState:", AppState.turmaSelecionada);
+    
+    // Redireciona para a página de gerenciamento de notas
+    window.location.href = "/gerenciar-notas";
+}
+
+function obterTurmaSelecionada() {
+    return AppState.turmaSelecionada;
+}
+
+function limparTurmaSelecionada() {
+    AppState.turmaSelecionada = null;
+    console.log("🧹 Turma selecionada limpa do AppState");
+}
+
+// Função para renderizar todos os cards
 function renderizarCardsTurmas() {
     console.log("🎨 Renderizando cards de turmas...");
 
@@ -621,15 +740,13 @@ function renderizarCardsTurmas() {
     const cardVazio = document.querySelector("#turmasBody .cardIdt");
 
     if (!containerCards) {
-        console.error("❌ Container de cards de turmas não encontrado!");
+        console.error("❌ Container de cards não encontrado!");
         return;
     }
 
-    // Limpa os cards existentes
     containerCards.innerHTML = "";
 
     if (!AppState.turmas || AppState.turmas.length === 0) {
-        // Restaura/mostra o card vazio (se existir)
         if (cardVazio) {
             const iconIdt = cardVazio.querySelector('.iconIdt');
             const h3 = cardVazio.querySelector('h3');
@@ -639,26 +756,21 @@ function renderizarCardsTurmas() {
             if (h3) h3.style.display = "block";
             if (p) p.style.display = "block";
 
-            cardVazio.style.border = "1px solid var(--border)";
+            cardVazio.style.border = "1px dashed var(--lightgrey)";
+            cardVazio.style.borderWidth = "2px";
             cardVazio.style.height = "auto";
             cardVazio.style.padding = "1.25rem";
             cardVazio.style.overflow = "visible";
-
-            const modal = cardVazio.querySelector('.createIdt');
-            if (modal) modal.classList.remove('show');
         }
 
         containerCards.style.display = "none";
         containerCards.style.opacity = "0";
         containerCards.style.pointerEvents = "none";
-
-        // Ainda disparar o evento para garantir que listeners saibam que não há cards
-        document.dispatchEvent(new CustomEvent('cardsTurmasRenderizados'));
+        
         console.log("ℹ️ Nenhuma turma para renderizar");
         return;
     }
 
-    // Esconde o card vazio
     if (cardVazio) {
         const iconIdt = cardVazio.querySelector('.iconIdt');
         const h3 = cardVazio.querySelector('h3');
@@ -672,9 +784,6 @@ function renderizarCardsTurmas() {
         cardVazio.style.height = "0";
         cardVazio.style.padding = "0";
         cardVazio.style.overflow = "visible";
-
-        const modal = cardVazio.querySelector('.createIdt');
-        if (modal) modal.classList.remove('show');
     }
 
     containerCards.style.display = "grid";
@@ -682,40 +791,14 @@ function renderizarCardsTurmas() {
     containerCards.style.pointerEvents = "all";
 
     const fragmento = document.createDocumentFragment();
-    // Cria um card para cada turma
+    
     AppState.turmas.forEach(turma => {
-        const card = document.createElement("div");
-        card.className = "contentCardIdt";
-        card.setAttribute("data-id", turma.id);
-
-        const codigo = turma.codigo || "";
-        const periodo = turma.periodo || "Período não definido";
-
-        card.innerHTML = `
-            <i class="ph ph-users" id="turmasIcon"></i>
-            <div class="textContentCardIdt">
-                <h2>${turma.nome_turma}</h2>
-                <p style="font-size: 0.85rem; color: var(--color6); margin: 5px 0;">${codigo}</p>
-                <div class="viewDetails">
-                    <div class="code">${codigo}</div>
-                    <div class="period">${periodo}</div>
-                </div>
-            </div>
-            <div class="editAndDelet">
-                <button class="editCard" data-turma-id="${turma.id}">
-                    <i class="ph ph-pencil-simple"></i>
-                </button>
-                <button class="deletCard" data-turma-id="${turma.id}">
-                    <i class="ph ph-trash"></i>
-                </button>
-            </div>
-        `;
-
+        const card = criarCardTurma(turma);
         fragmento.appendChild(card);
     });
 
-    // ✅ OTIMIZAÇÃO: Adiciona ao DOM de uma vez
     containerCards.appendChild(fragmento);
+    console.log(`✅ ${AppState.turmas.length} cards renderizados`);
 }
 /**
  * Atualiza o contador visual de instituições no dashboard
@@ -773,39 +856,39 @@ async function carregarInstituicoesFromDB() {
         return Promise.reject(new Error("Usuário não autenticado"));
     }
     const id_docente = usuarioLogado.id;
-    
+
     // ✅ MODIFICADO: Retorna o fetch (Promise)
     return fetch(`/instituicao/all/${id_docente}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" }
     })
-    .then(res => res.json())
-    .then(dados => {
-        console.log("📦 Dados recebidos (Instituições):", dados);
-        let instituicoes = (Array.isArray(dados)) ? dados : (dados.instituicoes || []);
+        .then(res => res.json())
+        .then(dados => {
+            console.log("📦 Dados recebidos (Instituições):", dados);
+            let instituicoes = (Array.isArray(dados)) ? dados : (dados.instituicoes || []);
 
-        if (instituicoes.length === 0) {
-            console.log("⚠️ Nenhuma instituição foi cadastrada");
-            AppState.instituicoes = [];
-            AppState.cursos = [];
-            AppState.disciplinas = [];
-        } else {
-            AppState.instituicoes = instituicoes.map(inst => ({
-                id: inst.id.toString(),
-                nome: inst.nome,
-                cursos: [] 
-            }));
-            console.log("✅ Instituições carregadas:", AppState.instituicoes);
-        }
-        atualizarContadorInstituicoes(AppState.instituicoes.length);
-        
-        // ❌ REMOVIDO: Chamadas de renderização e carregamento em cadeia
-    })
-    .catch(err => {
-        console.error("❌ Erro ao carregar instituições:", err);
-        mostrarAlerta("Erro ao carregar instituições do banco de dados.", "erro");
-        throw err; // Re-lança o erro
-    });
+            if (instituicoes.length === 0) {
+                console.log("⚠️ Nenhuma instituição foi cadastrada");
+                AppState.instituicoes = [];
+                AppState.cursos = [];
+                AppState.disciplinas = [];
+            } else {
+                AppState.instituicoes = instituicoes.map(inst => ({
+                    id: inst.id.toString(),
+                    nome: inst.nome,
+                    cursos: []
+                }));
+                console.log("✅ Instituições carregadas:", AppState.instituicoes);
+            }
+            atualizarContadorInstituicoes(AppState.instituicoes.length);
+
+            // ❌ REMOVIDO: Chamadas de renderização e carregamento em cadeia
+        })
+        .catch(err => {
+            console.error("❌ Erro ao carregar instituições:", err);
+            mostrarAlerta("Erro ao carregar instituições do banco de dados.", "erro");
+            throw err; // Re-lança o erro
+        });
 }
 
 /**
@@ -887,63 +970,59 @@ async function carregarDisciplinasFromDB() {
         method: "GET",
         headers: { "Content-Type": "application/json" }
     })
-    .then(res => {
-        if (res.status === 404) return [];
-        if (!res.ok) throw new Error(`Erro HTTP ${res.status}`);
-        return res.json();
-    })
-    .then(data => {
-        let todasDisciplinas = (Array.isArray(data)) ? data : (data.disciplinas || []);
+        .then(res => {
+            if (res.status === 404) return [];
+            if (!res.ok) throw new Error(`Erro HTTP ${res.status}`);
+            return res.json();
+        })
+        .then(data => {
+            let todasDisciplinas = (Array.isArray(data)) ? data : (data.disciplinas || []);
 
-        if (todasDisciplinas.length === 0) {
-            console.log("⚠️ Nenhuma disciplina cadastrada no sistema");
+            if (todasDisciplinas.length === 0) {
+                console.log("⚠️ Nenhuma disciplina cadastrada no sistema");
+                AppState.disciplinas = [];
+                atualizarContadorDisciplinas(0);
+                return;
+            }
+
+            const disciplinasDoUsuario = todasDisciplinas.filter(disc => {
+                const idCursoDisc = disc.id_curso ? disc.id_curso.toString() : null;
+                return idsCursos.includes(idCursoDisc);
+            });
+
+            AppState.disciplinas = disciplinasDoUsuario.map(disc => ({
+                id: disc.id ? disc.id.toString() : null,
+                codigo: disc.codigo,
+                nome: disc.nome,
+                sigla: disc.sigla,
+                periodo: disc.periodo,
+                id_curso: disc.id_curso ? disc.id_curso.toString() : null
+            }));
+
+            console.log(`✅ ${AppState.disciplinas.length} disciplinas salvas no AppState`);
+            atualizarContadorDisciplinas(AppState.disciplinas.length);
+
+            // ❌ REMOVIDO: Chamadas de renderização e carregamento em cadeia
+        })
+        .catch(err => {
+            console.error("❌ Erro ao carregar disciplinas:", err);
             AppState.disciplinas = [];
             atualizarContadorDisciplinas(0);
-            return;
-        }
-
-        const disciplinasDoUsuario = todasDisciplinas.filter(disc => {
-            const idCursoDisc = disc.id_curso ? disc.id_curso.toString() : null;
-            return idsCursos.includes(idCursoDisc);
+            throw err;
         });
-
-        AppState.disciplinas = disciplinasDoUsuario.map(disc => ({
-            id: disc.id ? disc.id.toString() : null,
-            codigo: disc.codigo,
-            nome: disc.nome,
-            sigla: disc.sigla,
-            periodo: disc.periodo,
-            id_curso: disc.id_curso ? disc.id_curso.toString() : null
-        }));
-
-        console.log(`✅ ${AppState.disciplinas.length} disciplinas salvas no AppState`);
-        atualizarContadorDisciplinas(AppState.disciplinas.length);
-        
-        // ❌ REMOVIDO: Chamadas de renderização e carregamento em cadeia
-    })
-    .catch(err => {
-        console.error("❌ Erro ao carregar disciplinas:", err);
-        AppState.disciplinas = [];
-        atualizarContadorDisciplinas(0);
-        throw err;
-    });
 }
 
-/**
- * Carrega turmas (MODIFICADO)
- * Agora é async e retorna uma Promise.
- */
+
 async function carregarTurmasFromDB() {
     const disciplinas = AppState.disciplinas;
     if (!disciplinas || disciplinas.length === 0) {
         console.log("ℹ️ Nenhuma disciplina carregada. Pulando carregamento de Turmas.");
         AppState.turmas = [];
         atualizarContadorTurmas(0);
-        return Promise.resolve(); // Retorna Promise resolvida
+        return Promise.resolve();
     }
 
-    // ✅ MODIFICADO: Retorna o fetch
-    return fetch(`/turma/all`) // Assumindo que /turma/all retorna todas as turmas
+    return fetch(`/turma/all`)
         .then(res => {
             if (res.status === 404) return [];
             if (!res.ok) throw new Error(`Erro HTTP ${res.status}`);
@@ -959,18 +1038,18 @@ async function carregarTurmasFromDB() {
                 const codigosDisciplinas = new Set(AppState.disciplinas.map(d => d.codigo));
                 const turmasDoUsuario = todasTurmas.filter(t => codigosDisciplinas.has(t.fk_disciplina_codigo));
 
+                // ✅ CORREÇÃO: Mapeia CADA turma individualmente
                 AppState.turmas = turmasDoUsuario.map(turma => ({
                     id: turma.id.toString(),
-                    nome_turma: turma.nome || "Nome Turma",
-                    periodo: turma.periodo ? `${turma.periodo}° Semestre` : "Período não definido",
                     fk_disciplina_codigo: turma.fk_disciplina_codigo,
-                    codigo: turma.codigo || ""
+                    nome_turma: turma.nome || "Turma sem nome",
+                    local_aula: turma.local_aula || "",
+                    dia_semana: turma.dia_semana || "",
+                    hora: turma.hora || ""
                 }));
                 console.log("✅ Turmas formatadas:", AppState.turmas);
             }
             atualizarContadorTurmas(AppState.turmas.length);
-
-            // ❌ REMOVIDO: Chamadas de renderização e carregamento em cadeia
         })
         .catch(err => {
             console.error("❌ Erro ao carregar turmas:", err);
@@ -1007,51 +1086,51 @@ function salvarInstituicao() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nome: nomeInstituicao, id_docente: id_docente })
     })
-    .then(res => res.json())
-    .then(data => {
-        if (!data.sucesso) {
-            mostrarAlerta("Instituição já possui cadastro!", "aviso");
-            throw new Error("Instituição duplicada");
-        }
-        return fetch("/instituicao/cadastro", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                nomeInstituicao: nomeInstituicao,
-                nomeCurso: nomeCurso,
-                id_docente: id_docente
-            })
-        });
-    })
-    .then(resCadastro => {
-        if (resCadastro.status === 400) {
-            return resCadastro.json().then(errData => {
-                throw new Error(`Erro 400: ${errData.mensagem || 'Dados inválidos'}`);
+        .then(res => res.json())
+        .then(data => {
+            if (!data.sucesso) {
+                mostrarAlerta("Instituição já possui cadastro!", "aviso");
+                throw new Error("Instituição duplicada");
+            }
+            return fetch("/instituicao/cadastro", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    nomeInstituicao: nomeInstituicao,
+                    nomeCurso: nomeCurso,
+                    id_docente: id_docente
+                })
             });
-        }
-        return resCadastro.json();
-    })
-    .then(dados => {
-        if (dados.sucesso) {
-            mostrarAlerta("Cadastro realizado com sucesso", "sucesso");
-            inputNomeInstituicao.value = "";
-            inputNomeCurso.value = "";
-            modal.classList.remove("show");
+        })
+        .then(resCadastro => {
+            if (resCadastro.status === 400) {
+                return resCadastro.json().then(errData => {
+                    throw new Error(`Erro 400: ${errData.mensagem || 'Dados inválidos'}`);
+                });
+            }
+            return resCadastro.json();
+        })
+        .then(dados => {
+            if (dados.sucesso) {
+                mostrarAlerta("Cadastro realizado com sucesso", "sucesso");
+                inputNomeInstituicao.value = "";
+                inputNomeCurso.value = "";
+                modal.classList.remove("show");
 
-            // ✅ MODIFICADO: Chama o orquestrador central
-            carregarTodaAplicacao();
-        } else {
-            mostrarAlerta(dados.mensagem || "Erro ao realizar o cadastro!", "erro");
+                // ✅ MODIFICADO: Chama o orquestrador central
+                carregarTodaAplicacao();
+            } else {
+                mostrarAlerta(dados.mensagem || "Erro ao realizar o cadastro!", "erro");
+                mostrarLoader('esconder');
+            }
+        })
+        .catch(err => {
+            console.error("❌ Erro completo:", err);
+            if (err.message !== "Instituição duplicada") {
+                mostrarAlerta(err.message || "Ocorreu um erro.", "erro");
+            }
             mostrarLoader('esconder');
-        }
-    })
-    .catch(err => {
-        console.error("❌ Erro completo:", err);
-        if (err.message !== "Instituição duplicada") {
-            mostrarAlerta(err.message || "Ocorreu um erro.", "erro");
-        }
-        mostrarLoader('esconder');
-    });
+        });
 }
 
 /**
@@ -1074,42 +1153,42 @@ function salvarCurso() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fk_id_instituicao: fk_id_instituicao, nome: nomeCurso })
     })
-    .then(res => res.json())
-    .then(data => {
-        if (data.sucesso) {
-            return fetch("/curso/cadastro", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ fk_id_instituicao: fk_id_instituicao, nome: nomeCurso })
-            });
-        } else {
-            mostrarLoader('esconder');
-            mostrarAlerta("Este curso já está cadastrado nesta instituição!", "aviso");
-            throw new Error("Curso duplicado");
-        }
-    })
-    .then(res => res.json())
-    .then(dados => {
-        if (dados.sucesso) {
-            mostrarAlerta("Curso cadastrado com sucesso!", "sucesso");
-            selectInstituicao.value = "";
-            inputNomeCurso.value = "";
-            modal.classList.remove("show");
+        .then(res => res.json())
+        .then(data => {
+            if (data.sucesso) {
+                return fetch("/curso/cadastro", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ fk_id_instituicao: fk_id_instituicao, nome: nomeCurso })
+                });
+            } else {
+                mostrarLoader('esconder');
+                mostrarAlerta("Este curso já está cadastrado nesta instituição!", "aviso");
+                throw new Error("Curso duplicado");
+            }
+        })
+        .then(res => res.json())
+        .then(dados => {
+            if (dados.sucesso) {
+                mostrarAlerta("Curso cadastrado com sucesso!", "sucesso");
+                selectInstituicao.value = "";
+                inputNomeCurso.value = "";
+                modal.classList.remove("show");
 
-            // ✅ MODIFICADO: Chama o orquestrador central
-            carregarTodaAplicacao();
-        } else {
-            mostrarLoader('esconder');
-            mostrarAlerta("Erro ao cadastrar o curso!", "erro");
-        }
-    })
-    .catch(err => {
-        if (err.message !== "Curso duplicado") {
-            mostrarLoader('esconder');
-            mostrarAlerta("Ocorreu um erro. Verifique o console.", "erro");
-            console.error("Erro:", err);
-        }
-    });
+                // ✅ MODIFICADO: Chama o orquestrador central
+                carregarTodaAplicacao();
+            } else {
+                mostrarLoader('esconder');
+                mostrarAlerta("Erro ao cadastrar o curso!", "erro");
+            }
+        })
+        .catch(err => {
+            if (err.message !== "Curso duplicado") {
+                mostrarLoader('esconder');
+                mostrarAlerta("Ocorreu um erro. Verifique o console.", "erro");
+                console.error("Erro:", err);
+            }
+        });
 }
 
 /**
@@ -1138,51 +1217,51 @@ function salvarDisciplina() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nome: nomeDisciplina, id_curso: fk_id_curso })
     })
-    .then(res => res.json())
-    .then(data => {
-        if (data.sucesso) {
-            return fetch("/disciplina/cadastro", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    codigo: codigoDisciplina,
-                    id_curso: fk_id_curso,
-                    nome: nomeDisciplina,
-                    periodo: periodo,
-                    sigla: siglaDisciplina
-                })
-            });
-        } else {
-            mostrarLoader('esconder');
-            mostrarAlerta("Esta disciplina já está cadastrada neste curso!", "aviso");
-            throw new Error("Disciplina duplicada");
-        }
-    })
-    .then(res => res.json())
-    .then(dados => {
-        if (dados.message || dados.codigo) {
-            mostrarAlerta("Disciplina cadastrada com sucesso!", "sucesso");
-            selectCurso.value = "";
-            inputNomeDisciplina.value = "";
-            inputSiglaDisciplina.value = "";
-            selectPeriodo.value = "";
-            inputCodigoDisciplina.value = "";
-            modal.classList.remove("show");
+        .then(res => res.json())
+        .then(data => {
+            if (data.sucesso) {
+                return fetch("/disciplina/cadastro", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        codigo: codigoDisciplina,
+                        id_curso: fk_id_curso,
+                        nome: nomeDisciplina,
+                        periodo: periodo,
+                        sigla: siglaDisciplina
+                    })
+                });
+            } else {
+                mostrarLoader('esconder');
+                mostrarAlerta("Esta disciplina já está cadastrada neste curso!", "aviso");
+                throw new Error("Disciplina duplicada");
+            }
+        })
+        .then(res => res.json())
+        .then(dados => {
+            if (dados.message || dados.codigo) {
+                mostrarAlerta("Disciplina cadastrada com sucesso!", "sucesso");
+                selectCurso.value = "";
+                inputNomeDisciplina.value = "";
+                inputSiglaDisciplina.value = "";
+                selectPeriodo.value = "";
+                inputCodigoDisciplina.value = "";
+                modal.classList.remove("show");
 
-            // ✅ MODIFICADO: Chama o orquestrador central
-            carregarTodaAplicacao();
-        } else {
-            mostrarLoader('esconder');
-            mostrarAlerta("Erro ao cadastrar a disciplina!", "erro");
-        }
-    })
-    .catch(err => {
-        if (err.message !== "Disciplina duplicada") {
-            mostrarLoader('esconder');
-            mostrarAlerta("Ocorreu um erro. Verifique o console.", "erro");
-            console.error("Erro:", err);
-        }
-    });
+                // ✅ MODIFICADO: Chama o orquestrador central
+                carregarTodaAplicacao();
+            } else {
+                mostrarLoader('esconder');
+                mostrarAlerta("Erro ao cadastrar a disciplina!", "erro");
+            }
+        })
+        .catch(err => {
+            if (err.message !== "Disciplina duplicada") {
+                mostrarLoader('esconder');
+                mostrarAlerta("Ocorreu um erro. Verifique o console.", "erro");
+                console.error("Erro:", err);
+            }
+        });
 }
 
 /**
@@ -1190,21 +1269,44 @@ function salvarDisciplina() {
  */
 function salvarTurma() {
     const modal = document.querySelector("#turmasBody .createIdt");
-    if (!modal) { /*...*/ return; }
+    if (!modal) return;
+
     const selectDisciplina = modal.querySelector("#inputDisciplinaTurma");
     const inputNomeTurma = modal.querySelector("#inputNomeTurma");
     const inputLocalAula = modal.querySelector("#inputLocalAula");
     const inputDiaSemana = modal.querySelector("#diaSemanaSelect");
     const inputHora = modal.querySelector("#inputHoraAula");
-    if (!selectDisciplina || !inputNomeTurma) { /*...*/ return; }
+
+    if (!selectDisciplina || !inputNomeTurma) {
+        mostrarAlerta("Campos obrigatórios não encontrados!", "erro");
+        return;
+    }
+
     const nomeDisciplina = selectDisciplina.value.trim();
     const nomeTurma = inputNomeTurma.value.trim();
     const localAula = inputLocalAula?.value.trim() || "";
     const diaSemana = inputDiaSemana?.value.trim() || "";
     const hora = inputHora?.value.trim() || "";
-    if (nomeDisciplina === "" || nomeTurma === "") { /*...*/ return; }
+
+    // ✅ VALIDAÇÃO BÁSICA
+    if (nomeDisciplina === "" || nomeTurma === "") {
+        mostrarAlerta("Preencha os campos obrigatórios (Disciplina e Nome da Turma)", "aviso");
+        return;
+    }
+
+    // ✅ VALIDAÇÃO DO HORÁRIO
+    if (hora !== '' && !validarHorario(hora)) {
+        marcarErroHorario(inputHora, 'Horário inválido! Use o formato HH:MM');
+        mostrarAlerta("Digite um horário válido (HH:MM)", "aviso");
+        return;
+    }
+
     const disciplina = AppState.disciplinas.find(d => d.nome === nomeDisciplina);
-    if (!disciplina) { /*...*/ return; }
+    if (!disciplina) {
+        mostrarAlerta("Disciplina não encontrada!", "erro");
+        return;
+    }
+
     const fk_disciplina_codigo = disciplina.codigo;
     mostrarLoader("mostrar");
 
@@ -1213,56 +1315,51 @@ function salvarTurma() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fk_disciplina_codigo: fk_disciplina_codigo, nome: nomeTurma })
     })
-    .then(res => res.json())
-    .then(data => {
-        if (data.sucesso) {
-            return fetch("/turma/cadastro", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    fk_disciplina_codigo: fk_disciplina_codigo,
-                    nome: nomeTurma,
-                    local_aula: localAula,
-                    dia_semana: diaSemana,
-                    hora: hora
-                })
-            });
-        } else {
-            mostrarLoader('esconder');
-            mostrarAlerta("Esta turma já está cadastrada nesta disciplina!", "aviso");
-            throw new Error("Turma duplicada");
-        }
-    })
-    .then(res => res.json())
-    .then(dados => {
-        if (dados.message || dados.id) {
-            mostrarAlerta("Turma cadastrada com sucesso!", "sucesso");
-            selectDisciplina.value = "";
-            inputNomeTurma.value = "";
-            if (inputLocalAula) inputLocalAula.value = "";
-            if (inputDiaSemana) inputDiaSemana.value = "";
-            if (inputHora) inputHora.value = "";
-            modal.classList.remove("show");
-            AppState.turmas.push({
-                id: dados.id.toString(),
-                nome_turma: nomeTurma,
-                fk_disciplina_codigo: fk_disciplina_codigo,
-            });
+        .then(res => res.json())
+        .then(data => {
+            if (data.sucesso) {
+                return fetch("/turma/cadastro", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        fk_disciplina_codigo: fk_disciplina_codigo,
+                        nome: nomeTurma,
+                        local_aula: localAula,
+                        dia_semana: diaSemana,
+                        hora: hora
+                    })
+                });
+            } else {
+                mostrarLoader('esconder');
+                mostrarAlerta("Esta turma já está cadastrada nesta disciplina!", "aviso");
+                throw new Error("Turma duplicada");
+            }
+        })
+        .then(res => res.json())
+        .then(dados => {
+            if (dados.message || dados.id) {
+                mostrarAlerta("Turma cadastrada com sucesso!", "sucesso");
+                selectDisciplina.value = "";
+                inputNomeTurma.value = "";
+                if (inputLocalAula) inputLocalAula.value = "";
+                if (inputDiaSemana) inputDiaSemana.value = "";
+                if (inputHora) inputHora.value = "";
+                modal.classList.remove("show");
 
-            // ✅ MODIFICADO: Chama o orquestrador central
-            carregarTodaAplicacao();
-        } else {
-            mostrarLoader('esconder');
-            mostrarAlerta("Erro ao cadastrar a turma!", "erro");
-        }
-    })
-    .catch(err => {
-        if (err.message !== "Turma duplicada") {
-            mostrarLoader('esconder');
-            mostrarAlerta("Ocorreu um erro. Verifique o console.", "erro");
-            console.error("Erro:", err);
-        }
-    });
+                // ✅ Recarrega toda a aplicação
+                carregarTodaAplicacao();
+            } else {
+                mostrarLoader('esconder');
+                mostrarAlerta("Erro ao cadastrar a turma!", "erro");
+            }
+        })
+        .catch(err => {
+            if (err.message !== "Turma duplicada") {
+                mostrarLoader('esconder');
+                mostrarAlerta("Ocorreu um erro. Verifique o console.", "erro");
+                console.error("Erro:", err);
+            }
+        });
 }
 
 
@@ -1279,45 +1376,45 @@ function vincularCursoInstituicaoDB(idInstituicao, nomeCurso) {
             nome: nomeCurso
         })
     })
-    .then(res => res.json())
-    .then(data => {
-        if (data.sucesso) {
-            return fetch("/curso/cadastro", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    fk_id_instituicao: idInstituicao,
-                    nome: nomeCurso
-                })
-            });
-        } else {
-            mostrarAlerta(`Curso "${nomeCurso}" já está cadastrado!`, "aviso");
-            throw new Error("Curso duplicado");
-        }
-    })
-    .then(res => res.json())
-    .then(dados => {
-        if (dados.sucesso) {
-            mostrarAlerta(`Curso "${nomeCurso}" cadastrado!`, "sucesso");
-            fecharModalAdicionarCurso();
-            
-            // ✅ MODIFICADO: Chama o orquestrador central (se chamado fora de um modal de edição)
-            // Se esta função for chamada de 'salvarEdicaoInstituicao', o 'carregarTodaAplicacao'
-            // será chamado no final daquela função de qualquer maneira.
-            // Para garantir consistência, vamos chamar o recarregamento.
-            carregarTodaAplicacao();
-        } else {
-            mostrarAlerta("Erro ao cadastrar o curso!", "erro");
-            throw new Error("Erro ao cadastrar curso");
-        }
-    })
-    .catch(err => {
-        if (err.message !== "Curso duplicado") {
-            mostrarAlerta("Ocorreu um erro. Verifique o console.", "erro");
-            console.error("Erro:", err);
-        }
-        throw err; // Propaga o erro
-    });
+        .then(res => res.json())
+        .then(data => {
+            if (data.sucesso) {
+                return fetch("/curso/cadastro", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        fk_id_instituicao: idInstituicao,
+                        nome: nomeCurso
+                    })
+                });
+            } else {
+                mostrarAlerta(`Curso "${nomeCurso}" já está cadastrado!`, "aviso");
+                throw new Error("Curso duplicado");
+            }
+        })
+        .then(res => res.json())
+        .then(dados => {
+            if (dados.sucesso) {
+                mostrarAlerta(`Curso "${nomeCurso}" cadastrado!`, "sucesso");
+                fecharModalAdicionarCurso();
+
+                // ✅ MODIFICADO: Chama o orquestrador central (se chamado fora de um modal de edição)
+                // Se esta função for chamada de 'salvarEdicaoInstituicao', o 'carregarTodaAplicacao'
+                // será chamado no final daquela função de qualquer maneira.
+                // Para garantir consistência, vamos chamar o recarregamento.
+                carregarTodaAplicacao();
+            } else {
+                mostrarAlerta("Erro ao cadastrar o curso!", "erro");
+                throw new Error("Erro ao cadastrar curso");
+            }
+        })
+        .catch(err => {
+            if (err.message !== "Curso duplicado") {
+                mostrarAlerta("Ocorreu um erro. Verifique o console.", "erro");
+                console.error("Erro:", err);
+            }
+            throw err; // Propaga o erro
+        });
 }
 
 // ============================================
@@ -1695,9 +1792,9 @@ function salvarEdicaoInstituicao(id, novoNome, modal) {
                 EdicaoState.cursosParaAdicionar = [];
                 EdicaoState.cursosParaDeletar = [];
                 atualizarCamposModalEdicao(modal, instituicaoAtualizada);
-                
+
                 // ✅ ATUALIZA A UI CENTRALIZADA
-                renderizarTodaInterface(); 
+                renderizarTodaInterface();
             }
         })
         .catch(err => {
@@ -1719,36 +1816,36 @@ function vincularCursoInstituicaoDB_Edicao(idInstituicao, nomeCurso) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fk_id_instituicao: idInstituicao, nome: nomeCurso })
     })
-    .then(res => res.json())
-    .then(data => {
-        if (data.sucesso) {
-            return fetch("/curso/cadastro", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ fk_id_instituicao: idInstituicao, nome: nomeCurso })
-            });
-        } else {
-            console.warn(`Curso "${nomeCurso}" já existe.`);
-            mostrarAlerta(`Curso "${nomeCurso}" já está cadastrado!`, "aviso");
-            throw new Error("Curso duplicado");
-        }
-    })
-    .then(res => res.json())
-    .then(dados => {
-        if (dados.sucesso) {
-            mostrarAlerta(`Modificações alteradas com sucesso!`, "sucesso");
-            console.log(`Curso "${nomeCurso}" cadastrado.`);
-        } else {
-            throw new Error("Erro ao cadastrar o curso!");
-        }
-    })
-    .catch(err => {
-        if (err.message !== "Curso duplicado") {
-            console.error("Erro ao vincular curso:", err);
-        }
-        // Não propaga o erro de duplicado para não parar a cadeia
-        return;
-    });
+        .then(res => res.json())
+        .then(data => {
+            if (data.sucesso) {
+                return fetch("/curso/cadastro", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ fk_id_instituicao: idInstituicao, nome: nomeCurso })
+                });
+            } else {
+                console.warn(`Curso "${nomeCurso}" já existe.`);
+                mostrarAlerta(`Curso "${nomeCurso}" já está cadastrado!`, "aviso");
+                throw new Error("Curso duplicado");
+            }
+        })
+        .then(res => res.json())
+        .then(dados => {
+            if (dados.sucesso) {
+                mostrarAlerta(`Modificações alteradas com sucesso!`, "sucesso");
+                console.log(`Curso "${nomeCurso}" cadastrado.`);
+            } else {
+                throw new Error("Erro ao cadastrar o curso!");
+            }
+        })
+        .catch(err => {
+            if (err.message !== "Curso duplicado") {
+                console.error("Erro ao vincular curso:", err);
+            }
+            // Não propaga o erro de duplicado para não parar a cadeia
+            return;
+        });
 }
 
 
@@ -1828,10 +1925,10 @@ function salvarEdicaoCurso(idCurso, novoNome, modal) {
                 EdicaoStateCurso.disciplinasParaAdicionar = [];
                 EdicaoStateCurso.disciplinasParaDeletar = [];
                 atualizarCamposModalEdicaoCurso(modal, cursoAtualizado);
-                
+
                 // ✅ ATUALIZA A UI CENTRALIZADA
                 renderizarTodaInterface();
-                
+
                 mostrarAlerta("Alterações salvas com sucesso!", "sucesso");
             }
         })
@@ -2106,7 +2203,7 @@ function editarDisciplina(codigoDisciplina) {
     if (disciplina) {
         idCurso = disciplina.id_curso;
     }
-    
+
     if (!disciplina) { mostrarAlerta("Disciplina não encontrada!", "erro"); return; }
     const card = document.querySelector(`#disciplinasBody .contentCardIdt[data-codigo="${codigoDisciplina}"]`);
     if (!card) { console.error("❌ Card de disciplina não encontrado!"); return; }
@@ -2139,38 +2236,62 @@ function editarDisciplina(codigoDisciplina) {
     modal.classList.add("show");
 }
 
-function editarTurma(idTurma) {
+function editarTurmaCard(idTurma) {
+    console.log(`✏️ Editando turma ID: ${idTurma}`);
+    
     const turma = AppState.turmas.find(t => t.id == idTurma);
-    if (!turma) { mostrarAlerta("Turma não encontrada!", "erro"); return; }
-    const card = document.querySelector(`#turmasBody .contentCardIdt[data-id="${idTurma}"]`); // Assumindo data-id no card de turma
-    if (!card) { console.error("❌ Card de turma não encontrado!"); return; }
-    EdicaoStateTurma.turmaOriginal = JSON.parse(JSON.stringify(turma));
-    const modal = document.querySelector("#turmasBody .modalEdicaoExpansivel");
-    if (!modal) { console.error("❌ Modal não encontrado no HTML!"); return; }
-    modal.setAttribute("data-turma-id", idTurma);
-    const inputNome = modal.querySelector("#editNomeTurma");
-    const inputCodigo = modal.querySelector("#editCodigoTurma");
-    const selectPeriodo = modal.querySelector("#editPeriodoTurma");
-    if (inputNome) { inputNome.value = turma.nome_turma || ""; inputNome.placeholder = turma.nome_turma || ""; }
-    if (inputCodigo) { inputCodigo.value = turma.codigo || ""; }
-    if (selectPeriodo) {
-        const periodoNum = turma.periodo ? turma.periodo.toString().match(/\d+/)[0] : "";
-        selectPeriodo.value = periodoNum || "";
+    if (!turma) {
+        mostrarAlerta("Turma não encontrada!", "erro");
+        return;
     }
+
+    const card = document.querySelector(`#turmasBody .turma-card[data-id="${idTurma}"]`);
+    if (!card) {
+        console.error("❌ Card não encontrado!");
+        return;
+    }
+
+    EdicaoStateTurma.turmaOriginal = JSON.parse(JSON.stringify(turma));
+
+    const modal = document.querySelector("#turmasBody .modalEdicaoExpansivel");
+    if (!modal) {
+        console.error("❌ Modal de edição não encontrado!");
+        return;
+    }
+
+    modal.setAttribute("data-turma-id", idTurma);
+
+    const inputNome = modal.querySelector("#editNomeTurma");
+    const inputLocal = modal.querySelector("#editLocalAula");
+    const inputDia = modal.querySelector("#editDiaSemana");
+    const inputHora = modal.querySelector("#editHoraAula");
+
+    if (inputNome) {
+        inputNome.value = turma.nome_turma || "";
+        inputNome.placeholder = turma.nome_turma || "";
+    }
+    if (inputLocal) inputLocal.value = turma.local_aula || "";
+    if (inputDia) inputDia.value = turma.dia_semana || "";
+    if (inputHora) inputHora.value = turma.hora || "";
+
     if (!modal.hasAttribute("data-eventos-vinculados")) {
         vincularEventosModalTurma(modal);
         modal.setAttribute("data-eventos-vinculados", "true");
     }
+
     const cardRect = card.getBoundingClientRect();
     const scrollTop = window.scrollY || document.documentElement.scrollTop;
     const top = cardRect.bottom + scrollTop + 10;
     const left = cardRect.left;
     const width = cardRect.width;
+
     modal.style.position = 'absolute';
     modal.style.top = `${top}px`;
     modal.style.left = `${left}px`;
     modal.style.width = `${width}px`;
+
     modal.classList.add("show");
+    console.log("✅ Modal de edição aberto!");
 }
 
 function vincularEventosModalTurma(modal) {
@@ -2209,23 +2330,23 @@ function salvarEdicaoDisciplina(codigo, idCurso, novoNome, novaSigla, novoPeriod
             periodo: parseInt(novoPeriodo)
         })
     })
-    .then(res => res.json())
-    .then(dados => {
-        if (dados.message) {
-            mostrarAlerta("Disciplina atualizada com sucesso!", "sucesso");
-            fecharModalEdicaoExpansivel(modal);
-            // ✅ MODIFICADO: Chama o orquestrador central
-            carregarTodaAplicacao();
-        } else {
+        .then(res => res.json())
+        .then(dados => {
+            if (dados.message) {
+                mostrarAlerta("Disciplina atualizada com sucesso!", "sucesso");
+                fecharModalEdicaoExpansivel(modal);
+                // ✅ MODIFICADO: Chama o orquestrador central
+                carregarTodaAplicacao();
+            } else {
+                mostrarLoader('esconder');
+                mostrarAlerta(dados.error || "Erro ao atualizar disciplina", "erro");
+            }
+        })
+        .catch(err => {
             mostrarLoader('esconder');
-            mostrarAlerta(dados.error || "Erro ao atualizar disciplina", "erro");
-        }
-    })
-    .catch(err => {
-        mostrarLoader('esconder');
-        mostrarAlerta("Erro ao atualizar disciplina", "erro");
-        console.error("❌ Erro:", err);
-    });
+            mostrarAlerta("Erro ao atualizar disciplina", "erro");
+            console.error("❌ Erro:", err);
+        });
 }
 
 function salvarEdicaoTurma(idTurma, novoNome, novoCodigo, novoPeriodo, modal) {
@@ -2240,23 +2361,23 @@ function salvarEdicaoTurma(idTurma, novoNome, novoCodigo, novoPeriodo, modal) {
             // Adicione outros campos se o backend suportar (codigo, periodo)
         })
     })
-    .then(res => res.json())
-    .then(dados => {
-        if (dados.message) {
-            mostrarAlerta("Turma atualizada com sucesso!", "sucesso");
-            fecharModalEdicaoExpansivel(modal);
-            // ✅ MODIFICADO: Chama o orquestrador central
-            carregarTodaAplicacao();
-        } else {
+        .then(res => res.json())
+        .then(dados => {
+            if (dados.message) {
+                mostrarAlerta("Turma atualizada com sucesso!", "sucesso");
+                fecharModalEdicaoExpansivel(modal);
+                // ✅ MODIFICADO: Chama o orquestrador central
+                carregarTodaAplicacao();
+            } else {
+                mostrarLoader('esconder');
+                mostrarAlerta(dados.error || "Erro ao atualizar turma", "erro");
+            }
+        })
+        .catch(err => {
             mostrarLoader('esconder');
-            mostrarAlerta(dados.error || "Erro ao atualizar turma", "erro");
-        }
-    })
-    .catch(err => {
-        mostrarLoader('esconder');
-        mostrarAlerta("Erro ao atualizar turma", "erro");
-        console.error("❌ Erro:", err);
-    });
+            mostrarAlerta("Erro ao atualizar turma", "erro");
+            console.error("❌ Erro:", err);
+        });
 }
 
 
@@ -2276,22 +2397,22 @@ function deletarInstituicaoDB(id) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: parseInt(id) })
     })
-    .then(res => res.json())
-    .then(dados => {
-        console.log("✅ Resposta do servidor:", dados);
-        if (dados.sucesso || dados.message) {
-            mostrarAlerta("Instituição deletada com sucesso!", "sucesso");
-            // ✅ MODIFICADO: Chama o orquestrador central
-            carregarTodaAplicacao();
-        } else {
-            throw new Error(dados.error || "Erro ao deletar");
-        }
-    })
-    .catch(err => {
-        console.error("❌ Erro ao deletar instituição:", err);
-        mostrarAlerta("Erro ao deletar instituição do banco de dados.", "erro");
-        mostrarLoader('esconder');
-    });
+        .then(res => res.json())
+        .then(dados => {
+            console.log("✅ Resposta do servidor:", dados);
+            if (dados.sucesso || dados.message) {
+                mostrarAlerta("Instituição deletada com sucesso!", "sucesso");
+                // ✅ MODIFICADO: Chama o orquestrador central
+                carregarTodaAplicacao();
+            } else {
+                throw new Error(dados.error || "Erro ao deletar");
+            }
+        })
+        .catch(err => {
+            console.error("❌ Erro ao deletar instituição:", err);
+            mostrarAlerta("Erro ao deletar instituição do banco de dados.", "erro");
+            mostrarLoader('esconder');
+        });
 }
 
 /**
@@ -2306,22 +2427,22 @@ function deletarCursoDB(id, idInstituicao) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: parseInt(id), id_instituicao: parseInt(idInstituicao) })
     })
-    .then(res => res.json())
-    .then(dados => {
-        console.log("✅ Resposta do servidor:", dados);
-        if (dados.sucesso) {
-            mostrarAlerta("Curso deletado com sucesso!", "sucesso");
-            // ✅ MODIFICADO: Chama o orquestrador central
-            carregarTodaAplicacao();
-        } else {
-            throw new Error(dados.error || "Erro ao deletar");
-        }
-    })
-    .catch(err => {
-        console.error("❌ Erro ao deletar curso:", err);
-        mostrarAlerta("Erro ao deletar curso do banco de dados.", "erro");
-        mostrarLoader('esconder');
-    });
+        .then(res => res.json())
+        .then(dados => {
+            console.log("✅ Resposta do servidor:", dados);
+            if (dados.sucesso) {
+                mostrarAlerta("Curso deletado com sucesso!", "sucesso");
+                // ✅ MODIFICADO: Chama o orquestrador central
+                carregarTodaAplicacao();
+            } else {
+                throw new Error(dados.error || "Erro ao deletar");
+            }
+        })
+        .catch(err => {
+            console.error("❌ Erro ao deletar curso:", err);
+            mostrarAlerta("Erro ao deletar curso do banco de dados.", "erro");
+            mostrarLoader('esconder');
+        });
 }
 
 /**
@@ -2336,22 +2457,22 @@ function deletarDisciplinaDB(codigo) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ codigo: codigo })
     })
-    .then(res => res.json())
-    .then(dados => {
-        console.log("✅ Resposta do servidor:", dados);
-        if (dados.sucesso || dados.message) {
-            mostrarAlerta("Disciplina deletada com sucesso!", "sucesso");
-            // ✅ MODIFICADO: Chama o orquestrador central
-            carregarTodaAplicacao();
-        } else {
-            throw new Error(dados.error || "Erro ao deletar");
-        }
-    })
-    .catch(err => {
-        console.error("❌ Erro ao deletar disciplina:", err);
-        mostrarAlerta("Erro ao deletar disciplina do banco de dados.", "erro");
-        mostrarLoader('esconder');
-    });
+        .then(res => res.json())
+        .then(dados => {
+            console.log("✅ Resposta do servidor:", dados);
+            if (dados.sucesso || dados.message) {
+                mostrarAlerta("Disciplina deletada com sucesso!", "sucesso");
+                // ✅ MODIFICADO: Chama o orquestrador central
+                carregarTodaAplicacao();
+            } else {
+                throw new Error(dados.error || "Erro ao deletar");
+            }
+        })
+        .catch(err => {
+            console.error("❌ Erro ao deletar disciplina:", err);
+            mostrarAlerta("Erro ao deletar disciplina do banco de dados.", "erro");
+            mostrarLoader('esconder');
+        });
 }
 
 /**
@@ -2366,23 +2487,23 @@ function deletarTurmaDB(id) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: parseInt(id) })
     })
-    .then(res => res.json())
-    .then(dados => {
-        console.log("✅ Resposta do servidor:", dados);
-        if (dados.sucesso || dados.message) {
-            mostrarAlerta("Turma deletada com sucesso!", "sucesso");
-            fecharModalEdicaoExpansivel(document.querySelector("#turmasBody .modalEdicaoExpansivel"));
-            // ✅ MODIFICADO: Chama o orquestrador central
-            carregarTodaAplicacao();
-        } else {
-            throw new Error(dados.error || "Erro ao deletar");
-        }
-    })
-    .catch(err => {
-        console.error("❌ Erro ao deletar turma:", err);
-        mostrarAlerta("Erro ao deletar turma do banco de dados.", "erro");
-        mostrarLoader('esconder');
-    });
+        .then(res => res.json())
+        .then(dados => {
+            console.log("✅ Resposta do servidor:", dados);
+            if (dados.sucesso || dados.message) {
+                mostrarAlerta("Turma deletada com sucesso!", "sucesso");
+                fecharModalEdicaoExpansivel(document.querySelector("#turmasBody .modalEdicaoExpansivel"));
+                // ✅ MODIFICADO: Chama o orquestrador central
+                carregarTodaAplicacao();
+            } else {
+                throw new Error(dados.error || "Erro ao deletar");
+            }
+        })
+        .catch(err => {
+            console.error("❌ Erro ao deletar turma:", err);
+            mostrarAlerta("Erro ao deletar turma do banco de dados.", "erro");
+            mostrarLoader('esconder');
+        });
 }
 
 // ============================================
@@ -2529,14 +2650,54 @@ const get = (() => {
     function getTurmasPorDisciplina(idDisciplina) {
         return AppState.turmas.filter(turma => turma.fk_id_disciplina == idDisciplina);
     }
+    function getNomeDisciplinaPorCodigo(codigo) {
+        const disciplina = AppState.disciplinas.find(d => d.codigo == codigo);
+        return disciplina ? disciplina.nome : "Disciplina não encontrada";
+    }
+
+     function getTurmaPorId(id) {
+        return AppState.turmas.find(t => t.id == id) || null;
+    }
+    
+    function getTurmaCompletaPorId(id) {
+        const turma = AppState.turmas.find(t => t.id == id);
+        if (!turma) return null;
+
+        const disciplina = AppState.disciplinas.find(d => d.codigo == turma.fk_disciplina_codigo);
+        const curso = disciplina ? AppState.cursos.find(c => c.id == disciplina.id_curso) : null;
+        const instituicao = curso ? AppState.instituicoes.find(i => i.id == curso.fk_id_instituicao) : null;
+
+        return {
+            id: turma.id,
+            nome_turma: turma.nome_turma || "Turma sem nome",
+            local_aula: turma.local_aula || "",
+            dia_semana: turma.dia_semana || "",
+            hora: turma.hora || "",
+            qtd_alunos: turma.qtd_alunos || "0",
+            
+            disciplina: {
+                codigo: disciplina?.codigo || "",
+                nome: disciplina?.nome || "Disciplina não encontrada",
+                sigla: disciplina?.sigla || "",
+                periodo: disciplina?.periodo || "",
+                id_curso: disciplina?.id_curso || ""
+            },
+            
+            timestamp: new Date().toISOString()
+        };
+    }
     return {
+        getNomeDisciplinaPorCodigo,
+        getTurmasPorDisciplina,
         getDisciplinasPorCurso,
         getNomeInstituicaoPorId,
         getNomeCursoPorId,
         getInstituicaoPorId,
         getCursoPorId,
         getCursosPorInstituicao,
-        getNomeInstituicaoDoCurso
+        getNomeInstituicaoDoCurso,
+        getTurmaPorId,
+        getTurmaCompletaPorId
     };
 })();
 
@@ -2566,7 +2727,7 @@ function vincularCursosNasInstituicoes() {
         };
     });
     console.log("\n✅ Instituições com cursos vinculados");
-    
+
     // ❌ REMOVIDO: renderizarCardsInstituicoes() (será chamado centralmente)
 }
 
@@ -2582,12 +2743,12 @@ async function carregarTodaAplicacao() {
     try {
         // 1. Carrega Instituições
         await carregarInstituicoesFromDB();
-        
+
         // 2. Carrega Cursos (só se houver instituições)
         if (AppState.instituicoes.length > 0) {
             await carregarCursosFromDB();
         }
-        
+
         // 3. Carrega Disciplinas (só se houver cursos)
         if (AppState.cursos.length > 0) {
             await carregarDisciplinasFromDB();
@@ -2614,7 +2775,7 @@ async function carregarTodaAplicacao() {
  */
 function renderizarTodaInterface() {
     console.log("🚀 Renderizando toda a interface...");
-    
+
     // 1. Vincula dados no AppState
     vincularDisciplinasAosCursos(); // Primeiro, para cursos terem disciplinas
     vincularCursosNasInstituicoes(); // Segundo, para instituições terem nomes de cursos
@@ -2629,10 +2790,85 @@ function renderizarTodaInterface() {
     atualizarDashboardView();
 }
 
+/**
+ * Função para formatar e validar input de horário (HH:MM) (turma)
+ */
+function formatarHorario(input) {
+    let valor = input.value.replace(/\D/g, '');
+    if (valor.length > 4) valor = valor.substring(0, 4);
+    if (valor.length >= 3) {
+        valor = valor.substring(0, 2) + ':' + valor.substring(2, 4);
+    }
+    input.value = valor;
+}
+
+function validarHorario(horario) {
+    const regex = /^([0-1][0-9]|2[0-3]):([0-5][0-9])$/;
+    if (!regex.test(horario)) return false;
+    const [horas, minutos] = horario.split(':').map(Number);
+    return horas >= 0 && horas <= 23 && minutos >= 0 && minutos <= 59;
+}
+
+function marcarErroHorario(input, mensagem) {
+    input.style.border = "2px solid red";
+    input.style.animation = "shake 0.3s";
+    let msgErro = input.parentElement.querySelector('.mensagem-erro-horario');
+    if (!msgErro) {
+        msgErro = document.createElement('span');
+        msgErro.className = 'mensagem-erro-horario';
+        msgErro.style.color = 'red';
+        msgErro.style.fontSize = '0.85rem';
+        msgErro.style.marginTop = '5px';
+        msgErro.style.display = 'block';
+        input.parentElement.appendChild(msgErro);
+    }
+    msgErro.textContent = mensagem;
+    setTimeout(() => { input.style.animation = ""; }, 300);
+}
+
+function removerErroHorario(input) {
+    input.style.border = "";
+    const msgErro = input.parentElement.querySelector('.mensagem-erro-horario');
+    if (msgErro) msgErro.remove();
+}
+
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log("🔧 Configurando integração com banco de dados...");
-    
+
+    const inputsHorario = document.querySelectorAll('#inputHoraAula');
+
+    inputsHorario.forEach(input => {
+        input.setAttribute('maxlength', '5');
+        input.setAttribute('placeholder', 'HH:MM');
+
+        input.addEventListener('input', (e) => {
+            formatarHorario(e.target);
+            removerErroHorario(e.target);
+        });
+
+        input.addEventListener('blur', (e) => {
+            const valor = e.target.value.trim();
+            if (valor === '') {
+                removerErroHorario(e.target);
+                return;
+            }
+            if (!validarHorario(valor)) {
+                marcarErroHorario(e.target, 'Horário inválido! Use o formato HH:MM (ex: 14:30)');
+            } else {
+                removerErroHorario(e.target);
+            }
+        });
+
+        input.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const texto = (e.clipboardData || window.clipboardData).getData('text');
+            const numeros = texto.replace(/\D/g, '').substring(0, 4);
+            input.value = numeros;
+            formatarHorario(input);
+        });
+    });
+
     // ✅ NOVO: Chama a nova cadeia de carregamento
-    carregarTodaAplicacao(); 
+    carregarTodaAplicacao();
 });

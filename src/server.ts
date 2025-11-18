@@ -141,6 +141,10 @@ app.get('/userSettings', (req, res) => {
     res.sendFile(path.join(__dirname, '../pages/pageUserSettings.html'));
 });
 
+app.get('/gerenciar-notas', (req, res) => {
+    res.sendFile(path.join(__dirname, '../pages/notasEalunos.html'));
+});
+
 /*=============*/
 /* INSTITUIÇÃO */
 /*=============*/
