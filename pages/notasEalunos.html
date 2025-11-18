@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notas e Alunos</title>
+    <link rel="icon" class="logo32" type="image/png" href="../assets/logo32x32.png" />
     <link rel="stylesheet" href="../styles/notasEalunos.css">
     <link rel="stylesheet" href="../styles/load.css">
     <link rel="stylesheet" href="../styles/alert.css">
@@ -74,21 +75,29 @@
                     </div>
                 </div>
                 <div class="provasCamp">
+                    <div class="editCompBody">
+                        <button id="closedEditComp">
+                            <i class="ph ph-x"></i>
+                        </button>
+                        <!-- <input type="text" id="nomeComp" placeholder=" ">
+                        <label for="nomeComp">Nome do componente</label> -->
+                    </div>
                     <div class="headerComponents">
                         <h2>Componentes de Nota</h2>
-                        <button class="btnAddComp">
-                            <i class="ph ph-plus"></i>
-                            Adicionar
-                        </button>
+                        <div class="buttonsComponents">
+                            <button class="btnEditComp">
+                                <i class="ph ph-pencil-simple"></i>
+                            </button>
+                            <button class="btnAddComp">
+                                <i class="ph ph-plus"></i>
+                                Adicionar
+                            </button>
+                        </div>
                     </div>
                     <div class="viewDatailsComp">
                         <div class="detailP">
-                            <p id="detailNameP">Prova 1</p>
-                            <p id="detailSiglaP">(P1)</p>
-                        </div>
-                        <div class="detailP">
-                            <p id="detailNameP">Prova 2</p>
-                            <p id="detailSiglaP">(P2)</p>
+                            <p id="detailNameP"></p>
+                            <p id="detailSiglaP"></p>
                         </div>
                     </div>
 
@@ -117,8 +126,8 @@
                     <div class="headerNotas">
                         <h2>Lançamento de Notas</h2>
                         <div class="btnNotasEdit">
-                            <button id="oneEditComp">Editar por Componente</button>
-                            <button id="allEditComp">Edição Completa</button>
+                            <button id="oneEditComp">Editar notas</button>
+                            <button id="allEditComp">Salvar</button>
                         </div>
                     </div>
                     <div class="itensNotas">
@@ -127,23 +136,10 @@
                                 <tr>
                                     <th>RA</th>
                                     <th>Nome</th>
-                                    <th class="siglaProvaTable">P1</th>
-                                    <th class="siglaProvaTable">P2</th>
                                     <th class="siglaProvaTable">Média</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td class="raTable">25001</td>
-                                    <td class="nameTable">Cezar Rull</td>
-                                    <td class="notaSiglaTable">
-                                        <input type="text" class="input-nota" placeholder="-" step="0.1" min="0" max="10">
-                                    </td>
-                                    <td class="notaSiglaTable">
-                                        <input type="text" class="input-nota" placeholder="-" step="0.1" min="0" max="10">
-                                    </td>
-                                    <td class="notaSiglaTable mediaNotaTable"></td>
-                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -208,6 +204,7 @@
 
     <script src="../scripts/notasEalunos.js"></script>
     <script src="../scripts/functionsNeA.js"></script>
+    <script src="../scripts/alert.js"></script>
 </body>
 
 </html>

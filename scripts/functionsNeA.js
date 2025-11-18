@@ -22,8 +22,158 @@ document.addEventListener('DOMContentLoaded', () => {
     if (searchInput) {
         searchInput.addEventListener('keyup', filtrarAlunos);
     }
+    
+    // 5. Configura botões de Componentes de Nota (Adicionar / Cancelar / Salvar)
+    const btnAddComp = document.querySelector('.btnAddComp');
+    const addComponents = document.querySelector('.addComponents');
+    const btnCancelComp = document.getElementById('cancelComp');
+    const btnSaveComp = document.getElementById('saveComp');
+
+    if (btnAddComp && addComponents) {
+        btnAddComp.addEventListener('click', (e) => {
+            e.preventDefault();
+            addComponents.style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+
+    if (btnCancelComp && addComponents) {
+        btnCancelComp.addEventListener('click', (e) => {
+            e.preventDefault();
+            addComponents.style.display = 'none';
+            limparFormularioComponente();
+        });
+    }
+
+    if (btnSaveComp) {
+        btnSaveComp.addEventListener('click', async (e) => {
+            e.preventDefault();
+            await cadastrarComponente();
+        });
+    }
+
+    // Carrega a lista de componentes ao iniciar a página
+    listarComponentes();
+    // Carrega a tabela de notas dinâmica
+    carregarTabelaNotas();
 });
 
+// ============================================================
+// TABELA DE NOTAS DINÂMICA
+// ============================================================
+async function carregarTabelaNotas() {
+    const tabela = document.querySelector('.itensNotas table');
+    if (!tabela) return;
+
+    // Busca componentes de nota da disciplina da turma atual
+    const turmaEl = document.querySelector('.tumaLogin') || document.querySelector('.turmaLogin');
+    const turmaNome = turmaEl ? turmaEl.innerText.trim() : null;
+
+    // Busca turmas para pegar fk_disciplina_codigo
+    let fk_disciplina = null;
+    if (turmaNome) {
+        const respTurmas = await fetch('/turma/all');
+        if (respTurmas.ok) {
+            const turmas = await respTurmas.json();
+            const listaTurmas = Array.isArray(turmas) ? turmas : (turmas.turmas || []);
+            let turmaObj = listaTurmas.find(t => (t.nome && t.nome.trim() === turmaNome));
+            if (!turmaObj) turmaObj = listaTurmas.find(t => (t.nome && turmaNome.includes(t.nome)) || (t.nome && t.nome.includes(turmaNome)));
+            if (turmaObj) fk_disciplina = turmaObj.fk_disciplina_codigo || turmaObj.FK_DISCIPLINA_CODIGO;
+        }
+    }
+
+    // Busca componentes
+    let componentes = [];
+    const respComp = await fetch('/componente-nota/all');
+    if (respComp.ok) {
+        const lista = await respComp.json();
+        componentes = fk_disciplina ? lista.filter(c => String(c.fk_disciplina_codigo) === String(fk_disciplina)) : lista;
+    }
+
+    // Busca alunos
+    let alunos = [];
+    const respAlunos = await fetch('/estudante/all');
+    if (respAlunos.ok) {
+        alunos = await respAlunos.json();
+    }
+
+    // Monta o thead
+    const thead = tabela.querySelector('thead');
+    if (thead) {
+        let ths = '<tr>';
+        ths += '<th>RA</th>';
+        ths += '<th>Nome</th>';
+        componentes.forEach(comp => {
+            ths += `<th class="siglaProvaTable">${comp.sigla || comp.nome}</th>`;
+        });
+        ths += '<th class="siglaProvaTable">Média</th>';
+        ths += '</tr>';
+        thead.innerHTML = ths;
+    }
+
+    // Monta o tbody
+    const tbody = tabela.querySelector('tbody');
+    if (tbody) {
+        let trs = '';
+        alunos.forEach(aluno => {
+            trs += '<tr>';
+            trs += `<td class="raTable">${aluno.ra}</td>`;
+            trs += `<td class="nameTable">${aluno.nome}</td>`;
+            componentes.forEach(comp => {
+                trs += `<td class="notaSiglaTable"><input type="text" class="input-nota" data-id-componente="${comp.id_componente}" data-id-estudante="${aluno.ra}" placeholder="-" step="0.1" min="0" max="10" disabled></td>`;
+            });
+            trs += '<td class="notaSiglaTable mediaNotaTable"></td>';
+            trs += '</tr>';
+        });
+        tbody.innerHTML = trs;
+    }
+
+    // Carrega notas existentes do banco de dados
+    await carregarNotasExistentes();
+}
+
+// ============================================================
+// CARREGAR NOTAS EXISTENTES DO BANCO DE DADOS
+// ============================================================
+async function carregarNotasExistentes() {
+    try {
+        const respNotas = await fetch('/nota/all');
+        if (!respNotas.ok) {
+            console.warn('Erro ao buscar notas:', respNotas.statusText);
+            return;
+        }
+
+        const notas = await respNotas.json();
+        if (!Array.isArray(notas)) {
+            console.warn('Resposta de notas não é um array');
+            return;
+        }
+
+        // Percorre as notas e preenche os inputs correspondentes
+        notas.forEach(nota => {
+            const input = document.querySelector(
+                `.input-nota[data-id-componente="${nota.fk_id_componente}"][data-id-estudante="${nota.fk_id_estudante}"]`
+            );
+            
+            if (input) {
+                // Converte o valor para formato brasileiro (com vírgula)
+                const valorFormatado = String(nota.valor_nota).replace('.', ',');
+                input.value = valorFormatado;
+            }
+        });
+
+        // Recalcula as médias depois de carregar as notas
+        const tbody = document.querySelector('.itensNotas tbody');
+        if (tbody) {
+            const linhas = tbody.querySelectorAll('tr');
+            linhas.forEach(linha => {
+                calcularMedia(linha);
+            });
+        }
+    } catch (error) {
+        console.error('Erro ao carregar notas existentes:', error);
+    }
+}
 // ============================================================
 // FUNÇÃO PRINCIPAL: LISTAR ALUNOS
 // ============================================================
@@ -89,6 +239,163 @@ async function listarAlunos() {
         }
     } catch (error) {
         console.error("Erro ao listar alunos:", error);
+    }
+}
+
+// ============================================================
+// COMPONENTES DE NOTA (FRONT-END)
+// ============================================================
+function limparFormularioComponente() {
+    const provaName = document.getElementById('provaName');
+    const siglaPR = document.getElementById('siglaPR');
+    const descricaoPR = document.getElementById('descricaoPR');
+
+    if (provaName) provaName.value = '';
+    if (siglaPR) siglaPR.value = '';
+    if (descricaoPR) descricaoPR.value = '';
+}
+
+async function cadastrarComponente() {
+    const provaNameEl = document.getElementById('provaName');
+    const siglaEl = document.getElementById('siglaPR');
+    const descricaoEl = document.getElementById('descricaoPR');
+
+    const nome = provaNameEl ? provaNameEl.value.trim() : '';
+    const sigla = siglaEl ? siglaEl.value.trim() : '';
+    const descricao = descricaoEl ? descricaoEl.value.trim() : '';
+
+    if (!nome) {
+        mostrarAlerta('Por favor, informe o nome do componente.', 'warning');
+        return;
+    }
+
+    const load = document.querySelector('.load');
+    if (load) load.style.display = 'flex';
+
+    try {
+        // Identifica a turma atual para descobrir a disciplina
+        const turmaEl = document.querySelector('.tumaLogin') || document.querySelector('.turmaLogin');
+        if (!turmaEl) {
+            mostrarAlerta('Não foi possível identificar a turma atual.', 'error');
+            return;
+        }
+        const turmaNome = turmaEl.innerText.trim();
+
+        const respTurmas = await fetch('/turma/all');
+        if (!respTurmas.ok) {
+            mostrarAlerta('Erro ao buscar turmas no servidor.', 'error');
+            return;
+        }
+
+        const turmas = await respTurmas.json();
+        const listaTurmas = Array.isArray(turmas) ? turmas : (turmas.turmas || []);
+
+        let turmaObj = listaTurmas.find(t => (t.nome && t.nome.trim() === turmaNome));
+        if (!turmaObj) {
+            turmaObj = listaTurmas.find(t => (t.nome && turmaNome.includes(t.nome)) || (t.nome && t.nome.includes(turmaNome)));
+        }
+
+        if (!turmaObj) {
+            alert(`Turma "${turmaNome}" não encontrada no servidor.`);
+            return;
+        }
+
+        const fk_disciplina_codigo = turmaObj.fk_disciplina_codigo || turmaObj.FK_DISCIPLINA_CODIGO || turmaObj.fk_disciplina_codigo;
+
+        // Verifica duplicidade via API
+        const checkResp = await fetch('/componente-nota/verificar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fk_disciplina_codigo, nome })
+        });
+
+        if (checkResp.ok) {
+            const checkData = await checkResp.json();
+            if (checkData.sucesso === false) {
+                alert('Componente já cadastrado: ' + (checkData.componente?.nome || ''));
+                return;
+            }
+        }
+
+        // Faz o cadastro
+        const resp = await fetch('/componente-nota/cadastro', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fk_disciplina_codigo, nome, sigla, descricao })
+        });
+
+        if (resp.ok) {
+            const data = await resp.json();
+            alert('Componente cadastrado com sucesso! ID: ' + (data.id_componente || data.id));
+            // Fecha formulário e atualiza lista
+            const addComponents = document.querySelector('.addComponents');
+            if (addComponents) addComponents.style.display = 'none';
+            limparFormularioComponente();
+            await listarComponentes();
+            // Recarrega a tabela de notas com a nova coluna
+            await carregarTabelaNotas();
+        } else {
+            const err = await resp.json().catch(() => ({}));
+            alert('Erro ao cadastrar componente: ' + (err.error || resp.status));
+        }
+
+    } catch (error) {
+        console.error('Erro ao cadastrar componente:', error);
+        alert('Erro ao cadastrar componente. Veja console.');
+    } finally {
+        if (load) load.style.display = 'none';
+    }
+}
+
+async function listarComponentes() {
+    try {
+        const view = document.querySelector('.viewDatailsComp');
+        const countEl = document.getElementById('countComponents');
+
+        const turmaEl = document.querySelector('.tumaLogin') || document.querySelector('.turmaLogin');
+        const turmaNome = turmaEl ? turmaEl.innerText.trim() : null;
+
+        const resp = await fetch('/componente-nota/all');
+        if (!resp.ok) return;
+
+        const componentes = await resp.json();
+        const lista = Array.isArray(componentes) ? componentes : (componentes.componentes || []);
+
+        // Se tivermos o nome da turma, tenta filtrar pela disciplina desta turma
+        let fk_disciplina = null;
+        if (turmaNome) {
+            const respTurmas = await fetch('/turma/all');
+            if (respTurmas.ok) {
+                const turmas = await respTurmas.json();
+                const listaTurmas = Array.isArray(turmas) ? turmas : (turmas.turmas || []);
+                let turmaObj = listaTurmas.find(t => (t.nome && t.nome.trim() === turmaNome));
+                if (!turmaObj) turmaObj = listaTurmas.find(t => (t.nome && turmaNome.includes(t.nome)) || (t.nome && t.nome.includes(turmaNome)));
+                if (turmaObj) fk_disciplina = turmaObj.fk_disciplina_codigo || turmaObj.FK_DISCIPLINA_CODIGO;
+            }
+        }
+
+        const filtered = fk_disciplina ? lista.filter(c => String(c.fk_disciplina_codigo) === String(fk_disciplina)) : lista;
+
+        if (countEl) countEl.innerText = filtered.length || 0;
+
+        if (view) {
+            view.innerHTML = '';
+            filtered.forEach(comp => {
+                const div = document.createElement('div');
+                div.className = 'detailP';
+                const nameP = document.createElement('p');
+                nameP.id = 'detailNameP';
+                nameP.innerText = comp.nome;
+                const sigP = document.createElement('p');
+                sigP.id = 'detailSiglaP';
+                sigP.innerText = comp.sigla ? `(${comp.sigla})` : '';
+                div.appendChild(nameP);
+                div.appendChild(sigP);
+                view.appendChild(div);
+            });
+        }
+    } catch (error) {
+        console.error('Erro ao listar componentes:', error);
     }
 }
 
@@ -168,10 +475,19 @@ async function cadastrarAluno(ra, nome) {
 // ============================================================
 // EDIÇÃO (UPDATE)
 // ============================================================
+
 function prepararEdicao(ra, nome) {
+    const formBody = document.querySelector('.cadastrarAlunoBody');
+    
+    // 2. Se ele existir, torna visível (block ou flex, dependendo do seu CSS)
+    if (formBody) {
+        formBody.style.display = 'block'; 
+    }
     // Preenche o formulário com os dados do aluno selecionado
     const raInput = document.getElementById('raAluno');
     const nomeInput = document.getElementById('nameAluno');
+    const campInputRA = document.querySelector('.campCA');
+    const textCampRa = document.querySelector('label[for="raAluno"]');
     const btnSalvar = document.getElementById('btnSaveCA');
     const titulo = document.querySelector('.headerCA h2'); // Título "Cadastre Alunos"
 
@@ -180,7 +496,10 @@ function prepararEdicao(ra, nome) {
     
     // Bloqueia o RA pois é a chave primária (não editável facilmente)
     raInput.disabled = true; 
-    raInput.style.backgroundColor = "#e0e0e0";
+    campInputRA.style.border = '1px solid var(--lightgrey)';
+    campInputRA.style.background = "var(--lightgrey)";
+    textCampRa.innerText = "Campo indisponível para edição";
+    textCampRa.style.color = 'var(--grey)';
 
     // Muda estado visual
     isEditing = true;
@@ -349,6 +668,9 @@ function limparFormulario() {
     const nomeInput = document.getElementById('nameAluno');
     const btnSalvar = document.getElementById('btnSaveCA');
     const titulo = document.querySelector('.headerCA h2');
+    
+    // Adicionado: Seleciona o corpo do formulário
+    const formBody = document.querySelector('.cadastrarAlunoBody');
 
     raInput.value = '';
     nomeInput.value = '';
@@ -356,10 +678,26 @@ function limparFormulario() {
     // Restaura estado original (Modo Cadastro)
     raInput.disabled = false;
     raInput.style.backgroundColor = "";
+    
+    // Restaura visual do campo RA (bordas e texto originais)
+    const campInputRA = document.querySelector('.campCA');
+    const textCampRa = document.querySelector('label[for="raAluno"]');
+    if (campInputRA) {
+        campInputRA.style.border = '';     // Remove estilo inline
+        campInputRA.style.background = ''; // Remove estilo inline
+    }
+    if (textCampRa) {
+        textCampRa.innerText = "RA do Aluno"; // Ou o texto original do label
+        textCampRa.style.color = '';
+    }
+
     isEditing = false;
     
     if (titulo) titulo.innerText = "Cadastre Alunos";
     if (btnSalvar) btnSalvar.innerText = "Salvar";
+
+    // SE você quiser que o formulário feche ao cancelar, descomente a linha abaixo:
+    // if (formBody) formBody.style.display = 'none';
 }
 
 function filtrarAlunos() {
@@ -412,7 +750,7 @@ function configurarBotoesImportacao() {
             e.preventDefault();
             
             if (!inputFile || !inputFile.files || inputFile.files.length === 0) {
-                alert("Por favor, selecione um arquivo CSV.");
+                mostrarAlerta("Por favor, selecione um arquivo CSV.", 'warning');
                 return;
             }
 
@@ -485,8 +823,8 @@ async function processarArquivoCSV(file) {
         }
 
         // --- PASSO 3: Finalização ---
-        alert(`Importação Concluída!\n\n🆕 Novos Alunos: ${countCriados}\n✅ Matriculados: ${countMatriculados}\n❌ Erros: ${countErros}`);
-        
+        mostrarAlerta('Cadastro feito com sucesso', 'success');
+
         listarAlunos(); 
 
         // Fecha modal e limpa inputs (CORREÇÃO AQUI: Buscando os elementos novamente)

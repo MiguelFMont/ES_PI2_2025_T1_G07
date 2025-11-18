@@ -102,7 +102,9 @@ export async function getAllNotas(): Promise<Nota[]> {
                     FK_ID_ESTUDANTE as "fk_id_estudante",
                     FK_ID_TURMA as "fk_id_turma",
                     VALOR as "valor_nota"
-             FROM webapp.NOTA`
+             FROM webapp.NOTA`,
+            {},
+            { outFormat: OracleDB.OUT_FORMAT_OBJECT }
         );
 
         return result.rows as Nota[];
