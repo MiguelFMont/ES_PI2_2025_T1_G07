@@ -625,7 +625,6 @@ function criarCardTurma(turma) {
     const localAula = turma.local_aula || "Local não definido";
     const diaSemana = turma.dia_semana || "Dia não definido";
     const hora = turma.hora || "Hora não definida";
-    const qtdAlunos = turma.qtd_alunos || "0";
 
     // Cria o elemento do card
     const card = document.createElement("div");
@@ -669,13 +668,6 @@ function criarCardTurma(turma) {
             </div>
         </div>
 
-        <div class="turma-info-badges">
-            <div class="info-badge badge-alunos">
-                <i class="ph ph-users-three"></i>
-                ${qtdAlunos} alunos
-            </div>
-        </div>
-
         <div class="turma-footer">
             <button class="btn-notas" data-turma-id="${turma.id}">
                 <i class="ph ph-note"></i>
@@ -706,9 +698,9 @@ function deletarTurmaCard(idTurma) {
 
 function selecionarTurmaParaNotas(idTurma) {
     console.log(`📝 Selecionando turma para gerenciamento de notas: ${idTurma}`);
-
+    
     const turmaCompleta = get.getTurmaCompletaPorId(idTurma);
-
+    
     if (!turmaCompleta) {
         mostrarAlerta("Turma não encontrada!", "erro");
         return;
@@ -716,20 +708,40 @@ function selecionarTurmaParaNotas(idTurma) {
 
     // Armazena no AppState
     AppState.turmaSelecionada = turmaCompleta;
-
-    console.log("✅ Turma selecionada no AppState:", AppState.turmaSelecionada);
-
+    
+    // TAMBÉM armazena no localStorage como backup
+    localStorage.setItem("turmaSelecionada", JSON.stringify(turmaCompleta));
+    
+    console.log("✅ Turma selecionada:", AppState.turmaSelecionada);
+    
     // Redireciona para a página de gerenciamento de notas
     window.location.href = "/gerenciar-notas";
 }
 
 function obterTurmaSelecionada() {
-    return AppState.turmaSelecionada;
+    // Primeiro tenta do AppState
+    if (AppState.turmaSelecionada) {
+        return AppState.turmaSelecionada;
+    }
+    
+    // Se não tiver, busca do localStorage
+    const turmaLS = localStorage.getItem("turmaSelecionada");
+    if (turmaLS) {
+        try {
+            AppState.turmaSelecionada = JSON.parse(turmaLS);
+            return AppState.turmaSelecionada;
+        } catch (e) {
+            console.error("Erro ao recuperar turma do localStorage:", e);
+        }
+    }
+    
+    return null;
 }
 
 function limparTurmaSelecionada() {
     AppState.turmaSelecionada = null;
-    console.log("🧹 Turma selecionada limpa do AppState");
+    localStorage.removeItem("turmaSelecionada");
+    console.log("🧹 Turma selecionada limpa");
 }
 
 // Função para renderizar todos os cards
@@ -2304,14 +2316,13 @@ function vincularEventosModalTurma(modal) {
         btnSalvar.addEventListener("click", () => {
             const idTurma = modal.getAttribute("data-turma-id");
             const inputNome = modal.querySelector("#editNomeTurma");
-            const inputCodigo = modal.querySelector("#editCodigoTurma");
-            const selectPeriodo = modal.querySelector("#editPeriodoTurma");
             const novoNome = inputNome?.value.trim() || "";
-            const novoCodigo = inputCodigo?.value.trim() || "";
-            const novoPeriodo = selectPeriodo?.value || "";
+            const novoLocal = modal.querySelector("#editLocalAula")?.value.trim() || "";
+            const novoDia = modal.querySelector("#editDiaSemana")?.value.trim() || "";
+            const novaHora = modal.querySelector("#editHoraAula")?.value.trim() || "";
+
             if (novoNome === "") { mostrarAlerta("Preencha o nome da turma", "aviso"); return; }
-            if (novoPeriodo === "") { mostrarAlerta("Selecione o período", "aviso"); return; }
-            salvarEdicaoTurma(idTurma, novoNome, novoCodigo, novoPeriodo, modal);
+            salvarEdicaoTurma(idTurma, novoNome, novoLocal, novoDia, novaHora, modal);
         });
     }
 }
@@ -2349,16 +2360,19 @@ function salvarEdicaoDisciplina(codigo, idCurso, novoNome, novaSigla, novoPeriod
         });
 }
 
-function salvarEdicaoTurma(idTurma, novoNome, novoCodigo, novoPeriodo, modal) {
+function salvarEdicaoTurma(idTurma, novoNome, novoLocal, novoDia, novaHora, modal) {
     console.log("💾 Salvando edição de turma...");
     mostrarLoader("mostrar");
     fetch("/turma/atualizar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            id: parseInt(idTurma),
-            nome: novoNome
-            // Adicione outros campos se o backend suportar (codigo, periodo)
+             id: parseInt(idTurma),
+             fk_disciplina_codigo: EdicaoStateTurma.turmaOriginal.fk_disciplina_codigo,
+             nome: novoNome,
+             local_aula: novoLocal,
+             dia_semana: novoDia,
+             hora: novaHora
         })
     })
         .then(res => res.json())
@@ -2836,7 +2850,7 @@ function removerErroHorario(input) {
 document.addEventListener('DOMContentLoaded', () => {
     console.log("🔧 Configurando integração com banco de dados...");
 
-    const inputsHorario = document.querySelectorAll('#inputHoraAula');
+    const inputsHorario = document.querySelectorAll('#inputHoraAula, #editHoraAula');
 
     inputsHorario.forEach(input => {
         input.setAttribute('maxlength', '5');

@@ -2,6 +2,51 @@
 let isEditing = false;
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    function carregarInformacoesTurma() {
+        // Tenta recuperar do localStorage
+        const turmaJSON = localStorage.getItem("turmaSelecionada");
+
+        if (!turmaJSON) {
+            console.warn("⚠️ Nenhuma turma selecionada encontrada!");
+            mostrarAlerta("Nenhuma turma foi selecionada. Redirecionando...", "aviso");
+            setTimeout(() => {
+                window.location.href = "/mainPage";
+            }, 2000);
+            return null;
+        }
+
+        try {
+            const turma = JSON.parse(turmaJSON);
+            console.log("✅ Turma carregada:", turma);
+
+            // Atualiza todos os elementos .turmaLogin na página
+            const elementosTurma = document.querySelectorAll('.turmaLogin, .tumaLogin');
+            elementosTurma.forEach(el => {
+                el.textContent = turma.nome_turma;
+                el.setAttribute('data-turma-id', turma.id);
+                el.setAttribute('data-disciplina-codigo', turma.disciplina.codigo);
+            });
+
+            // Adiciona informações adicionais em data-attributes para uso posterior
+            document.body.setAttribute('data-turma-atual', JSON.stringify(turma));
+
+            return turma;
+
+        } catch (error) {
+            console.error("❌ Erro ao carregar turma:", error);
+            mostrarAlerta("Erro ao carregar informações da turma", "erro");
+            return null;
+        }
+    }
+    const turmaAtual = carregarInformacoesTurma();
+
+    if (!turmaAtual) {
+        console.error("❌ Não foi possível carregar a turma. Interrompendo inicialização.");
+        return;
+    }
+
+    console.log("🎓 Turma atual carregada:", turmaAtual);
     // 1. Carrega a lista inicial
     listarAlunos();
 
@@ -22,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (searchInput) {
         searchInput.addEventListener('keyup', filtrarAlunos);
     }
-    
+
     // 5. Configura botões de Componentes de Nota (Adicionar / Cancelar / Salvar)
     const btnAddComp = document.querySelector('.btnAddComp');
     const addComponents = document.querySelector('.addComponents');
@@ -61,40 +106,68 @@ document.addEventListener('DOMContentLoaded', () => {
 // ============================================================
 // TABELA DE NOTAS DINÂMICA
 // ============================================================
+
+function obterTurmaAtual() {
+    const turmaData = document.body.getAttribute('data-turma-atual');
+    if (turmaData) {
+        try {
+            return JSON.parse(turmaData);
+        } catch (e) {
+            console.error("Erro ao parsear turma atual:", e);
+        }
+    }
+    return null;
+}
+
+
 async function carregarTabelaNotas() {
     const tabela = document.querySelector('.itensNotas table');
     if (!tabela) return;
 
-    // Busca componentes de nota da disciplina da turma atual
-    const turmaEl = document.querySelector('.tumaLogin') || document.querySelector('.turmaLogin');
-    const turmaNome = turmaEl ? turmaEl.innerText.trim() : null;
-
-    // Busca turmas para pegar fk_disciplina_codigo
-    let fk_disciplina = null;
-    if (turmaNome) {
-        const respTurmas = await fetch('/turma/all');
-        if (respTurmas.ok) {
-            const turmas = await respTurmas.json();
-            const listaTurmas = Array.isArray(turmas) ? turmas : (turmas.turmas || []);
-            let turmaObj = listaTurmas.find(t => (t.nome && t.nome.trim() === turmaNome));
-            if (!turmaObj) turmaObj = listaTurmas.find(t => (t.nome && turmaNome.includes(t.nome)) || (t.nome && t.nome.includes(turmaNome)));
-            if (turmaObj) fk_disciplina = turmaObj.fk_disciplina_codigo || turmaObj.FK_DISCIPLINA_CODIGO;
-        }
+    // ✅ USAR A TURMA DO DATA-ATTRIBUTE
+    const turmaAtual = obterTurmaAtual();
+    if (!turmaAtual) {
+        console.error("❌ Turma não encontrada no body");
+        return;
     }
+
+    const fk_disciplina = turmaAtual.disciplina.codigo;
+    console.log("📚 Carregando notas para disciplina:", fk_disciplina);
 
     // Busca componentes
     let componentes = [];
     const respComp = await fetch('/componente-nota/all');
     if (respComp.ok) {
         const lista = await respComp.json();
-        componentes = fk_disciplina ? lista.filter(c => String(c.fk_disciplina_codigo) === String(fk_disciplina)) : lista;
+        componentes = fk_disciplina
+            ? lista.filter(c => String(c.fk_disciplina_codigo) === String(fk_disciplina))
+            : lista;
     }
 
-    // Busca alunos
+    // Busca alunos MATRICULADOS na turma atual
     let alunos = [];
-    const respAlunos = await fetch('/estudante/all');
-    if (respAlunos.ok) {
-        alunos = await respAlunos.json();
+    try {
+        // Busca matrículas da turma
+        const respMatriculas = await fetch('/matricula/all');
+        if (respMatriculas.ok) {
+            const todasMatriculas = await respMatriculas.json();
+            const matriculasDaTurma = todasMatriculas.filter(m =>
+                String(m.fk_id_turma) === String(turmaAtual.id)
+            );
+
+            // Busca dados completos dos alunos
+            const respAlunos = await fetch('/estudante/all');
+            if (respAlunos.ok) {
+                const todosAlunos = await respAlunos.json();
+                // Filtra apenas alunos matriculados nesta turma
+                alunos = todosAlunos.filter(aluno =>
+                    matriculasDaTurma.some(m => String(m.fk_id_estudante) === String(aluno.ra))
+                );
+            }
+        
+        }
+    } catch (error) {
+        console.error("Erro ao buscar alunos matriculados:", error);
     }
 
     // Monta o thead
@@ -128,6 +201,12 @@ async function carregarTabelaNotas() {
         tbody.innerHTML = trs;
     }
 
+    // Atualiza contador de alunos
+    const contadorAlunos = document.getElementById('alunosCount');
+    if (contadorAlunos) {
+        contadorAlunos.textContent = alunos.length;
+    }
+
     // Carrega notas existentes do banco de dados
     await carregarNotasExistentes();
 }
@@ -154,7 +233,7 @@ async function carregarNotasExistentes() {
             const input = document.querySelector(
                 `.input-nota[data-id-componente="${nota.fk_id_componente}"][data-id-estudante="${nota.fk_id_estudante}"]`
             );
-            
+
             if (input) {
                 // Converte o valor para formato brasileiro (com vírgula)
                 const valorFormatado = String(nota.valor_nota).replace('.', ',');
@@ -179,24 +258,45 @@ async function carregarNotasExistentes() {
 // ============================================================
 async function listarAlunos() {
     try {
-        const response = await fetch('/estudante/all'); //
-        const alunos = await response.json();
+        const turmaAtual = obterTurmaAtual();
+        if (!turmaAtual) {
+            console.error("❌ Turma não encontrada");
+            return;
+        }
 
-        const listaAlunos = document.querySelector('.itemThree ul'); //
+        // Busca matrículas da turma atual
+        const respMatriculas = await fetch('/matricula/all');
+        if (!respMatriculas.ok) {
+            console.error("Erro ao buscar matrículas");
+            return;
+        }
+
+        const todasMatriculas = await respMatriculas.json();
+        const matriculasDaTurma = todasMatriculas.filter(m =>
+            String(m.fk_id_turma) === String(turmaAtual.id)
+        );
+
+        // Busca todos os alunos
+        const response = await fetch('/estudante/all');
+        const todosAlunos = await response.json();
+
+        // Filtra apenas alunos desta turma
+        const alunos = todosAlunos.filter(aluno =>
+            matriculasDaTurma.some(m => String(m.fk_id_estudante) === String(aluno.ra))
+        );
+
+        const listaAlunos = document.querySelector('.itemThree ul');
         const contadorAlunos = document.getElementById('alunosCount');
-        
-        listaAlunos.innerHTML = ''; // Limpa a lista antes de renderizar
+
+        listaAlunos.innerHTML = '';
 
         if (Array.isArray(alunos)) {
             if (contadorAlunos) contadorAlunos.innerText = alunos.length;
 
             alunos.forEach(aluno => {
-                // Gera iniciais (Ex: Cezar Rull -> CR)
                 const iniciais = aluno.nome.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-
                 const li = document.createElement('li');
-                
-                // Estrutura HTML do item da lista
+
                 li.innerHTML = `
                     <a href="#" class="item-aluno">
                         <div class="raAluno">${aluno.ra}</div>
@@ -218,19 +318,14 @@ async function listarAlunos() {
                     </div>
                 `;
 
-                // Adiciona evento de clique para abrir/fechar (Accordion)
                 const linkClick = li.querySelector('.item-aluno');
                 const infoDiv = li.querySelector('.infoAluno');
 
                 linkClick.addEventListener('click', (e) => {
                     e.preventDefault();
-                    
-                    // Fecha todos os outros antes de abrir este
                     document.querySelectorAll('.infoAluno').forEach(div => {
                         if (div !== infoDiv) div.style.display = 'none';
                     });
-
-                    // Alterna a visualização deste item
                     infoDiv.style.display = (infoDiv.style.display === 'none') ? 'block' : 'none';
                 });
 
@@ -352,18 +447,43 @@ async function listarComponentes() {
         const view = document.querySelector('.viewDatailsComp');
         const countEl = document.getElementById('countComponents');
 
-        const turmaEl = document.querySelector('.tumaLogin') || document.querySelector('.turmaLogin');
-        const turmaNome = turmaEl ? turmaEl.innerText.trim() : null;
+        // 1. Obter o ID do docente logado (MUDANÇA AQUI)
+        const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
+        if (!usuarioLogado || !usuarioLogado.id) {
+            console.error("❌ Usuário não autenticado");
+            return;
+        }
+        const id_docente = usuarioLogado.id;
 
-        const resp = await fetch('/componente-nota/all');
-        if (!resp.ok) return;
+        // 2. Buscar na NOVA rota, usando o ID do docente (MUDANÇA AQUI)
+        // ANTES: /componente-nota/all ou /componente-nota/all/${id}
+        // AGORA:
+        const resp = await fetch(`/componente-nota/docente/${id_docente}`);
+
+        if (!resp.ok) {
+            // Se não encontrar (404), limpa a lista e o contador
+            if (resp.status === 404) {
+                if (countEl) countEl.innerText = 0;
+                if (view) view.innerHTML = '';
+            }
+            console.error("Erro ao buscar componentes do docente:", resp.status);
+            return;
+        }
 
         const componentes = await resp.json();
         const lista = Array.isArray(componentes) ? componentes : (componentes.componentes || []);
 
-        // Se tivermos o nome da turma, tenta filtrar pela disciplina desta turma
+        // 3. Obter a disciplina da turma atual (lógica que você já tinha)
+        const turmaEl = document.querySelector('.tumaLogin') || document.querySelector('.turmaLogin');
+        // ✅ CORREÇÃO: Usar a função global que criamos
+        const turmaAtual = obterTurmaAtual();
         let fk_disciplina = null;
-        if (turmaNome) {
+
+        if (turmaAtual && turmaAtual.disciplina) {
+            fk_disciplina = turmaAtual.disciplina.codigo;
+        } else if (turmaEl) {
+            // Fallback caso 'obterTurmaAtual' falhe (mas não deveria)
+            const turmaNome = turmaEl.innerText.trim();
             const respTurmas = await fetch('/turma/all');
             if (respTurmas.ok) {
                 const turmas = await respTurmas.json();
@@ -374,10 +494,12 @@ async function listarComponentes() {
             }
         }
 
-        const filtered = fk_disciplina ? lista.filter(c => String(c.fk_disciplina_codigo) === String(fk_disciplina)) : lista;
+        // 4. Filtrar a lista (apenas componentes da disciplina atual)
+        const filtered = fk_disciplina ? lista.filter(c => String(c.fk_disciplina_codigo) === String(fk_disciplina)) : [];
 
         if (countEl) countEl.innerText = filtered.length || 0;
 
+        // 5. Renderizar
         if (view) {
             view.innerHTML = '';
             filtered.forEach(comp => {
@@ -405,7 +527,7 @@ async function listarComponentes() {
 async function handleSaveButton() {
     const raInput = document.getElementById('raAluno');
     const nomeInput = document.getElementById('nameAluno');
-    
+
     const ra = parseInt(raInput.value.trim());
     const nome = nomeInput.value.trim();
 
@@ -438,12 +560,12 @@ async function cadastrarAluno(ra, nome) {
         const checkResult = await checkResponse.json();
 
         if (checkResult.sucesso === false) { // Aluno já existe
-                // Aluno já existe localmente — não recria, mas segue para matricular na turma atual
-                console.log(`ℹ️ Estudante com RA ${ra} já existe:`, checkResult.estudante);
-                if (load) load.style.display = 'none';
-                // Prossegue para matricular o aluno existente
-                await matricularAluno(ra);
-                return;
+            // Aluno já existe localmente — não recria, mas segue para matricular na turma atual
+            console.log(`ℹ️ Estudante com RA ${ra} já existe:`, checkResult.estudante);
+            if (load) load.style.display = 'none';
+            // Prossegue para matricular o aluno existente
+            await matricularAluno(ra);
+            return;
         }
 
         // 2. Realiza o Cadastro
@@ -478,10 +600,10 @@ async function cadastrarAluno(ra, nome) {
 
 function prepararEdicao(ra, nome) {
     const formBody = document.querySelector('.cadastrarAlunoBody');
-    
+
     // 2. Se ele existir, torna visível (block ou flex, dependendo do seu CSS)
     if (formBody) {
-        formBody.style.display = 'block'; 
+        formBody.style.display = 'block';
     }
     // Preenche o formulário com os dados do aluno selecionado
     const raInput = document.getElementById('raAluno');
@@ -493,9 +615,9 @@ function prepararEdicao(ra, nome) {
 
     raInput.value = ra;
     nomeInput.value = nome;
-    
+
     // Bloqueia o RA pois é a chave primária (não editável facilmente)
-    raInput.disabled = true; 
+    raInput.disabled = true;
     campInputRA.style.border = '1px solid var(--lightgrey)';
     campInputRA.style.background = "var(--lightgrey)";
     textCampRa.innerText = "Campo indisponível para edição";
@@ -547,41 +669,16 @@ async function matricularAluno(ra) {
     if (load) load.style.display = 'flex';
 
     try {
-        // 1. Identifica a turma atual pela classe 'turmaLogin' (usa o texto)
-        const turmaEl = document.querySelector('.turmaLogin');
-        if (!turmaEl) {
-            alert('Não foi possível identificar a turma atual (elemento .turmaLogin não encontrado).');
+        const turmaAtual = obterTurmaAtual();
+        if (!turmaAtual) {
+            alert('Não foi possível identificar a turma atual.');
             return;
         }
 
-        const turmaNome = turmaEl.textContent.trim();
-
-        // 2. Busca todas as turmas e tenta encontrar a que possui o mesmo nome
-        const respTurmas = await fetch('/turma/all');
-        if (!respTurmas.ok) {
-            console.error('Erro ao obter turmas:', respTurmas.status);
-            alert('Erro ao buscar turmas no servidor.');
-            return;
-        }
-
-        const turmas = await respTurmas.json();
-        const listaTurmas = Array.isArray(turmas) ? turmas : (turmas.turmas || []);
-
-        // Tenta achar correspondência exata, senão por inclusão
-        let turmaObj = listaTurmas.find(t => (t.nome && t.nome.trim() === turmaNome));
-        if (!turmaObj) {
-            turmaObj = listaTurmas.find(t => (t.nome && turmaNome.includes(t.nome)) || (t.nome && t.nome.includes(turmaNome)));
-        }
-
-        if (!turmaObj) {
-            alert(`Turma com nome "${turmaNome}" não encontrada no servidor.`);
-            return;
-        }
-
-        const fk_id_turma = Number(turmaObj.id);
+        const fk_id_turma = Number(turmaAtual.id);
         const fk_id_estudante = Number(ra);
 
-        // 3. Verifica se matrícula já existe
+        // Verifica se matrícula já existe
         const verifyResp = await fetch('/matricula/verificar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -589,8 +686,6 @@ async function matricularAluno(ra) {
         });
 
         if (!verifyResp.ok) {
-            const err = await verifyResp.json().catch(() => ({}));
-            console.error('Erro ao verificar matrícula:', verifyResp.status, err);
             alert('Erro ao verificar matrícula.');
             return;
         }
@@ -601,7 +696,7 @@ async function matricularAluno(ra) {
             return;
         }
 
-        // 4. Cadastra a matrícula
+        // Cadastra a matrícula
         const cadastroResp = await fetch('/matricula/cadastro', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -611,12 +706,12 @@ async function matricularAluno(ra) {
         if (cadastroResp.ok) {
             const data = await cadastroResp.json();
             alert('Matrícula realizada com sucesso! ID: ' + (data.id_matricula || data.id || '---'));
+            // Recarrega listas
+            await listarAlunos();
+            await carregarTabelaNotas();
         } else if (cadastroResp.status === 409) {
-            const d = await cadastroResp.json().catch(() => ({}));
-            alert(d.message || 'Matrícula já existe.');
+            alert('Matrícula já existe.');
         } else {
-            const d = await cadastroResp.json().catch(() => ({}));
-            console.error('Erro ao cadastrar matrícula:', cadastroResp.status, d);
             alert('Erro ao cadastrar matrícula.');
         }
 
@@ -668,17 +763,17 @@ function limparFormulario() {
     const nomeInput = document.getElementById('nameAluno');
     const btnSalvar = document.getElementById('btnSaveCA');
     const titulo = document.querySelector('.headerCA h2');
-    
+
     // Adicionado: Seleciona o corpo do formulário
     const formBody = document.querySelector('.cadastrarAlunoBody');
 
     raInput.value = '';
     nomeInput.value = '';
-    
+
     // Restaura estado original (Modo Cadastro)
     raInput.disabled = false;
     raInput.style.backgroundColor = "";
-    
+
     // Restaura visual do campo RA (bordas e texto originais)
     const campInputRA = document.querySelector('.campCA');
     const textCampRa = document.querySelector('label[for="raAluno"]');
@@ -692,7 +787,7 @@ function limparFormulario() {
     }
 
     isEditing = false;
-    
+
     if (titulo) titulo.innerText = "Cadastre Alunos";
     if (btnSalvar) btnSalvar.innerText = "Salvar";
 
@@ -707,7 +802,7 @@ function filtrarAlunos() {
     itens.forEach(item => {
         const nome = item.querySelector('.nameAluno').innerText.toLowerCase();
         const ra = item.querySelector('.raAluno').innerText;
-        
+
         if (nome.includes(termo) || ra.includes(termo)) {
             item.style.display = '';
         } else {
@@ -732,7 +827,7 @@ function configurarBotoesImportacao() {
 
     // 1. Feedback visual ao selecionar arquivo
     if (inputFile) {
-        inputFile.addEventListener('change', function() {
+        inputFile.addEventListener('change', function () {
             if (this.files && this.files.length > 0) {
                 if (fileNameDisplay) {
                     fileNameDisplay.innerText = this.files[0].name;
@@ -748,7 +843,7 @@ function configurarBotoesImportacao() {
     if (btnImportar) {
         btnImportar.addEventListener('click', async (e) => {
             e.preventDefault();
-            
+
             if (!inputFile || !inputFile.files || inputFile.files.length === 0) {
                 mostrarAlerta("Por favor, selecione um arquivo CSV.", 'warning');
                 return;
@@ -764,7 +859,7 @@ function configurarBotoesImportacao() {
             e.preventDefault();
             if (inputFile) inputFile.value = '';
             if (fileNameDisplay) fileNameDisplay.innerText = "Nenhum arquivo selecionado";
-            
+
             const modal = document.querySelector('.fileBody');
             if (modal) modal.style.display = 'none';
         });
@@ -779,17 +874,17 @@ async function processarArquivoCSV(file) {
         // --- PASSO 1: Identificar a Turma ---
         const turmaEl = document.querySelector('.tumaLogin') || document.querySelector('.turmaLogin');
         if (!turmaEl) throw new Error("Não foi possível identificar a turma na tela.");
-        
+
         const nomeTurmaAtual = turmaEl.innerText.trim();
-        
+
         const respTurmas = await fetch('/turma/all');
-        if(!respTurmas.ok) throw new Error("Erro ao buscar turmas.");
-        
+        if (!respTurmas.ok) throw new Error("Erro ao buscar turmas.");
+
         const dadosTurmas = await respTurmas.json();
         const listaTurmas = Array.isArray(dadosTurmas) ? dadosTurmas : (dadosTurmas.turmas || []);
-        
+
         const turmaObj = listaTurmas.find(t => t.nome && (t.nome.trim() === nomeTurmaAtual || t.nome.includes(nomeTurmaAtual)));
-        
+
         if (!turmaObj) throw new Error(`Turma "${nomeTurmaAtual}" não encontrada no sistema.`);
         const idTurma = turmaObj.id;
 
@@ -806,7 +901,7 @@ async function processarArquivoCSV(file) {
             if (!linha) continue;
 
             const colunas = linha.includes(';') ? linha.split(';') : linha.split(',');
-            
+
             const ra = colunas[0] ? colunas[0].replace(/["']/g, "").trim() : null;
             const nome = colunas[1] ? colunas[1].replace(/["']/g, "").trim() : null;
 
@@ -816,7 +911,7 @@ async function processarArquivoCSV(file) {
                     if (res.novo) countCriados++;
                     countMatriculados++;
                 } else {
-                    console.warn(`Falha linha ${i+1}: ${res.msg}`);
+                    console.warn(`Falha linha ${i + 1}: ${res.msg}`);
                     countErros++;
                 }
             }
@@ -825,17 +920,17 @@ async function processarArquivoCSV(file) {
         // --- PASSO 3: Finalização ---
         mostrarAlerta('Cadastro feito com sucesso', 'success');
 
-        listarAlunos(); 
+        listarAlunos();
 
         // Fecha modal e limpa inputs (CORREÇÃO AQUI: Buscando os elementos novamente)
         const modal = document.querySelector('.fileBody');
-        if(modal) modal.style.display = 'none';
-        
+        if (modal) modal.style.display = 'none';
+
         const inputEl = document.getElementById('inputFileAlunos');
-        if(inputEl) inputEl.value = '';
-        
+        if (inputEl) inputEl.value = '';
+
         const displayEl = document.getElementById('fileNameDisplay');
-        if(displayEl) displayEl.innerText = "Nenhum arquivo selecionado";
+        if (displayEl) displayEl.innerText = "Nenhum arquivo selecionado";
 
     } catch (erro) {
         console.error(erro);
@@ -860,14 +955,14 @@ async function importarUnico(ra, nome, idTurma) {
 
         // 1. Verificar/Criar Estudante
         const check = await fetch('/estudante/verificar', {
-            method: 'POST', headers: {'Content-Type': 'application/json'},
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ra: ra })
         });
         const checkData = await check.json();
 
         if (checkData.sucesso !== false) {
             const create = await fetch('/estudante/cadastro', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ra: ra, nome: nome })
             });
             if (!create.ok) return { sucesso: false, msg: "Erro ao criar estudante" };
@@ -876,7 +971,7 @@ async function importarUnico(ra, nome, idTurma) {
 
         // 2. Matricular
         const verMat = await fetch('/matricula/verificar', {
-            method: 'POST', headers: {'Content-Type': 'application/json'},
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ fk_id_turma: idTurma, fk_id_estudante: ra })
         });
         const verMatData = await verMat.json();
@@ -886,7 +981,7 @@ async function importarUnico(ra, nome, idTurma) {
         }
 
         const cadMat = await fetch('/matricula/cadastro', {
-            method: 'POST', headers: {'Content-Type': 'application/json'},
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ fk_id_turma: idTurma, fk_id_estudante: ra })
         });
 
