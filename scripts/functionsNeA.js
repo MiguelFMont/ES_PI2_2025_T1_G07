@@ -725,15 +725,41 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Carregar componentes no select
+    // Carregar componentes no select, filtrados pela disciplina
     async function carregarComponentesNoSelect() {
         selectCompToDelete.innerHTML = '<option value="">Carregando...</option>';
         try {
+            // Busca a turma atual
+            const turmaEl = document.querySelector('.tumaLogin') || document.querySelector('.turmaLogin');
+            const turmaNome = turmaEl ? turmaEl.innerText.trim() : null;
+
+            // Busca a disciplina da turma
+            let fk_disciplina = null;
+            if (turmaNome) {
+                const respTurmas = await fetch('/turma/all');
+                if (respTurmas.ok) {
+                    const turmas = await respTurmas.json();
+                    const listaTurmas = Array.isArray(turmas) ? turmas : (turmas.turmas || []);
+                    const turmaObj = listaTurmas.find(t => (t.nome && t.nome.trim() === turmaNome));
+                    if (turmaObj) {
+                        fk_disciplina = turmaObj.fk_disciplina_codigo || turmaObj.FK_DISCIPLINA_CODIGO;
+                    }
+                }
+            }
+
+            // Busca todos os componentes
             const resp = await fetch('/componente-nota/all');
             if (resp.ok) {
                 const lista = await resp.json();
-                if (Array.isArray(lista) && lista.length > 0) {
-                    selectCompToDelete.innerHTML = lista.map(comp =>
+                
+                // Filtra componentes pela disciplina
+                let componentesFiltrados = lista;
+                if (fk_disciplina) {
+                    componentesFiltrados = lista.filter(c => String(c.fk_disciplina_codigo) === String(fk_disciplina));
+                }
+
+                if (Array.isArray(componentesFiltrados) && componentesFiltrados.length > 0) {
+                    selectCompToDelete.innerHTML = componentesFiltrados.map(comp =>
                         `<option value="${comp.id_componente}">${comp.sigla ? comp.sigla : comp.nome}</option>`
                     ).join('');
                 } else {
@@ -743,6 +769,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 selectCompToDelete.innerHTML = '<option value="">Erro ao carregar</option>';
             }
         } catch (error) {
+            console.error('Erro ao carregar componentes:', error);
             selectCompToDelete.innerHTML = '<option value="">Erro ao carregar</option>';
         }
     }
