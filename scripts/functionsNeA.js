@@ -54,8 +54,80 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Carrega a lista de componentes ao iniciar a página
     listarComponentes();
+    // Carrega a tabela de notas dinâmica
+    carregarTabelaNotas();
 });
 
+// ============================================================
+// TABELA DE NOTAS DINÂMICA
+// ============================================================
+async function carregarTabelaNotas() {
+    const tabela = document.querySelector('.itensNotas table');
+    if (!tabela) return;
+
+    // Busca componentes de nota da disciplina da turma atual
+    const turmaEl = document.querySelector('.tumaLogin') || document.querySelector('.turmaLogin');
+    const turmaNome = turmaEl ? turmaEl.innerText.trim() : null;
+
+    // Busca turmas para pegar fk_disciplina_codigo
+    let fk_disciplina = null;
+    if (turmaNome) {
+        const respTurmas = await fetch('/turma/all');
+        if (respTurmas.ok) {
+            const turmas = await respTurmas.json();
+            const listaTurmas = Array.isArray(turmas) ? turmas : (turmas.turmas || []);
+            let turmaObj = listaTurmas.find(t => (t.nome && t.nome.trim() === turmaNome));
+            if (!turmaObj) turmaObj = listaTurmas.find(t => (t.nome && turmaNome.includes(t.nome)) || (t.nome && t.nome.includes(turmaNome)));
+            if (turmaObj) fk_disciplina = turmaObj.fk_disciplina_codigo || turmaObj.FK_DISCIPLINA_CODIGO;
+        }
+    }
+
+    // Busca componentes
+    let componentes = [];
+    const respComp = await fetch('/componente-nota/all');
+    if (respComp.ok) {
+        const lista = await respComp.json();
+        componentes = fk_disciplina ? lista.filter(c => String(c.fk_disciplina_codigo) === String(fk_disciplina)) : lista;
+    }
+
+    // Busca alunos
+    let alunos = [];
+    const respAlunos = await fetch('/estudante/all');
+    if (respAlunos.ok) {
+        alunos = await respAlunos.json();
+    }
+
+    // Monta o thead
+    const thead = tabela.querySelector('thead');
+    if (thead) {
+        let ths = '<tr>';
+        ths += '<th>RA</th>';
+        ths += '<th>Nome</th>';
+        componentes.forEach(comp => {
+            ths += `<th class="siglaProvaTable">${comp.sigla || comp.nome}</th>`;
+        });
+        ths += '<th class="siglaProvaTable">Média</th>';
+        ths += '</tr>';
+        thead.innerHTML = ths;
+    }
+
+    // Monta o tbody
+    const tbody = tabela.querySelector('tbody');
+    if (tbody) {
+        let trs = '';
+        alunos.forEach(aluno => {
+            trs += '<tr>';
+            trs += `<td class="raTable">${aluno.ra}</td>`;
+            trs += `<td class="nameTable">${aluno.nome}</td>`;
+            componentes.forEach(comp => {
+                trs += `<td class="notaSiglaTable"><input type="text" class="input-nota" placeholder="-" step="0.1" min="0" max="10" disabled></td>`;
+            });
+            trs += '<td class="notaSiglaTable mediaNotaTable"></td>';
+            trs += '</tr>';
+        });
+        tbody.innerHTML = trs;
+    }
+}
 // ============================================================
 // FUNÇÃO PRINCIPAL: LISTAR ALUNOS
 // ============================================================
@@ -147,7 +219,7 @@ async function cadastrarComponente() {
     const descricao = descricaoEl ? descricaoEl.value.trim() : '';
 
     if (!nome) {
-        alert('Por favor, informe o nome do componente.');
+        mostrarAlerta('Por favor, informe o nome do componente.', 'warning');
         return;
     }
 
@@ -158,14 +230,14 @@ async function cadastrarComponente() {
         // Identifica a turma atual para descobrir a disciplina
         const turmaEl = document.querySelector('.tumaLogin') || document.querySelector('.turmaLogin');
         if (!turmaEl) {
-            alert('Não foi possível identificar a turma atual.');
+            mostrarAlerta('Não foi possível identificar a turma atual.', 'error');
             return;
         }
         const turmaNome = turmaEl.innerText.trim();
 
         const respTurmas = await fetch('/turma/all');
         if (!respTurmas.ok) {
-            alert('Erro ao buscar turmas no servidor.');
+            mostrarAlerta('Erro ao buscar turmas no servidor.', 'error');
             return;
         }
 
@@ -214,6 +286,8 @@ async function cadastrarComponente() {
             if (addComponents) addComponents.style.display = 'none';
             limparFormularioComponente();
             await listarComponentes();
+            // Recarrega a tabela de notas com a nova coluna
+            await carregarTabelaNotas();
         } else {
             const err = await resp.json().catch(() => ({}));
             alert('Erro ao cadastrar componente: ' + (err.error || resp.status));
@@ -630,7 +704,7 @@ function configurarBotoesImportacao() {
             e.preventDefault();
             
             if (!inputFile || !inputFile.files || inputFile.files.length === 0) {
-                alert("Por favor, selecione um arquivo CSV.");
+                mostrarAlerta("Por favor, selecione um arquivo CSV.", 'warning');
                 return;
             }
 
@@ -703,8 +777,8 @@ async function processarArquivoCSV(file) {
         }
 
         // --- PASSO 3: Finalização ---
-        alert(`Importação Concluída!\n\n🆕 Novos Alunos: ${countCriados}\n✅ Matriculados: ${countMatriculados}\n❌ Erros: ${countErros}`);
-        
+        mostrarAlerta('Cadastro feito com sucesso', 'success');
+
         listarAlunos(); 
 
         // Fecha modal e limpa inputs (CORREÇÃO AQUI: Buscando os elementos novamente)
