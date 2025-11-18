@@ -384,7 +384,7 @@ body {
 .fileBody {
     height: 100%;
     width: 100%;
-    position: fixed;
+    position: absolute;
     overflow: hidden;
     z-index: 100000;
     display: none;
