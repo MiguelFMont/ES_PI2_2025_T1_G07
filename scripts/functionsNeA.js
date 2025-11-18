@@ -164,7 +164,7 @@ async function carregarTabelaNotas() {
                     matriculasDaTurma.some(m => String(m.fk_id_estudante) === String(aluno.ra))
                 );
             }
-        
+
         }
     } catch (error) {
         console.error("Erro ao buscar alunos matriculados:", error);
@@ -313,6 +313,9 @@ async function listarAlunos() {
                                 <button onclick="deletarAluno(${aluno.ra})" class="deletAluno">
                                     <i class="ph ph-trash"></i> Excluir
                                 </button>
+                                <button class="exportarAluno">
+                                    <i class="ph ph-export"></i> Exportar
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -391,7 +394,7 @@ async function cadastrarComponente() {
         }
 
         if (!turmaObj) {
-            alert(`Turma "${turmaNome}" não encontrada no servidor.`);
+            mostrarAlerta(`Turma "${turmaNome}" não encontrada no servidor.`, 'erro');
             return;
         }
 
@@ -407,7 +410,7 @@ async function cadastrarComponente() {
         if (checkResp.ok) {
             const checkData = await checkResp.json();
             if (checkData.sucesso === false) {
-                alert('Componente já cadastrado: ' + (checkData.componente?.nome || ''));
+                mostrarAlerta('Componente já cadastrado: ' + (checkData.componente?.nome || ''), 'aviso');
                 return;
             }
         }
@@ -421,7 +424,7 @@ async function cadastrarComponente() {
 
         if (resp.ok) {
             const data = await resp.json();
-            alert('Componente cadastrado com sucesso! ID: ' + (data.id_componente || data.id));
+            mostrarAlerta('Componente cadastrado com sucesso! ID: ' + (data.id_componente || data.id), 'success');
             // Fecha formulário e atualiza lista
             const addComponents = document.querySelector('.addComponents');
             if (addComponents) addComponents.style.display = 'none';
@@ -431,12 +434,12 @@ async function cadastrarComponente() {
             await carregarTabelaNotas();
         } else {
             const err = await resp.json().catch(() => ({}));
-            alert('Erro ao cadastrar componente: ' + (err.error || resp.status));
+            mostrarAlerta('Erro ao cadastrar componente: ' + (err.error || resp.status), 'erro');
         }
 
     } catch (error) {
         console.error('Erro ao cadastrar componente:', error);
-        alert('Erro ao cadastrar componente. Veja console.');
+        mostrarAlerta('Erro ao cadastrar componente. Veja console.', 'erro');
     } finally {
         if (load) load.style.display = 'none';
     }
@@ -532,7 +535,7 @@ async function handleSaveButton() {
     const nome = nomeInput.value.trim();
 
     if (!ra || !nome) {
-        alert("Por favor, preencha o RA e o Nome.");
+        mostrarAlerta("Por favor, preencha o RA e o Nome.", 'aviso');
         return;
     }
 
@@ -576,19 +579,19 @@ async function cadastrarAluno(ra, nome) {
         });
 
         if (response.ok) {
-            alert('Aluno cadastrado com sucesso!');
+            mostrarAlerta('Aluno cadastrado com sucesso!', 'success');
             limparFormulario();
             listarAlunos(); // Atualiza a tabela
             // Depois de criar o estudante, matricula-o na turma atual
             await matricularAluno(ra);
         } else {
             const errorData = await response.json();
-            alert('Erro ao cadastrar: ' + errorData.error);
+            mostrarAlerta('Erro ao cadastrar: ' + errorData.error, 'erro');
         }
 
     } catch (error) {
         console.error(error);
-        alert('Erro de conexão.');
+        mostrarAlerta('Erro de conexão.', 'erro');
     } finally {
         if (load) load.style.display = 'none';
     }
@@ -645,17 +648,17 @@ async function atualizarAluno(ra, nome) {
         });
 
         if (response.ok) {
-            alert('Aluno atualizado com sucesso!');
+            mostrarAlerta('Aluno atualizado com sucesso!', 'success');
             limparFormulario();
             listarAlunos();
             // Após atualizar, tenta matricular o aluno na turma atual
             await matricularAluno(ra);
         } else {
-            alert('Erro ao atualizar.');
+            mostrarAlerta('Erro ao atualizar.', 'erro');
         }
     } catch (error) {
         console.error(error);
-        alert('Erro de conexão.');
+        mostrarAlerta('Erro de conexão.', 'erro');
     } finally {
         if (load) load.style.display = 'none';
     }
@@ -671,7 +674,7 @@ async function matricularAluno(ra) {
     try {
         const turmaAtual = obterTurmaAtual();
         if (!turmaAtual) {
-            alert('Não foi possível identificar a turma atual.');
+            mostrarAlerta('Não foi possível identificar a turma atual.', 'erro');
             return;
         }
 
@@ -686,13 +689,13 @@ async function matricularAluno(ra) {
         });
 
         if (!verifyResp.ok) {
-            alert('Erro ao verificar matrícula.');
+            mostrarAlerta('Erro ao verificar matrícula.', 'erro');
             return;
         }
 
         const verifyData = await verifyResp.json();
         if (verifyData.sucesso === false) {
-            alert('Aluno já matriculado nesta turma.');
+            mostrarAlerta('Aluno já matriculado nesta turma.', 'aviso');
             return;
         }
 
@@ -705,19 +708,19 @@ async function matricularAluno(ra) {
 
         if (cadastroResp.ok) {
             const data = await cadastroResp.json();
-            alert('Matrícula realizada com sucesso! ID: ' + (data.id_matricula || data.id || '---'));
+            mostrarAlerta('Matrícula realizada com sucesso! ID: ' + (data.id_matricula || data.id || '---'), 'success');
             // Recarrega listas
             await listarAlunos();
             await carregarTabelaNotas();
         } else if (cadastroResp.status === 409) {
-            alert('Matrícula já existe.');
+            mostrarAlerta('Matrícula já existe.', 'aviso');
         } else {
-            alert('Erro ao cadastrar matrícula.');
+            mostrarAlerta('Erro ao cadastrar matrícula.', 'erro');
         }
 
     } catch (error) {
         console.error('Erro na matrícula:', error);
-        alert('Erro ao realizar matrícula.');
+        mostrarAlerta('Erro ao realizar matrícula.', 'erro');
     } finally {
         if (load) load.style.display = 'none';
     }
@@ -727,9 +730,9 @@ async function matricularAluno(ra) {
 // EXCLUSÃO (DELETE)
 // ============================================================
 async function deletarAluno(ra) {
-    if (!confirm(`Tem certeza que deseja excluir o aluno com RA ${ra}?`)) {
-        return;
-    }
+    mostrarConfirm(`Tem certeza que deseja excluir o aluno com RA ${ra}?`, (confirmado) => {
+        if (!confirmado) return;
+    });
 
     const load = document.querySelector('.load');
     if (load) load.style.display = 'flex';
@@ -743,10 +746,10 @@ async function deletarAluno(ra) {
         });
 
         if (response.ok) {
-            alert('Aluno excluído com sucesso.');
+            mostrarAlerta('Aluno excluído com sucesso.');
             listarAlunos();
         } else {
-            alert('Erro ao excluir aluno.');
+            mostrarAlerta('Erro ao excluir aluno.');
         }
     } catch (error) {
         console.error(error);
@@ -754,6 +757,93 @@ async function deletarAluno(ra) {
         if (load) load.style.display = 'none';
     }
 }
+
+// ===============================
+// DELETAR COMPONENTE DE NOTA
+// ===============================
+document.addEventListener('DOMContentLoaded', () => {
+    const btnDeleteComp = document.querySelector('.btnDeteleComp');
+    const deleteCompBody = document.querySelector('.deleteCompBody');
+    const closedDeleteComp = document.getElementById('closedDeleteComp');
+    const cancelDeleteComp = document.getElementById('cancelDeleteComp');
+    const confirmDeleteComp = document.getElementById('confirmDeleteComp');
+    const selectCompToDelete = document.getElementById('selectCompToDelete');
+
+    // Abrir modal ao clicar no botão
+    if (btnDeleteComp && deleteCompBody) {
+        btnDeleteComp.addEventListener('click', async () => {
+            deleteCompBody.style.display = 'flex';
+            await carregarComponentesNoSelect();
+        });
+    }
+    // Fechar modal
+    if (closedDeleteComp) {
+        closedDeleteComp.addEventListener('click', () => {
+            deleteCompBody.style.display = 'none';
+        });
+    }
+    if (cancelDeleteComp) {
+        cancelDeleteComp.addEventListener('click', () => {
+            deleteCompBody.style.display = 'none';
+        });
+    }
+    // Deletar componente
+    if (confirmDeleteComp) {
+        confirmDeleteComp.addEventListener('click', async () => {
+            const idComp = selectCompToDelete.value;
+            if (!idComp) {
+                mostrarAlerta('Selecione um componente para deletar.');
+                return;
+            }
+            mostrarConfirm('Tem certeza que deseja deletar este componente? Todas as notas associadas serão removidas!', (confirmado) => {
+                if (!confirmado) return;
+            });
+            const load = document.querySelector('.load');
+            if (load) load.style.display = 'flex';
+            try {
+                const resp = await fetch('/componente-nota/deletar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id_componente: idComp })
+                });
+                if (resp.ok) {
+                    mostrarAlerta('Componente deletado com sucesso!');
+                    deleteCompBody.style.display = 'none';
+                    await listarComponentes();
+                    await carregarTabelaNotas();
+                } else {
+                    mostrarAlerta('Erro ao deletar componente.');
+                }
+            } catch (error) {
+                mostrarAlerta('Erro na requisição.');
+            } finally {
+                if (load) load.style.display = 'none';
+            }
+        });
+    }
+
+    // Carregar componentes no select
+    async function carregarComponentesNoSelect() {
+        selectCompToDelete.innerHTML = '<option value="">Carregando...</option>';
+        try {
+            const resp = await fetch('/componente-nota/all');
+            if (resp.ok) {
+                const lista = await resp.json();
+                if (Array.isArray(lista) && lista.length > 0) {
+                    selectCompToDelete.innerHTML = lista.map(comp =>
+                        `<option value="${comp.id_componente}">${comp.sigla ? comp.sigla : comp.nome}</option>`
+                    ).join('');
+                } else {
+                    selectCompToDelete.innerHTML = '<option value="">Nenhum componente cadastrado</option>';
+                }
+            } else {
+                selectCompToDelete.innerHTML = '<option value="">Erro ao carregar</option>';
+            }
+        } catch (error) {
+            selectCompToDelete.innerHTML = '<option value="">Erro ao carregar</option>';
+        }
+    }
+});
 
 // ============================================================
 // UTILITÁRIOS
@@ -934,7 +1024,7 @@ async function processarArquivoCSV(file) {
 
     } catch (erro) {
         console.error(erro);
-        alert("Erro na importação: " + erro.message);
+        mostrarAlerta("Erro na importação: " + erro.message, 'erro');
     } finally {
         if (load) load.style.display = 'none';
     }

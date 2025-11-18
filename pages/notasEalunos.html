@@ -75,19 +75,54 @@
                     </div>
                 </div>
                 <div class="provasCamp">
-                    <div class="editCompBody">
-                        <button id="closedEditComp">
-                            <i class="ph ph-x"></i>
-                        </button>
-                        <!-- <input type="text" id="nomeComp" placeholder=" ">
-                        <label for="nomeComp">Nome do componente</label> -->
+                    <!-- <div class="editCompBody">
+                        <div class="headerEditComp">
+                            <h2>Editar Componentes</h2>
+                            <button id="closedEditComp">
+                                <i class="ph ph-x"></i>
+                            </button>
+                        </div>
+                        <div class="campCompEdit">
+                            <input type="text" id="nomeComp" placeholder=" ">
+                            <label for="nomeComp">Nome do componente</label>
+                        </div>
+                        <div class="campCompEdit">
+                            <input type="text" id="nomeComp" placeholder=" ">
+                            <label for="nomeComp">Sigla do componente</label>
+                        </div>
+                        <div class="btnsEditComp">
+                            <button id="cancelEditComp">Cancelar</button>
+                            <button id="saveEditComp">Salvar</button>
+                        </div>
+                    </div> -->
+                    <!-- Modal para deletar componente de nota -->
+                    <div class="deleteCompBody">
+                        <div class="headerDeleteComp">
+                            <h2>Deletar Componente</h2>
+                            <button id="closedDeleteComp">
+                                <i class="ph ph-x"></i>
+                            </button>
+                        </div>
+                        <div class="selectCompDelete">
+                            <label for="selectCompToDelete">Selecione o componente:</label>
+                            <select id="selectCompToDelete">
+                                <option value="">Carregando...</option>
+                            </select>
+                        </div>
+                        <div class="btnsDeleteComp">
+                            <button id="cancelDeleteComp">Cancelar</button>
+                            <button id="confirmDeleteComp">Deletar</button>
+                        </div>
                     </div>
                     <div class="headerComponents">
                         <h2>Componentes de Nota</h2>
                         <div class="buttonsComponents">
-                            <button class="btnEditComp">
-                                <i class="ph ph-pencil-simple"></i>
+                            <button class="btnDeteleComp">
+                                <i class="ph ph-trash"></i>
                             </button>
+                            <!-- <button class="btnEditComp">
+                                <i class="ph ph-pencil-simple"></i>
+                            </button> -->
                             <button class="btnAddComp">
                                 <i class="ph ph-plus"></i>
                                 Adicionar
@@ -170,6 +205,9 @@
                                 </button>
                                 <button class="deletAluno">
                                     <i class="ph ph-trash"></i> Excluir
+                                </button>
+                                <button class="exportarAluno">
+                                    <i class="ph ph-export"></i> Exportar
                                 </button>
                             </div>
                         </div>

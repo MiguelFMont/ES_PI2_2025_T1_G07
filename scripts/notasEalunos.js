@@ -34,32 +34,42 @@ document.addEventListener('DOMContentLoaded', () => {
     var countClickAdd = 0;
 
     addComp.addEventListener('click', () => {
-        document.querySelector('.addComponents').style.display = 'flex'
-        document.querySelector('.addComponents').style.gap = '20px'
+        const addComponentsPanel = document.querySelector('.addComponents');
+        
+        addComponentsPanel.style.display = 'flex';
+        addComponentsPanel.style.flexDirection = 'column';
+        addComponentsPanel.style.gap = '20px';
         countClickAdd++;
 
         if(countClickAdd == 2) {
-            document.querySelector('.addComponents').style.display = 'none'
+            document.querySelector('.addComponents').style.display = 'none';
             countClickAdd = 0;
         }
     });
 
     cancelComp.addEventListener('click', () => {
-        document.querySelector('.addComponents').style.display = 'none'
+        document.querySelector('.addComponents').style.display = 'none';
         countClickAdd = 0;
     });
 
-    const openEditComp = document.querySelector('.btnEditComp');
-    const closedEditComp = document.getElementById('closedEditComp');
-    const bodyCompEdit = document.querySelector('.editCompBody')
+    ///////////////////// edição de componente /////////////////////
+    // const openEditComp = document.querySelector('.btnEditComp');
+    // const closedEditComp = document.getElementById('closedEditComp');
+    // const bodyCompEdit = document.querySelector('.editCompBody');
+    // const cancelEditComp =document.getElementById('cancelEditComp');
 
-    openEditComp.addEventListener('click', () => {
-        bodyCompEdit.style.display = 'block'
-    })
+    // openEditComp.addEventListener('click', () => {
+    //     bodyCompEdit.style.display = 'flex';
+    // });
 
-    closedEditComp.addEventListener('click', () => {
-        bodyCompEdit.style.display = 'none'
-    })
+    // closedEditComp.addEventListener('click', () => {
+    //     bodyCompEdit.style.display = 'none';
+    // });
+
+    // cancelEditComp.addEventListener('click', () => {
+    //     bodyCompEdit.style.display = 'none';
+    // });
+    //////////////////////////////////////////////////////////////
 
     const oneEditComp = document.getElementById('oneEditComp');
     const allEditComp = document.getElementById('allEditComp');
@@ -95,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     allEditComp.addEventListener('click', async () => {
         if (!modoEdicao) {
-            alert('Ative o modo edição primeiro clicando em "Editar notas".');
+            mostrarAlerta('Ative o modo edição primeiro clicando em "Editar notas".', 'info');
             return;
         }
         await salvarNotas();
@@ -240,7 +250,7 @@ async function salvarNotas() {
         }
 
         if (!id_turma) {
-            alert('Erro ao identificar a turma.');
+            mostrarAlerta('Erro ao identificar a turma.', 'error');
             if (load) load.style.display = 'none';
             return;
         }
@@ -275,7 +285,7 @@ async function salvarNotas() {
         // 4. Percorre tabela e coleta notas
         const tbody = document.querySelector('.itensNotas tbody');
         if (!tbody) {
-            alert('Erro ao acessar a tabela de notas.');
+            mostrarAlerta('Erro ao acessar a tabela de notas.', 'error');
             if (load) load.style.display = 'none';
             return;
         }
@@ -312,7 +322,7 @@ async function salvarNotas() {
 
         // 5. Envia notas
         if (notasParaSalvar.length === 0) {
-            alert('Nenhuma nota para salvar.');
+            mostrarAlerta('Nenhuma nota para salvar.', 'info');
             if (load) load.style.display = 'none';
             return;
         }
@@ -352,11 +362,11 @@ async function salvarNotas() {
         oneEditComp.style.color = 'var(--black)';
         oneEditComp.style.border = '1px solid var(--lightgrey)';
 
-        alert(`Notas salvas!\\n✅ Sucessos: ${sucessos}\\n❌ Erros: ${erros}`);
+        mostrarAlerta(`Notas salvas!\n✅ Sucessos: ${sucessos}\n❌ Erros: ${erros}`, 'success');
 
     } catch (error) {
         console.error('Erro ao salvar notas:', error);
-        alert('Erro ao salvar notas. Veja o console.');
+        mostrarAlerta('Erro ao salvar notas. Veja o console.', 'error');
     } finally {
         if (load) load.style.display = 'none';
     }
