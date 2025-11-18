@@ -1141,7 +1141,7 @@ app.post('/nota/cadastro', async (req: Request, res: Response) => {
     try {
         const { id_nota, fk_id_componente, fk_id_estudante, fk_id_turma, valor_nota } = req.body;
 
-        if (!fk_id_componente || !fk_id_estudante || !fk_id_turma || !valor_nota) {
+        if (!fk_id_componente || !fk_id_estudante || !fk_id_turma || isNaN(valor_nota)) {
             console.log("❌ Campos obrigatórios faltando:", { fk_id_componente, fk_id_estudante, fk_id_turma, valor_nota });
             return res.status(400).json({
                 error: "Os campos fk_disciplina_codigo e nome são obrigatórios!"
@@ -1193,13 +1193,7 @@ app.get('/nota/id/:id_nota', async (req: Request, res: Response) => {
 app.get('/nota/all', async (req: Request, res: Response) => {
     try {
         const notas = await getAllNotas();
-        if (notas && notas.length > 0) {
-            res.json(notas);
-        } else {
-            res.status(404).json({
-                message: "Não há notas cadastradas."
-            });
-        }
+        res.json(notas || []);
     } catch (error) {
         console.error("❌ Erro ao buscar todas as notas:", error);
         res.status(500).json({

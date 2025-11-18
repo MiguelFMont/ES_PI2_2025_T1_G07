@@ -120,12 +120,58 @@ async function carregarTabelaNotas() {
             trs += `<td class="raTable">${aluno.ra}</td>`;
             trs += `<td class="nameTable">${aluno.nome}</td>`;
             componentes.forEach(comp => {
-                trs += `<td class="notaSiglaTable"><input type="text" class="input-nota" placeholder="-" step="0.1" min="0" max="10" disabled></td>`;
+                trs += `<td class="notaSiglaTable"><input type="text" class="input-nota" data-id-componente="${comp.id_componente}" data-id-estudante="${aluno.ra}" placeholder="-" step="0.1" min="0" max="10" disabled></td>`;
             });
             trs += '<td class="notaSiglaTable mediaNotaTable"></td>';
             trs += '</tr>';
         });
         tbody.innerHTML = trs;
+    }
+
+    // Carrega notas existentes do banco de dados
+    await carregarNotasExistentes();
+}
+
+// ============================================================
+// CARREGAR NOTAS EXISTENTES DO BANCO DE DADOS
+// ============================================================
+async function carregarNotasExistentes() {
+    try {
+        const respNotas = await fetch('/nota/all');
+        if (!respNotas.ok) {
+            console.warn('Erro ao buscar notas:', respNotas.statusText);
+            return;
+        }
+
+        const notas = await respNotas.json();
+        if (!Array.isArray(notas)) {
+            console.warn('Resposta de notas não é um array');
+            return;
+        }
+
+        // Percorre as notas e preenche os inputs correspondentes
+        notas.forEach(nota => {
+            const input = document.querySelector(
+                `.input-nota[data-id-componente="${nota.fk_id_componente}"][data-id-estudante="${nota.fk_id_estudante}"]`
+            );
+            
+            if (input) {
+                // Converte o valor para formato brasileiro (com vírgula)
+                const valorFormatado = String(nota.valor_nota).replace('.', ',');
+                input.value = valorFormatado;
+            }
+        });
+
+        // Recalcula as médias depois de carregar as notas
+        const tbody = document.querySelector('.itensNotas tbody');
+        if (tbody) {
+            const linhas = tbody.querySelectorAll('tr');
+            linhas.forEach(linha => {
+                calcularMedia(linha);
+            });
+        }
+    } catch (error) {
+        console.error('Erro ao carregar notas existentes:', error);
     }
 }
 // ============================================================

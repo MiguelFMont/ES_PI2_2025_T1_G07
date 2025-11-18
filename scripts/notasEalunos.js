@@ -123,10 +123,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- CÓDIGO DE NOTAS (COM A CORREÇÃO) ---
+    const tabelaBody = document.querySelector('.itensNotas tbody');
 
-    function calcularMedia(row) {
-    
+    if (tabelaBody) {
+
+        tabelaBody.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && event.target.classList.contains('input-nota')) {
+                event.preventDefault(); 
+                processarNota(event.target);
+                event.target.blur(); 
+            }
+        });
+
+        tabelaBody.addEventListener('blur', (event) => {
+            if (event.target.classList.contains('input-nota')) {
+                processarNota(event.target);
+            }
+        }, true);
+
+    } else {
+        console.warn("AVISO: Tabela '.itensNotas tbody' não encontrada. A funcionalidade de notas não será ativada.");
+    }
+});
+
+// ============================================================
+// FUNÇÕES GLOBAIS PARA CÁLCULO E PROCESSAMENTO DE NOTAS
+// ============================================================
+function calcularMedia(row) {
     const inputs = row.querySelectorAll('.input-nota');
     const mediaCell = row.querySelector('.mediaNotaTable');
 
@@ -148,25 +171,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (inputs.length > 0) {
-        
         const media = total / inputs.length; 
 
         mediaCell.textContent = media.toFixed(2).replace('.', ',');
 
         if (media < 5.0) {
             mediaCell.classList.add('baixa');
+            mediaCell.classList.remove('alta');
         } else {
+            mediaCell.classList.add('alta');
             mediaCell.classList.remove('baixa');
         }
-        if (media >= 5.0) {
-            mediaCell.classList.add('alta');
-        } else {
-            mediaCell.classList.remove('alta')
-        }
-        
     } else {
         mediaCell.textContent = "-";
         mediaCell.classList.remove('baixa');
+        mediaCell.classList.remove('alta');
     }
 }
 
@@ -197,28 +216,6 @@ function processarNota(inputElement) {
         calcularMedia(row);
     }
 }
-    const tabelaBody = document.querySelector('.itensNotas tbody');
-
-    if (tabelaBody) {
-
-        tabelaBody.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter' && event.target.classList.contains('input-nota')) {
-                event.preventDefault(); 
-                processarNota(event.target);
-                event.target.blur(); 
-            }
-        });
-
-        tabelaBody.addEventListener('blur', (event) => {
-            if (event.target.classList.contains('input-nota')) {
-                processarNota(event.target);
-            }
-        }, true);
-
-    } else {
-        console.warn("AVISO: Tabela '.itensNotas tbody' não encontrada. A funcionalidade de notas não será ativada.");
-    }
-});
 
 // ============================================================
 // SALVAR NOTAS NO BANCO DE DADOS
