@@ -620,7 +620,7 @@ function criarCardTurma(turma) {
     // Busca informações relacionadas
     const disciplina = AppState.disciplinas.find(d => d.codigo == turma.fk_disciplina_codigo);
     const nomeDisciplina = disciplina ? disciplina.nome : "Disciplina não encontrada";
-    
+
     const nomeTurma = turma.nome_turma || "Turma sem nome";
     const localAula = turma.local_aula || "Local não definido";
     const diaSemana = turma.dia_semana || "Dia não definido";
@@ -645,13 +645,13 @@ function criarCardTurma(turma) {
                 </div>
             </div>
             <div class="turma-actions">
-                <button class="btn-action btn-edit" data-turma-id="${turma.id}">
-                    <i class="ph ph-pencil-simple"></i>
-                </button>
-                <button class="btn-action btn-delete" data-turma-id="${turma.id}">
-                    <i class="ph ph-trash"></i>
-                </button>
-            </div>
+                <button class="btn-action editCard" data-turma-id="${turma.id}"> 
+                    <i class="ph ph-pencil-simple"></i>
+                </button>
+                <button class="btn-action deletCard" data-turma-id="${turma.id}">
+                    <i class="ph ph-trash"></i>
+                </button>
+            </div>
         </div>
 
         <div class="turma-details">
@@ -689,14 +689,14 @@ function criarCardTurma(turma) {
 
 function deletarTurmaCard(idTurma) {
     const turma = AppState.turmas.find(t => t.id == idTurma);
-    
+
     if (!turma) {
         mostrarAlerta("Turma não encontrada!", "erro");
         return;
     }
 
     const nomeTurma = turma.nome_turma || "esta turma";
-    
+
     mostrarConfirm(`Tem certeza que deseja deletar ${nomeTurma}?`, (confirmado) => {
         if (confirmado) {
             deletarTurmaDB(idTurma);
@@ -706,9 +706,9 @@ function deletarTurmaCard(idTurma) {
 
 function selecionarTurmaParaNotas(idTurma) {
     console.log(`📝 Selecionando turma para gerenciamento de notas: ${idTurma}`);
-    
+
     const turmaCompleta = get.getTurmaCompletaPorId(idTurma);
-    
+
     if (!turmaCompleta) {
         mostrarAlerta("Turma não encontrada!", "erro");
         return;
@@ -716,9 +716,9 @@ function selecionarTurmaParaNotas(idTurma) {
 
     // Armazena no AppState
     AppState.turmaSelecionada = turmaCompleta;
-    
+
     console.log("✅ Turma selecionada no AppState:", AppState.turmaSelecionada);
-    
+
     // Redireciona para a página de gerenciamento de notas
     window.location.href = "/gerenciar-notas";
 }
@@ -766,7 +766,7 @@ function renderizarCardsTurmas() {
         containerCards.style.display = "none";
         containerCards.style.opacity = "0";
         containerCards.style.pointerEvents = "none";
-        
+
         console.log("ℹ️ Nenhuma turma para renderizar");
         return;
     }
@@ -791,7 +791,7 @@ function renderizarCardsTurmas() {
     containerCards.style.pointerEvents = "all";
 
     const fragmento = document.createDocumentFragment();
-    
+
     AppState.turmas.forEach(turma => {
         const card = criarCardTurma(turma);
         fragmento.appendChild(card);
@@ -2238,7 +2238,7 @@ function editarDisciplina(codigoDisciplina) {
 
 function editarTurmaCard(idTurma) {
     console.log(`✏️ Editando turma ID: ${idTurma}`);
-    
+
     const turma = AppState.turmas.find(t => t.id == idTurma);
     if (!turma) {
         mostrarAlerta("Turma não encontrada!", "erro");
@@ -2655,10 +2655,10 @@ const get = (() => {
         return disciplina ? disciplina.nome : "Disciplina não encontrada";
     }
 
-     function getTurmaPorId(id) {
+    function getTurmaPorId(id) {
         return AppState.turmas.find(t => t.id == id) || null;
     }
-    
+
     function getTurmaCompletaPorId(id) {
         const turma = AppState.turmas.find(t => t.id == id);
         if (!turma) return null;
@@ -2674,7 +2674,7 @@ const get = (() => {
             dia_semana: turma.dia_semana || "",
             hora: turma.hora || "",
             qtd_alunos: turma.qtd_alunos || "0",
-            
+
             disciplina: {
                 codigo: disciplina?.codigo || "",
                 nome: disciplina?.nome || "Disciplina não encontrada",
@@ -2682,7 +2682,7 @@ const get = (() => {
                 periodo: disciplina?.periodo || "",
                 id_curso: disciplina?.id_curso || ""
             },
-            
+
             timestamp: new Date().toISOString()
         };
     }

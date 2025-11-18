@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
-    
+
     function abrirModal(modal) {
         if (modal) {
             modal.classList.add('show');
@@ -208,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnCriarCurso) {
         btnCriarCurso.addEventListener("click", salvarCurso);
     }
-    
+
     // --- Botão Criar Disciplina ---
     const criarDisciplinaBtn = document.querySelector('#createBtnDisciplina');
     if (criarDisciplinaBtn) {
@@ -287,7 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
             fecharModalAdicionarDisciplina();
         });
     }
-    
+
     // ===================================================
     //          DELEGAÇÃO DE EVENTOS (Otimizado)
     // ===================================================
@@ -296,131 +296,134 @@ document.addEventListener('DOMContentLoaded', () => {
      * ✅ NOVO: Vincula todos os eventos de clique principais usando delegação.
      */
     function vincularEventosGlobais() {
-    console.log("🔗 Vinculando eventos globais (Delegação)...");
-    
-    const cardsContainer = document.querySelector(".pagesContent");
-    if (!cardsContainer) return;
+        console.log("🔗 Vinculando eventos globais (Delegação)...");
 
-    cardsContainer.addEventListener('click', (e) => {
-        
-        // --- Eventos de Edição ---
-        const btnEdit = e.target.closest('.editCard');
-        if (btnEdit) {
-            e.preventDefault();
-            e.stopPropagation();
+        const cardsContainer = document.querySelector(".pagesContent");
+        if (!cardsContainer) return;
 
-            const card = btnEdit.closest('.contentCardIdt, .turma-card'); // ✅ ADICIONAR .turma-card
-            if (!card) return;
+        cardsContainer.addEventListener('click', (e) => {
 
-            if (card.closest('#instituicoesBody')) {
-                const id = card.dataset.id;
-                console.log(`DELEGAÇÃO: Editar Instituição ${id}`);
-                requestAnimationFrame(() => editarInstituicao(id));
+            // --- Eventos de Edição ---
+            const btnEdit = e.target.closest('.editCard'); // Agora funciona para turmas tbm
+            if (btnEdit) {
+                e.preventDefault();
+                e.stopPropagation();
 
-            } else if (card.closest('#cursosBody')) {
-                const id = card.dataset.id;
-                console.log(`DELEGAÇÃO: Editar Curso ${id}`);
-                requestAnimationFrame(() => editarCurso(id));
+                const card = btnEdit.closest('.contentCardIdt, .turma-card');
+                if (!card) return;
 
-            } else if (card.closest('#disciplinasBody')) {
-                const codigo = card.dataset.codigo;
-                console.log(`DELEGAÇÃO: Editar Disciplina ${codigo}`);
-                requestAnimationFrame(() => editarDisciplina(codigo));
-            
-            } else if (card.closest('#turmasBody')) {
-                const id = card.dataset.id; // ✅ ADICIONAR
-                console.log(`DELEGAÇÃO: Editar Turma ${id}`);
-                requestAnimationFrame(() => editarTurmaCard(id));
-            }
-            return;
-        }
-        
-        // --- Eventos de Deleção ---
-        const btnDelete = e.target.closest('.deletCard');
-        if (btnDelete) {
-            e.preventDefault();
-            e.stopPropagation();
+                if (card.closest('#instituicoesBody')) {
+                    const id = card.dataset.id;
+                    console.log(`DELEGAÇÃO: Editar Instituição ${id}`);
+                    requestAnimationFrame(() => editarInstituicao(id));
 
-            const card = btnDelete.closest('.contentCardIdt, .turma-card'); // ✅ ADICIONAR .turma-card
-            if (!card) return;
+                } else if (card.closest('#cursosBody')) {
+                    const id = card.dataset.id;
+                    console.log(`DELEGAÇÃO: Editar Curso ${id}`);
+                    requestAnimationFrame(() => editarCurso(id));
 
-            if (card.closest('#instituicoesBody')) {
-                const id = card.dataset.id;
-                const cursosEmInstituicao = get.getCursosPorInstituicao(id);
-                if (cursosEmInstituicao.length > 0) {
-                    mostrarAlerta("Não é possível deletar uma instituição que possui cursos vinculados.", "erro");
-                    return;
+                } else if (card.closest('#disciplinasBody')) {
+                    const codigo = card.dataset.codigo;
+                    console.log(`DELEGAÇÃO: Editar Disciplina ${codigo}`);
+                    requestAnimationFrame(() => editarDisciplina(codigo));
+
+                } else if (card.closest('#turmasBody')) {
+                    const id = card.dataset.id; // Pega o ID do card
+                    console.log(`DELEGAÇÃO: Editar Turma ${id}`);
+                    requestAnimationFrame(() => editarTurmaCard(id)); // Chama a função correta
                 }
-                mostrarConfirm(`Tem certeza que deseja deletar a instituição ${get.getNomeInstituicaoPorId(id)}?`, (confirmado) => {
-                    if (confirmado) deletarInstituicaoDB(id);
-                });
-
-            } else if (card.closest('#cursosBody')) {
-                const id = card.dataset.id;
-                const idInstituicao = card.dataset.instituicaoId;
-                const disciplinasEmCurso = get.getDisciplinasPorCurso(id);
-                if (disciplinasEmCurso.length > 0) {
-                    mostrarAlerta("Não é possível deletar um curso que possui disciplinas vinculadas.", "erro");
-                    return;
-                }
-                mostrarConfirm("Tem certeza que deseja deletar este curso?", (confirmado) => {
-                     if (confirmado) deletarCursoDB(id, idInstituicao);
-                });
-
-            } else if (card.closest('#disciplinasBody')) {
-                const codigo = card.dataset.codigo;
-                const turmasEmDisciplina = get.getTurmasPorDisciplina(codigo);
-                if (turmasEmDisciplina.length > 0) {
-                    mostrarAlerta("Não é possível deletar uma disciplina que possui turmas vinculadas.", "erro");
-                    return;
-                }
-                mostrarConfirm("Tem certeza que deseja deletar esta disciplina?", (confirmado) => {
-                    if (confirmado) deletarDisciplinaDB(codigo);
-                });
-            
-            } else if (card.closest('#turmasBody')) {
-                const id = card.dataset.id; // ✅ ADICIONAR
-                deletarTurmaCard(id);
+                return;
             }
-            return;
-        }
 
-        // --- Eventos de Adicionar (Linkar) ---
-        const btnAdd = e.target.closest('.addCurso');
-        if (btnAdd) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const card = btnAdd.closest('.contentCardIdt');
-            if (!card) return;
+            // --- Eventos de Deleção ---
+            const btnDelete = e.target.closest('.deletCard'); // Agora funciona para turmas tbm
+            if (btnDelete) {
+                e.preventDefault();
+                e.stopPropagation();
 
-            if (card.closest('#instituicoesBody')) {
-                const id = card.dataset.id;
-                console.log(`DELEGAÇÃO: Abrir modal 'Adicionar Curso' para Instituição ${id}`);
-                abrirModalAdicionarCurso(id);
-            } else if (card.closest('#cursosBody')) {
-                const id = card.dataset.id;
-                console.log(`DELEGAÇÃO: Abrir modal 'Adicionar Disciplina' para Curso ${id}`);
-                abrirModalAdicionarDisciplina(id);
+                const card = btnDelete.closest('.contentCardIdt, .turma-card');
+                if (!card) return;
+
+                if (card.closest('#instituicoesBody')) {
+                    const id = card.dataset.id;
+                    const cursosEmInstituicao = get.getCursosPorInstituicao(id);
+                    if (cursosEmInstituicao.length > 0) {
+                        mostrarAlerta("Não é possível deletar uma instituição que possui cursos vinculados.", "erro");
+                        return;
+                    }
+                    mostrarConfirm(`Tem certeza que deseja deletar a instituição ${get.getNomeInstituicaoPorId(id)}?`, (confirmado) => {
+                        if (confirmado) deletarInstituicaoDB(id);
+                    });
+
+                } else if (card.closest('#cursosBody')) {
+                    const id = card.dataset.id;
+                    const idInstituicao = card.dataset.instituicaoId;
+                    // ✅ ADICIONADO: Verificação de segurança
+                    const disciplinasEmCurso = get.getDisciplinasPorCurso(id);
+                    if (disciplinasEmCurso.length > 0) {
+                        mostrarAlerta("Não é possível deletar um curso que possui disciplinas vinculadas.", "erro");
+                        return;
+                    }
+                    mostrarConfirm("Tem certeza que deseja deletar este curso?", (confirmado) => {
+                        if (confirmado) deletarCursoDB(id, idInstituicao);
+                    });
+
+                } else if (card.closest('#disciplinasBody')) {
+                    const codigo = card.dataset.codigo;
+                    // ✅ ADICIONADO: Verificação de segurança
+                    const turmasEmDisciplina = get.getTurmasPorDisciplina(codigo);
+                    if (turmasEmDisciplina.length > 0) {
+                        mostrarAlerta("Não é possível deletar uma disciplina que possui turmas vinculadas.", "erro");
+                        return;
+                    }
+                    mostrarConfirm("Tem certeza que deseja deletar esta disciplina?", (confirmado) => {
+                        if (confirmado) deletarDisciplinaDB(codigo);
+                    });
+
+                } else if (card.closest('#turmasBody')) {
+                    // ✅ CORRIGIDO: Define o 'id' antes de usá-lo
+                    const id = card.dataset.id;
+                    deletarTurmaCard(id); // Chama a função de confirmação
+                }
+                return;
             }
-            return;
-        }
-        
-        // ✅ ADICIONAR: Eventos de Gerenciar Notas
-        const btnNotas = e.target.closest('.btn-notas');
-        if (btnNotas) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const idTurma = btnNotas.getAttribute('data-turma-id');
-            console.log(`DELEGAÇÃO: Gerenciar Notas da Turma ${idTurma}`);
-            selecionarTurmaParaNotas(idTurma);
-            return;
-        }
-    });
 
-    console.log("✅ Eventos globais (Delegação) vinculados com sucesso!");
-}
+            // --- Eventos de Adicionar (Linkar) ---
+            const btnAdd = e.target.closest('.addCurso');
+            if (btnAdd) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const card = btnAdd.closest('.contentCardIdt');
+                if (!card) return;
+
+                if (card.closest('#instituicoesBody')) {
+                    const id = card.dataset.id;
+                    console.log(`DELEGAÇÃO: Abrir modal 'Adicionar Curso' para Instituição ${id}`);
+                    abrirModalAdicionarCurso(id);
+                } else if (card.closest('#cursosBody')) {
+                    const id = card.dataset.id;
+                    console.log(`DELEGAÇÃO: Abrir modal 'Adicionar Disciplina' para Curso ${id}`);
+                    abrirModalAdicionarDisciplina(id);
+                }
+                return;
+            }
+
+            // --- Eventos de Gerenciar Notas ---
+            const btnNotas = e.target.closest('.btn-notas');
+            if (btnNotas) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const idTurma = btnNotas.getAttribute('data-turma-id');
+                console.log(`DELEGAÇÃO: Gerenciar Notas da Turma ${idTurma}`);
+                selecionarTurmaParaNotas(idTurma);
+                return;
+            }
+        });
+
+        console.log("✅ Eventos globais (Delegação) vinculados com sucesso!");
+    }
 
     // ✅ NOVO: Chama a função de delegação de eventos UMA VEZ.
     vincularEventosGlobais();

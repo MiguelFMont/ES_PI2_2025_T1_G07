@@ -1353,15 +1353,15 @@ body {
     font-size: 18px;
 }
 
-.btn-edit {
+.editCard {
     color: var(--black);
 }
 
-.btn-edit:hover {
+.editCard:hover {
     background: var(--shadow);
 }
 
-.btn-delete {
+.deleteCard {
     color: var(--red);
 }
 
