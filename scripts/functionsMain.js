@@ -715,7 +715,7 @@ function selecionarTurmaParaNotas(idTurma) {
     console.log("✅ Turma selecionada:", AppState.turmaSelecionada);
     
     // Redireciona para a página de gerenciamento de notas
-    window.location.href = "/gerenciar-notas";
+    window.location.href = "/pages/notasEalunos.html";
 }
 
 function obterTurmaSelecionada() {

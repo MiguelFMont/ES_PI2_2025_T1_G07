@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.warn("⚠️ Nenhuma turma selecionada encontrada!");
             mostrarAlerta("Nenhuma turma foi selecionada. Redirecionando...", "aviso");
             setTimeout(() => {
-                window.location.href = "/mainPage";
+                window.location.href = "pages/mainPage.html";
             }, 2000);
             return null;
         }
