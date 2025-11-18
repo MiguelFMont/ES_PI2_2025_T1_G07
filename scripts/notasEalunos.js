@@ -34,32 +34,42 @@ document.addEventListener('DOMContentLoaded', () => {
     var countClickAdd = 0;
 
     addComp.addEventListener('click', () => {
-        document.querySelector('.addComponents').style.display = 'flex'
-        document.querySelector('.addComponents').style.gap = '20px'
+        const addComponentsPanel = document.querySelector('.addComponents');
+        
+        addComponentsPanel.style.display = 'flex';
+        addComponentsPanel.style.flexDirection = 'column';
+        addComponentsPanel.style.gap = '20px';
         countClickAdd++;
 
         if(countClickAdd == 2) {
-            document.querySelector('.addComponents').style.display = 'none'
+            document.querySelector('.addComponents').style.display = 'none';
             countClickAdd = 0;
         }
     });
 
     cancelComp.addEventListener('click', () => {
-        document.querySelector('.addComponents').style.display = 'none'
+        document.querySelector('.addComponents').style.display = 'none';
         countClickAdd = 0;
     });
 
-    const openEditComp = document.querySelector('.btnEditComp');
-    const closedEditComp = document.getElementById('closedEditComp');
-    const bodyCompEdit = document.querySelector('.editCompBody')
+    ///////////////////// edição de componente /////////////////////
+    // const openEditComp = document.querySelector('.btnEditComp');
+    // const closedEditComp = document.getElementById('closedEditComp');
+    // const bodyCompEdit = document.querySelector('.editCompBody');
+    // const cancelEditComp =document.getElementById('cancelEditComp');
 
-    openEditComp.addEventListener('click', () => {
-        bodyCompEdit.style.display = 'block'
-    })
+    // openEditComp.addEventListener('click', () => {
+    //     bodyCompEdit.style.display = 'flex';
+    // });
 
-    closedEditComp.addEventListener('click', () => {
-        bodyCompEdit.style.display = 'none'
-    })
+    // closedEditComp.addEventListener('click', () => {
+    //     bodyCompEdit.style.display = 'none';
+    // });
+
+    // cancelEditComp.addEventListener('click', () => {
+    //     bodyCompEdit.style.display = 'none';
+    // });
+    //////////////////////////////////////////////////////////////
 
     const oneEditComp = document.getElementById('oneEditComp');
     const allEditComp = document.getElementById('allEditComp');

@@ -1,4 +1,3 @@
-
 function mostrarAlerta(mensagem, tipo = 'sucesso') {
 
     document.body.classList.add('alert-active');

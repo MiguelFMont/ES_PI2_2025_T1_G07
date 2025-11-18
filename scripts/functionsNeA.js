@@ -213,6 +213,9 @@ async function listarAlunos() {
                                 <button onclick="deletarAluno(${aluno.ra})" class="deletAluno">
                                     <i class="ph ph-trash"></i> Excluir
                                 </button>
+                                <button class="exportarAluno">
+                                    <i class="ph ph-export"></i> Exportar
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -659,6 +662,91 @@ async function deletarAluno(ra) {
         if (load) load.style.display = 'none';
     }
 }
+
+// ===============================
+// DELETAR COMPONENTE DE NOTA
+// ===============================
+document.addEventListener('DOMContentLoaded', () => {
+    const btnDeleteComp = document.querySelector('.btnDeteleComp');
+    const deleteCompBody = document.querySelector('.deleteCompBody');
+    const closedDeleteComp = document.getElementById('closedDeleteComp');
+    const cancelDeleteComp = document.getElementById('cancelDeleteComp');
+    const confirmDeleteComp = document.getElementById('confirmDeleteComp');
+    const selectCompToDelete = document.getElementById('selectCompToDelete');
+
+    // Abrir modal ao clicar no botão
+    if (btnDeleteComp && deleteCompBody) {
+        btnDeleteComp.addEventListener('click', async () => {
+            deleteCompBody.style.display = 'flex';
+            await carregarComponentesNoSelect();
+        });
+    }
+    // Fechar modal
+    if (closedDeleteComp) {
+        closedDeleteComp.addEventListener('click', () => {
+            deleteCompBody.style.display = 'none';
+        });
+    }
+    if (cancelDeleteComp) {
+        cancelDeleteComp.addEventListener('click', () => {
+            deleteCompBody.style.display = 'none';
+        });
+    }
+    // Deletar componente
+    if (confirmDeleteComp) {
+        confirmDeleteComp.addEventListener('click', async () => {
+            const idComp = selectCompToDelete.value;
+            if (!idComp) {
+                alert('Selecione um componente para deletar.');
+                return;
+            }
+            if (!confirm('Tem certeza que deseja deletar este componente? Todas as notas associadas serão removidas!')) return;
+            const load = document.querySelector('.load');
+            if (load) load.style.display = 'flex';
+            try {
+                const resp = await fetch('/componente-nota/deletar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id_componente: idComp })
+                });
+                if (resp.ok) {
+                    alert('Componente deletado com sucesso!');
+                    deleteCompBody.style.display = 'none';
+                    await listarComponentes();
+                    await carregarTabelaNotas();
+                } else {
+                    alert('Erro ao deletar componente.');
+                }
+            } catch (error) {
+                alert('Erro na requisição.');
+            } finally {
+                if (load) load.style.display = 'none';
+            }
+        });
+    }
+
+    // Carregar componentes no select
+    async function carregarComponentesNoSelect() {
+        selectCompToDelete.innerHTML = '<option value="">Carregando...</option>';
+        try {
+            const resp = await fetch('/componente-nota/all');
+            if (resp.ok) {
+                const lista = await resp.json();
+                if (Array.isArray(lista) && lista.length > 0) {
+                    selectCompToDelete.innerHTML = lista.map(comp =>
+                        `<option value="${comp.id_componente}">${comp.sigla ? comp.sigla : comp.nome}</option>`
+                    ).join('');
+                } else {
+                    selectCompToDelete.innerHTML = '<option value="">Nenhum componente cadastrado</option>';
+                }
+            } else {
+                selectCompToDelete.innerHTML = '<option value="">Erro ao carregar</option>';
+            }
+        } catch (error) {
+            selectCompToDelete.innerHTML = '<option value="">Erro ao carregar</option>';
+        }
+    }
+});
 
 // ============================================================
 // UTILITÁRIOS

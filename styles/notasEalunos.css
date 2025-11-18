@@ -14,6 +14,7 @@
     --white2: #f5f8fa;
     --grey: #808080;
     --red: #e20000;
+    --green: #00ae49;
     --greyBorder: #c3c3c3;
     --placeholder: #5a5a5a;
     
@@ -219,7 +220,7 @@ body {
     margin-top: 10px;
 }
 
-.editAluno, .deletAluno {
+.editAluno, .deletAluno, .exportarAluno {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -231,15 +232,41 @@ body {
     border-radius: 4px;
     color: var(--black);
     font-weight: 500;
+    box-shadow: 0px 4px 5px var(--shadow2);
+    transition: all 0.1s ease;
 }
 
 .editAluno {
     background: var(--white);
 }
 
+.editAluno:hover {
+    background: var(--color5);
+    color: var(--white);
+    box-shadow: 0px 4px 5px var(--color5Hover);
+    transform: scale(1.01);
+}
+
 .deletAluno {
     color: var(--white);
     background: var(--color4);
+}
+
+.deletAluno:hover {
+    color: var(--red);
+    box-shadow: 0px 4px 5px var(--red);
+    transform: scale(1.01);
+}
+
+.exportarAluno {
+    color: var(--white);
+    background: var(--color8);
+}
+
+.exportarAluno:hover {
+    color: var(--green);
+    box-shadow: 0px 4px 5px var(--green);
+    transform: scale(1.01);
 }
 
 @keyframes downInfoAluno {
@@ -606,7 +633,7 @@ body {
     cursor: pointer;
     color: var(--white);
     transform: scale(1.01);
-    box-shadow: 0 5px 8px var(--shadow2);
+    box-shadow: 0 6px 7px var(--shadow2);
 }
 
 #btnCancelCA {
@@ -620,6 +647,10 @@ body {
 
 #btnSaveCA {
     background: var(--color5);
+}
+
+#btnSaveCA:hover {
+    background: var(--color8);
 }
 
 @keyframes slideDownCA {
@@ -689,22 +720,147 @@ body {
     position: relative;
 }
 
-.editCompBody{
-    display: none;
-    position: absolute;
-    height: 100px;
+/* ==============================================
+    STYLES - Edit Component Body (Semelhante ao containerCampsCA)
+   ============================================== */
+
+.editCompBody {
+    display: none; 
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    background: var(--white);
+    border-radius: 12px;
+    box-shadow: 0 6px 5px var(--shadow2);
+    border: 1px solid var(--lightgrey2);
+    position: relative;
     width: 100%;
-    top: 0;
-    left: 0;
-    background: var(--color3);
-    border-radius: 8px;
-    box-shadow: 0 5px 6px var(--shadow2);
+    margin-bottom: 20px;
+    animation: openAddComp 0.4s ease-in-out;
+}
+
+.headerEditComp {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    padding: 10px;
 }
 
 #closedEditComp {
     position: absolute;
-    right: 0;
-    top: 0;
+    top: 10px;
+    right: 10px;
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--grey);
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+#closedEditComp:hover {
+    background-color: var(--lightgrey);
+    color: var(--color4);
+    transform: scale(1.1);
+}
+
+.campCompEdit {
+    position: relative;
+    height: 40px;
+    width: 100%;
+    background: var(--white);
+    border: 1px solid var(--grey);
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    transition: border 0.3s ease;
+}
+
+.campCompEdit input {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+    color: var(--black);
+    padding-left: 5px;
+    z-index: 2;
+    caret-color: var(--color5);
+}
+
+.campCompEdit label {
+    position: absolute;
+    left: 20px;
+    color: var(--grey);
+    font-size: 1rem;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    z-index: 1;
+    background: var(--white);
+    padding: 0 5px;
+}
+
+.campCompEdit input:focus + label,
+.campCompEdit input:not(:placeholder-shown) + label {
+    transform: translateY(-28px);
+    font-size: 0.8rem;
+    color: var(--color5);
+    margin-left: 5px;
+    top: 20px;
+    font-weight: 600;
+}
+
+.campCompEdit:has(input:focus) {
+    border: 1px solid var(--color5);
+}
+
+.btnsEditComp {
+    display: flex;
+    justify-content: end;
+    gap: 10px;
+}
+
+.btnsEditComp button {
+    padding: 10px 20px;
+    border: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--black);
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0px 5px 6px var(--shadow2);
+}
+
+#cancelEditComp {
+    background: var(--lightgrey);
+    transition: all 0.1s ease;
+}
+
+#cancelEditComp:hover {
+    box-shadow: 0px 6px 7px var(--shadow2);
+    background: var(--color4);
+    transform: scale(1.01);
+    color: var(--white);
+}
+
+#saveEditComp {
+    background: var(--color5);
+    transition: all 0.1s ease;
+}
+
+#saveEditComp:hover {
+    color: var(--white);
+    box-shadow: 0px 6px 7px var(--shadow2);
+    transform: scale(1.01);
+    background: var(--color8);
 }
 
 .headerComponents {
@@ -952,9 +1108,10 @@ body {
 }
 
 #saveComp:hover {
-    transform: scale(1.01);
     color: var(--white);
-    box-shadow: 0 5px 10px var(--shadow);
+    box-shadow: 0px 6px 7px var(--shadow2);
+    transform: scale(1.01);
+    background: var(--color8);
 }
 
 .notasBody {
@@ -1003,6 +1160,124 @@ body {
 .headerNotas button:hover {
     background: var(--lightgrey);
     cursor: pointer;
+}
+
+.btnDeteleComp {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1rem;
+    font-weight: 500;
+    padding: 10px;
+    border-radius: 4px;
+    border: none;
+    background: none;
+    color: var(--color4);
+}
+
+.btnDeteleComp:hover {
+    background: var(--color4Shadow);
+}
+
+.deleteCompBody {
+    display: none;
+    flex-direction: column;
+    gap: 20px;
+    position: absolute;
+    z-index: 10;
+    top: 0;
+    left: 0;
+    background: var(--white);
+    border-radius: 10px;
+    box-shadow: 0 4px 10px var(--shadow2);
+    padding: 24px;
+    min-width: 320px;
+    max-width: 90vw;
+    animation: openDeleteCompBody 0.5s ease-in-out;
+}
+
+@keyframes openDeleteCompBody {
+    0% {
+        opacity: 0;
+        top: -20px;
+        height: 0;
+    }
+
+    100% {
+        opacity: 1;
+        top: 0;
+        height: 100%;
+    }
+}
+
+.headerDeleteComp {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#closedDeleteComp {
+    background: none;
+    border: none;
+    font-size: 1em;
+    padding: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.1s ease;
+}
+
+#closedDeleteComp:hover  {
+    background: var(--lightgrey);
+}
+
+.selectCompDelete {
+    margin-bottom: 16px;
+}
+
+#selectCompToDelete {
+    width: 100%;
+    padding: 8px;
+    border-radius: 6px;
+}
+
+.btnsDeleteComp {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+#cancelDeleteComp {
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 4px;
+    background: var(--lightgrey);
+    border: none;
+    transition: all 0.1s ease;
+}
+
+#cancelDeleteComp:hover {
+    color: var(--white);
+    background: var(--grey);
+    box-shadow: 0px 4px 5px var(--shadow2);
+    transform: scale(1.01);
+}
+
+#confirmDeleteComp {
+    background: var(--color4);
+    color: var(--white);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#confirmDeleteComp:hover {
+    color: var(--red);
+    box-shadow: 0px 4px 5px var(--shadow2);
+    transform: scale(1.01);
 }
 
 /*==============================================
