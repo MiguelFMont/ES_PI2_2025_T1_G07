@@ -150,6 +150,7 @@
 
 .campoEdicao #editCodigoDisciplina {
     background-color: var(--lightwhite);
+    border-color: var(--lightgrey) !important;
 }
 
 
@@ -538,14 +539,9 @@ Style das Infos de Disciplina no Modal de Edição
     box-sizing: border-box;
 }
 
-.boxInfoDisciplinas input:focus {
+.boxInfoDisciplinas input:focus{
     outline: none;
     border-color: var(--color5);
-}
-
-.boxInfoDisciplinas .editCodigoDisciplina:focus{
-    border-color: var(--lightgrey);
-    outline: none;
 }
 
 @keyframes shake {
