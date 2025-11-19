@@ -134,6 +134,72 @@ body {
 /*==============================================
     STYLES - Search Bar
 ==============================================*/
+
+.headerItemThree {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    width: 100%;
+}
+
+.selectAlunos {
+    position: relative;
+}
+
+.optionsSelect {
+    display: none;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    gap: 5px;
+    background: var(--color1);
+    padding: 5px;
+    flex-direction: column;
+    border-radius: 4px;
+    box-shadow: 0px 5px 6px var(--shadow);
+}
+
+.optionsSelect button {
+    border: 1px solid var(--lightgrey);
+    padding: 5px 10px;
+    border-radius: 4px;
+    background: var(--white);
+    width: 100%;
+    white-space: nowrap;
+    transition: all 0.1s ease;
+}
+
+.optionsSelect button:hover {
+    background: var(--lightgrey);
+    cursor: pointer;
+}
+
+.selectAlunos  i {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    font-weight: 500;
+    padding: 5px 6px;
+    border-radius: 50%;
+    transition: all 0.1s ease;
+    cursor: pointer;
+}
+
+.selectAlunos i:hover {
+    background: var(--lightgrey);
+}
+
+#selectAlunoBtn {
+    display: none;
+    border: 1px solid black;
+    border-radius: 50%;
+    height: 15px;
+    width: 15px;
+    /* background: var(--color9); */
+}
+
 .seachBar {
     display: flex;
     justify-content: center;

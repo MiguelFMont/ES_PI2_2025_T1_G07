@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnAddComp && addComponents) {
         btnAddComp.addEventListener('click', (e) => {
             e.preventDefault();
-            addComponents.style.display = 'block';
+            addComponents.style.display = 'flex';
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     }
@@ -254,7 +254,7 @@ async function carregarNotasExistentes() {
     }
 }
 // ============================================================
-// FUNÇÃO PRINCIPAL: LISTAR ALUNOS
+// FUNÇÃO PRINCIPAL: LISTAR ALUNOS (ATUALIZADA)
 // ============================================================
 async function listarAlunos() {
     try {
@@ -299,6 +299,7 @@ async function listarAlunos() {
 
                 li.innerHTML = `
                     <a href="#" class="item-aluno">
+                        <div id="selectAlunoBtn" style="display: none;"></div>
                         <div class="raAluno">${aluno.ra}</div>
                         <div class="nameAluno">${aluno.nome}</div>
                         <div class="iconAluno">${iniciais}</div>
@@ -323,13 +324,31 @@ async function listarAlunos() {
 
                 const linkClick = li.querySelector('.item-aluno');
                 const infoDiv = li.querySelector('.infoAluno');
+                const selectBtn = li.querySelector('#selectAlunoBtn');
 
+                // --- NOVA LÓGICA DE CLIQUE AQUI ---
                 linkClick.addEventListener('click', (e) => {
                     e.preventDefault();
-                    document.querySelectorAll('.infoAluno').forEach(div => {
-                        if (div !== infoDiv) div.style.display = 'none';
-                    });
-                    infoDiv.style.display = (infoDiv.style.display === 'none') ? 'block' : 'none';
+
+                    // Verifica se a bolinha está visível (Modo Seleção Ativo)
+                    const isSelectionMode = selectBtn.style.display === 'block';
+
+                    if (isSelectionMode) {
+                        // MODO SELEÇÃO: Apenas marca/desmarca a cor
+                        if (selectBtn.style.background.includes('var(--color9)')) {
+                            selectBtn.style.background = ''; // Remove a seleção
+                            selectBtn.style.border = '1px solid var(--black)'; // Remove a seleção
+                        } else {
+                            selectBtn.style.background = 'var(--color9)'; // Seleciona
+                            selectBtn.style.border = '1px solid var(--color9)'; // Seleciona
+                        }
+                    } else {
+                        // MODO NORMAL: Abre os detalhes (InfoAluno)
+                        document.querySelectorAll('.infoAluno').forEach(div => {
+                            if (div !== infoDiv) div.style.display = 'none';
+                        });
+                        infoDiv.style.display = (infoDiv.style.display === 'none') ? 'block' : 'none';
+                    }
                 });
 
                 listaAlunos.appendChild(li);
@@ -1035,28 +1054,24 @@ async function processarArquivoCSV(file) {
         }
 
         // --- PASSO 3: Finalização ---
-        mostrarAlerta('Cadastro feito com sucesso', 'success');
+        mostrarAlerta('Importação concluída! A página será recarregada...', 'success');
 
-        listarAlunos();
-
-        // Fecha modal e limpa inputs (CORREÇÃO AQUI: Buscando os elementos novamente)
         const modal = document.querySelector('.fileBody');
         if (modal) modal.style.display = 'none';
 
-        const inputEl = document.getElementById('inputFileAlunos');
-        if (inputEl) inputEl.value = '';
-
-        const displayEl = document.getElementById('fileNameDisplay');
-        if (displayEl) displayEl.innerText = "Nenhum arquivo selecionado";
+        setTimeout(() => {
+            window.location.reload();
+        }, 1500);
 
     } catch (erro) {
         console.error(erro);
         mostrarAlerta("Erro na importação: " + erro.message, 'erro');
+        // Se der erro, garantimos que o loading suma (embora o finally já faça isso)
     } finally {
+        // O finally remove o loading antes do reload acontecer
         if (load) load.style.display = 'none';
     }
 }
-
 function lerArquivo(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -1112,3 +1127,61 @@ async function importarUnico(ra, nome, idTurma) {
         return { sucesso: false, msg: e.message };
     }
 }
+
+/*/////////////////////////////////////////////
+/------------- SELECIONAR ALUNOS -------------/
+/////////////////////////////////////////////*/
+
+const openClosedSelectAlunos = document.querySelector('.selectAlunos i');
+const optionsSelect = document.querySelector('.optionsSelect');
+const bodySelect = document.querySelector('.selectAlunos');
+var countSelect = 0;
+
+openClosedSelectAlunos.addEventListener('click', () => {
+    optionsSelect.style.display = 'flex';
+    bodySelect.style.height = '110px';
+    countSelect++;
+
+    if(countSelect == 2) {
+        optionsSelect.style.display = 'none';
+        bodySelect.style.height = 'min-content';
+        countSelect = 0;
+    };
+});
+
+// ============================================================
+// LÓGICA DO BOTÃO "SELECIONAR" (ATIVAR MODO DE SELEÇÃO)
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+    const btnSelecionarOne = document.getElementById('selecionarOne');
+
+    if (btnSelecionarOne) {
+        btnSelecionarOne.addEventListener('click', () => {
+            // 1. Pega todas as bolinhas de seleção
+            const checkButtons = document.querySelectorAll('#selectAlunoBtn');
+
+            // 2. Percorre e alterna visibilidade
+            checkButtons.forEach(btn => {
+                if (btn.style.display === 'none' || btn.style.display === '') {
+                    btn.style.display = 'block'; // Mostra
+                } else {
+                    btn.style.display = 'none';  // Esconde
+                    btn.style.background = '';   // Limpa seleção ao sair
+                }
+            });
+
+            // 3. Fecha o menu de opções visualmente para limpar a tela
+            const optionsSelect = document.querySelector('.optionsSelect');
+            const bodySelect = document.querySelector('.selectAlunos');
+            
+            if (optionsSelect) {
+                optionsSelect.style.display = 'none';
+                if (bodySelect) bodySelect.style.height = 'min-content';
+                // Zera o contador do menu (conforme sua lógica original)
+                if (typeof countSelect !== 'undefined') {
+                    countSelect = 0; 
+                }
+            }
+        });
+    }
+});

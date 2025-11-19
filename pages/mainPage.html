@@ -743,160 +743,129 @@
 
         </div>
 
-        <div class="turmas">
-            <div class="idtBody" id="turmasBody">
-                <div class="headerIdt">
-                    <div class="titleIdt">
-                        <div class="iconAndTitle">
-                            <i class="ph ph-users" id="iconUsers"></i>
-                            <h1>Turmas</h1>
-                        </div>
-                        <p>Gerencie as turmas das suas disciplinas</p>
-                    </div>
-                    <button class="newIdt">
-                        <i class="ph ph-plus"></i>
-                        Nova Turma
+        <div class="turmas" style="height: 100%;">
+    <div class="idtBody" id="turmasBody">
+        <div class="headerIdt">
+            <div class="titleIdt">
+                <div class="iconAndTitle">
+                    <i class="ph ph-users" id="iconUsers"></i>
+                    <h1>Turmas</h1>
+                </div>
+                <p>Gerencie as turmas das suas disciplinas</p>
+            </div>
+            <button class="newIdt">
+                <i class="ph ph-plus"></i>
+                Nova Turma
+            </button>
+        </div>
+
+        <div class="cardIdt">
+            <div class="iconIdt">
+                <i class="ph ph-users"></i>
+            </div>
+            <h3>Nenhuma turma cadastrada</h3>
+            <p>Clique no botão "Nova Turma" para começar</p>
+
+            <div class="createIdt">
+                <div class="titleCreateIdt">
+                    <h2>Nova Turma</h2>
+                    <button>
+                        <i class="ph ph-x" id="xClosedCreate"></i>
                     </button>
                 </div>
-
-                <div class="cardsCreateIdt" style="display: none;">
+                <div class="campIdt">
+                    <p>Disciplina</p>
+                    <input list="listTurma" type="text" placeholder="Selecione a disciplina" id="inputDisciplinaTurma">
+                    <datalist id="listTurma"></datalist>
                 </div>
-
-                <div class="cardIdt">
-                    <div class="iconIdt">
-                        <i class="ph ph-users"></i>
+                <div class="campIdt">
+                    <p>Nome da Turma</p>
+                    <input type="text" placeholder="Ex: Turma 1" id="inputNomeTurma">
+                </div>
+                <div class="campIdt">
+                    <p>Local da Aula</p>
+                    <input type="text" placeholder="Ex: H08" id="inputLocalAula">
+                    <label for="text"></label>
+                </div>
+                <div class="campIdtToggle">
+                    <div class="campIdt">
+                        <p>Dia da Semana</p>
+                        <select id="diaSemanaSelect" required>
+                            <option value="" disabled selected>Selecione o dia da semana</option>
+                            <option value="Segunda-Feira">Segunda-Feira</option>
+                            <option value="Terça-Feira">Terça-Feira</option>
+                            <option value="Quarta-Feira">Quarta-Feira</option>
+                            <option value="Quinta-Feira">Quinta-Feira</option>
+                            <option value="Sexta-Feira">Sexta-Feira</option>
+                        </select>
+                        <label for="text"></label>
                     </div>
-                    <h3>Nenhuma turma cadastrada</h3>
-                    <p>Clique no botão "Nova Turma" para começar</p>
-
-                    <div class="createIdt">
-                        <div class="titleCreateIdt">
-                            <h2>Nova Turma</h2>
-                            <button>
-                                <i class="ph ph-x" id="xClosedCreate"></i>
-                            </button>
-                        </div>
-                        <div class="campIdt">
-                            <p>Disciplina</p>
-                            <input list="listTurma" type="text" placeholder="Selecione a disciplina" id="inputDisciplinaTurma">
-                            <datalist id="listTurma"></datalist>
-                        </div>
-                        <div class="campIdt">
-                            <p>Nome da Turma</p>
-                            <input type="text" placeholder="Ex: Turma 1" id="inputNomeTurma">
-                        </div>
-                        <div class="campIdt">
-                                <p>Local da Aula</p>
-                                <input type="text" placeholder="Ex: H08" id="inputLocalAula">
-                                <label for="text"></label>
-                            </div>
-                        <div class="campIdtToggle">
-                            <div class="campIdt">
-                                <p>Dia da Semana</p>
-                                <select id="diaSemanaSelect" required>
-                                    <option value="" disabled selected>Selecione o dia da semana</option>
-                                    <option value="Segunda-Feira">Segunda-Feira</option>
-                                    <option value="Terça-Feira">Terça-Feira</option>
-                                    <option value="Quarta-Feira">Quarta-Feira</option>
-                                    <option value="Quinta-Feira">Quinta-Feira</option>
-                                    <option value="Sexta-Feira">Sexta-Feira</option>
-                                </select>
-                                <label for="text"></label>
-                            </div>
-                            <div class="campIdt">
-                                <p>Horário da Aula</p>
-                                <input type="text" placeholder="Ex: 10h00" id="inputHoraAula">
-                            </div>
-                        </div>
-                        <div class="buttonsCheck">
-                            <button id="cancelBtnIdt">Cancelar</button>
-                            <button class="createBtnIdt" id="createBtnTurma">Criar</button>
-                        </div>
+                    <div class="campIdt">
+                        <p>Horário da Aula</p>
+                        <input type="text" placeholder="Ex: 10h00" id="inputHoraAula">
                     </div>
                 </div>
-                <div class="cardsCreateIdt">
-                    <!-- ============================================================= -->
-                    <!-- Aqui o Propio JavaScrip Inplementa no html com innerHtml -->
-                    <!-- ============================================================= -->
-
-                    <!-- <div class="contentCardIdt">
-            <i class="ph ph-users" id="turmasIcon"></i>
-            <div class="textContentCardIdt">
-                <h2></h2>
-                <p></p>
-                <div class="viewDetails">
-                    <div class="code"></div>
-                    <div class="period">°</div>
-                </div>
-            </div>
-            <div class="editAndDelet">
-                <button class="editCard">
-                    <i class="ph ph-pencil-simple"></i>
-                </button>
-                <button class="deletCard">
-                    <i class="ph ph-trash"></i>
-                </button>
-            </div>
-            <div class="notas">
-                olatest
-            </div>
-        </div> -->
-                </div>
-
-                <!-- MODAL PARA EDIÇÃO DE TURMAS -->
-                <div class="modalEdicaoExpansivel">
-
-                    <div class="headerModalExpansivel">
-                        <h3><i class="ph ph-pencil-simple"></i> Editar Turma</h3>
-                        <button class="btnFecharExpansivel" aria-label="Fechar modal">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-
-                    <div class="contentModalExpansivel">
-
-                        <div class="boxInfoDisciplinas">
-                            <div class="campoEdicao">
-                                <label for="editNomeTurma"><i class="ph ph-users"></i>Nome da Turma</label>
-                                <input type="text" id="editNomeTurma" placeholder="">
-                            </div>
-                            <div class="campoEdicao">
-                                <label for="editLocalAula">Local</label>
-                                <input type="text" id="editLocalAula" placeholder="Ex: Sala 101">
-                            </div>
-                            <div class="campoEdicao">
-                                <label for="editDiaSemana">Dia da Semana</label>
-                                <select id="editDiaSemana">
-                                    <option value="">Dia não definido</option>
-                                    <option value="Segunda-Feira">Segunda-Feira</option>
-                                    <option value="Terça-Feira">Terça-Feira</option>
-                                    <option value="Quarta-Feira">Quarta-Feira</option>
-                                    <option value="Quinta-Feira">Quinta-Feira</option>
-                                    <option value="Sexta-Feira">Sexta-Feira</option>
-                                </select>
-                                <label for="text"></label>
-                            </div>
-                            <div class="campoEdicao">
-                                <label for="editHoraAula">Horário da Aula</label>
-                                <input type="text" id="editHoraAula" placeholder="Ex: 10h00">
-                            </div>
-
-                        </div>
-
-                        <div class="footerModalExpansivel">
-                            <button class="btnCancelarEdicao">
-                                <i class="fas fa-times-circle"></i> Cancelar
-                            </button>
-                            <button class="btnSalvarEdicao">
-                                <i class="ph ph-check"></i> Salvar Alterações
-                            </button>
-                        </div>
-
-                    </div>
-
+                <div class="buttonsCheck">
+                    <button id="cancelBtnIdt">Cancelar</button>
+                    <button class="createBtnIdt" id="createBtnTurma">Criar</button>
                 </div>
             </div>
         </div>
+
+        <div class="cardsCreateIdt" style="display: none;">
+            </div>
+
+        <div class="modalEdicaoExpansivel">
+            <div class="headerModalExpansivel">
+                <h3><i class="ph ph-pencil-simple"></i> Editar Turma</h3>
+                <button class="btnFecharExpansivel" aria-label="Fechar modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="contentModalExpansivel">
+
+                <div class="boxInfoDisciplinas">
+                    <div class="campoEdicao">
+                        <label for="editNomeTurma"><i class="ph ph-users"></i>Nome da Turma</label>
+                        <input type="text" id="editNomeTurma" placeholder="">
+                    </div>
+                    <div class="campoEdicao">
+                        <label for="editLocalAula">Local</label>
+                        <input type="text" id="editLocalAula" placeholder="Ex: Sala 101">
+                    </div>
+                    <div class="campoEdicao">
+                        <label for="editDiaSemana">Dia da Semana</label>
+                        <select id="editDiaSemana">
+                            <option value="">Dia não definido</option>
+                            <option value="Segunda-Feira">Segunda-Feira</option>
+                            <option value="Terça-Feira">Terça-Feira</option>
+                            <option value="Quarta-Feira">Quarta-Feira</option>
+                            <option value="Quinta-Feira">Quinta-Feira</option>
+                            <option value="Sexta-Feira">Sexta-Feira</option>
+                        </select>
+                        <label for="text"></label>
+                    </div>
+                    <div class="campoEdicao">
+                        <label for="editHoraAula">Horário da Aula</label>
+                        <input type="text" id="editHoraAula" placeholder="Ex: 10h00">
+                    </div>
+
+                </div>
+
+                <div class="footerModalExpansivel">
+                    <button class="btnCancelarEdicao">
+                        <i class="fas fa-times-circle"></i> Cancelar
+                    </button>
+                    <button class="btnSalvarEdicao">
+                        <i class="ph ph-check"></i> Salvar Alterações
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
 
     </div>
     <script src="../scripts/loader.js"></script>

@@ -197,7 +197,7 @@ function renderizarCardsCursos() {
                 <button class="addCurso">
                     <i class="ph ph-plus"></i>
                 </button>
-                <button class="editCard">
+                <button class="editCard" style="background: none;">
                     <i class="ph ph-pencil-simple"></i>
                 </button>
                 <button class="deletCard">
@@ -644,13 +644,13 @@ function criarCardTurma(turma) {
                 </div>
             </div>
             <div class="turma-actions">
-                <button class="btn-action editCard" data-turma-id="${turma.id}"> 
-                    <i class="ph ph-pencil-simple"></i>
-                </button>
-                <button class="btn-action deletCard" data-turma-id="${turma.id}">
-                    <i class="ph ph-trash"></i>
-                </button>
-            </div>
+                <button class="btn-action editCard" data-turma-id="${turma.id}" style="background: none; border: none; display: flex; justify-content: center; align-items: center;"> 
+                    <i class="ph ph-pencil-simple" style="height: 38px; width: 38px; padding: 20px; font-size: 1.1rem; display: flex; justify-content: center; align-items: center; border-radius: 4px;"></i>
+                </button>
+                <button class="btn-action deletCard" data-turma-id="${turma.id}">
+                    <i class="ph ph-trash" style="height: 38px; width: 38px; padding: 20px; font-size: 1.1rem; display: flex; justify-content: center; align-items: center; border-radius: 4px;"></i>
+                </button>
+            </div>
         </div>
 
         <div class="turma-details">
