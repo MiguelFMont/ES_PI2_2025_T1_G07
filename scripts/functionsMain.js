@@ -1730,7 +1730,7 @@ function salvarEdicaoInstituicao(id, novoNome, modal) {
     console.log(`💾 Salvando edição da instituição ID: ${id}`);
     mostrarLoader('mostrar');
     const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
-    if (!usuarioLogado || !usuarioLogado.id) { /*...*/ return; }
+    if (!usuarioLogado || !usuarioLogado.id) { return console.log("Usuário não logado ou ID inválido"); }
 
     let promiseChain = Promise.resolve();
 
@@ -1742,6 +1742,8 @@ function salvarEdicaoInstituicao(id, novoNome, modal) {
                 body: JSON.stringify({ id: parseInt(id), novo_nome: novoNome })
             }).then(res => res.json()).then(dados => {
                 console.log("✅ Nome atualizado");
+                mostrarLoader('esconder');
+                mostrarAlerta("Nome da instituição atualizado com sucesso!", "sucesso");
             });
         });
     }
@@ -1761,8 +1763,9 @@ function salvarEdicaoInstituicao(id, novoNome, modal) {
         promiseChain = promiseChain.then(() => {
             const disciplinasEmCurso = get.getDisciplinasPorCurso(idCurso);
             if (disciplinasEmCurso.length > 0) {
+                mostrarLoader('esconder');
                 mostrarAlerta(`Não foi possível deletar o curso ID ${idCurso} pois ele possui disciplinas vinculadas!`, "erro");
-                return Promise.resolve(); // Skip deletion if there are linked disciplines
+                return Promise.resolve();
             }
 
             return fetch("/curso/deletar", {
@@ -1772,8 +1775,10 @@ function salvarEdicaoInstituicao(id, novoNome, modal) {
             }).then(res => res.json()).then(dados => {
                 if (dados.sucesso) console.log(`✅ Curso deletado: ${idCurso}`);
                 else if (dados.cursoComFks) {
+                    mostrarLoader('esconder');
                     mostrarAlerta(`Não foi possível deletar o curso ID ${idCurso} pois ele possui disciplinas vinculadas!`, "erro");
                     console.warn(`⚠️ Curso ID ${idCurso} possui disciplinas vinculadas, não foi deletado.`);
+                    return
                 }
             });
         });
@@ -1876,6 +1881,8 @@ function salvarEdicaoCurso(idCurso, novoNome, modal) {
             }).then(res => res.json()).then(dados => {
                 if (!dados.message) throw new Error("Erro ao atualizar nome do curso");
                 console.log("✅ Nome do curso atualizado");
+                mostrarLoader('esconder');
+                mostrarAlerta("Nome atualizado com sucesso!", "sucesso");
             });
         });
     }
@@ -1918,7 +1925,11 @@ function salvarEdicaoCurso(idCurso, novoNome, modal) {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ codigo: idDisciplina }) // Assumindo que ID = Código
             }).then(res => res.json()).then(dados => {
-                if (dados.message) console.log(`✅ Disciplina deletada: ${idDisciplina}`);
+                if (dados.message) {
+                    console.log(`✅ Disciplina deletada: ${idDisciplina}`);
+                    mostrarLoader('esconder');
+                    mostrarAlerta(`Disciplina deletada com sucesso!`, "sucesso");
+                }
             });
         });
     });
