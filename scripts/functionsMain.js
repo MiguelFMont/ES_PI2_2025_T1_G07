@@ -197,7 +197,7 @@ function renderizarCardsCursos() {
                 <button class="addCurso">
                     <i class="ph ph-plus"></i>
                 </button>
-                <button class="editCard">
+                <button class="editCard" style="background: none;">
                     <i class="ph ph-pencil-simple"></i>
                 </button>
                 <button class="deletCard">
@@ -644,13 +644,13 @@ function criarCardTurma(turma) {
                 </div>
             </div>
             <div class="turma-actions">
-                <button class="btn-action editCard" data-turma-id="${turma.id}"> 
-                    <i class="ph ph-pencil-simple"></i>
-                </button>
-                <button class="btn-action deletCard" data-turma-id="${turma.id}">
-                    <i class="ph ph-trash"></i>
-                </button>
-            </div>
+                <button class="btn-action editCard" data-turma-id="${turma.id}" style="background: none; border: none; display: flex; justify-content: center; align-items: center;"> 
+                    <i class="ph ph-pencil-simple" style="height: 38px; width: 38px; padding: 20px; font-size: 1.1rem; display: flex; justify-content: center; align-items: center; border-radius: 4px;"></i>
+                </button>
+                <button class="btn-action deletCard" data-turma-id="${turma.id}">
+                    <i class="ph ph-trash" style="height: 38px; width: 38px; padding: 20px; font-size: 1.1rem; display: flex; justify-content: center; align-items: center; border-radius: 4px;"></i>
+                </button>
+            </div>
         </div>
 
         <div class="turma-details">
@@ -698,9 +698,9 @@ function deletarTurmaCard(idTurma) {
 
 function selecionarTurmaParaNotas(idTurma) {
     console.log(`📝 Selecionando turma para gerenciamento de notas: ${idTurma}`);
-    
+
     const turmaCompleta = get.getTurmaCompletaPorId(idTurma);
-    
+
     if (!turmaCompleta) {
         mostrarAlerta("Turma não encontrada!", "erro");
         return;
@@ -708,12 +708,12 @@ function selecionarTurmaParaNotas(idTurma) {
 
     // Armazena no AppState
     AppState.turmaSelecionada = turmaCompleta;
-    
+
     // TAMBÉM armazena no localStorage como backup
     localStorage.setItem("turmaSelecionada", JSON.stringify(turmaCompleta));
-    
+
     console.log("✅ Turma selecionada:", AppState.turmaSelecionada);
-    
+
     // Redireciona para a página de gerenciamento de notas
     window.location.href = "/pages/notasEalunos.html";
 }
@@ -723,7 +723,7 @@ function obterTurmaSelecionada() {
     if (AppState.turmaSelecionada) {
         return AppState.turmaSelecionada;
     }
-    
+
     // Se não tiver, busca do localStorage
     const turmaLS = localStorage.getItem("turmaSelecionada");
     if (turmaLS) {
@@ -734,7 +734,7 @@ function obterTurmaSelecionada() {
             console.error("Erro ao recuperar turma do localStorage:", e);
         }
     }
-    
+
     return null;
 }
 
@@ -1455,12 +1455,12 @@ function preencherDisciplinasAtuaisCursoExpansivel(curso, modal) {
     curso.disciplinas.forEach(disciplina => {
         const disciplinaEl = document.createElement("div");
         disciplinaEl.className = "itemCursoAtual";
-        disciplinaEl.setAttribute("data-disciplina-id", disciplina.id || disciplina.codigo);
+        disciplinaEl.setAttribute("data-disciplina-codigo", disciplina.codigo);
 
         disciplinaEl.innerHTML = `
             <span class="nomeCurso">${disciplina.nome}</span>
             <button class="btnDeletarCurso" 
-                    data-disciplina-id="${disciplina.id || disciplina.codigo}" 
+                    data-disciplina-codigo="${disciplina.codigo}" 
                     data-disciplina-nome="${disciplina.nome}" 
                     title="Deletar disciplina">
                 <i class="fas fa-trash-alt"></i>
@@ -1535,7 +1535,7 @@ function vincularEventosModalCursoExpansivel(modal) {
         containerDisciplinas.addEventListener("click", (e) => {
             const btn = e.target.closest(".btnDeletarCurso");
             if (!btn) return;
-            const idDisciplina = btn.getAttribute("data-disciplina-id");
+            const idDisciplina = btn.getAttribute("data-disciplina-codigo");
             const nomeDisciplina = btn.getAttribute("data-disciplina-nome");
             const itemDisciplina = btn.closest(".itemCursoAtual");
             if (!EdicaoStateCurso.disciplinasParaDeletar.includes(idDisciplina)) {
@@ -1867,6 +1867,7 @@ function vincularCursoInstituicaoDB_Edicao(idInstituicao, nomeCurso) {
 
 
 function salvarEdicaoCurso(idCurso, novoNome, modal) {
+
     console.log(`💾 Salvando edição do curso ID: ${idCurso}`);
     mostrarLoader('mostrar');
     const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
@@ -1897,6 +1898,8 @@ function salvarEdicaoCurso(idCurso, novoNome, modal) {
                 }).then(res => res.json()).then(verificacao => {
                     if (!verificacao.sucesso) {
                         console.warn("⚠️ Disciplina já existe, pulando:", disciplina.nome);
+                        mostrarLoader('esconder');
+                        mostrarAlerta(`Disciplina "${disciplina.nome}" já está cadastrada!`, "aviso");
                         return Promise.resolve({ jaExiste: true });
                     }
                     return fetch("/disciplina/cadastro", {
@@ -1910,8 +1913,15 @@ function salvarEdicaoCurso(idCurso, novoNome, modal) {
                             sigla: disciplina.sigla
                         })
                     }).then(res => res.json()).then(dados => {
-                        if (dados.disciplinaExistente) console.warn("⚠️ Disciplina já existe:", disciplina.nome);
-                        else if (dados.sucesso || dados.codigo) console.log(`✅ Disciplina "${disciplina.nome}" cadastrada`);
+                        if (dados.disciplinaExistente) {
+                            mostrarLoader('esconder');
+                            mostrarAlerta(`Uma disciplina já possui esse código!`, "aviso");
+                            console.warn("⚠️ Disciplina já existe:", disciplina.nome);
+                        } else if (dados.sucesso || dados.codigo) {
+                            mostrarLoader('esconder');
+                            mostrarAlerta(`Disciplina "${disciplina.nome}" cadastrada com sucesso!`, "sucesso");
+                            console.log(`✅ Disciplina "${disciplina.nome}" cadastrada`);
+                        }
                     });
                 });
             });
@@ -1920,15 +1930,31 @@ function salvarEdicaoCurso(idCurso, novoNome, modal) {
     });
     EdicaoStateCurso.disciplinasParaDeletar.forEach(idDisciplina => {
         promiseChain = promiseChain.then(() => {
-            return fetch("/disciplina/deletar", {
+            return fetch("/disciplina/componente/verificar", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ codigo: idDisciplina }) // Assumindo que ID = Código
-            }).then(res => res.json()).then(dados => {
-                if (dados.message) {
-                    console.log(`✅ Disciplina deletada: ${idDisciplina}`);
+                body: JSON.stringify({ codigo: idDisciplina })
+            }).then(res => res.json()).then(verificacao => {
+                if (verificacao.sucesso) {
                     mostrarLoader('esconder');
-                    mostrarAlerta(`Disciplina deletada com sucesso!`, "sucesso");
+                    mostrarAlerta(`Não foi possível deletar a disciplina ID ${idDisciplina} pois ela possui componentes de notas vinculados!`, "erro");
+                    console.warn(`⚠️ Disciplina ID ${idDisciplina} possui componentes vinculados, não foi deletada.`);
+                    return Promise.resolve();
+                } else {
+                    return fetch("/disciplina/turma/verificar", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ codigo: idDisciplina })
+                    }).then(res => res.json()).then(turma => {
+                        if (turma.sucesso) {
+                            mostrarLoader('esconder');
+                            mostrarAlerta(`Não foi possível deletar a disciplina ID ${idDisciplina} pois ela possui turmas vinculadas!`, "erro");
+                            console.warn(`⚠️ Disciplina ID ${idDisciplina} possui turmas vinculadas, não foi deletada.`);
+                            return Promise.resolve();
+                        } else {
+                            return deletarDisciplinaDB(idDisciplina)
+                        }
+                    });
                 }
             });
         });
@@ -1951,8 +1977,6 @@ function salvarEdicaoCurso(idCurso, novoNome, modal) {
 
                 // ✅ ATUALIZA A UI CENTRALIZADA
                 renderizarTodaInterface();
-
-                mostrarAlerta("Alterações salvas com sucesso!", "sucesso");
             }
         })
         .catch(err => {
@@ -2378,12 +2402,12 @@ function salvarEdicaoTurma(idTurma, novoNome, novoLocal, novoDia, novaHora, moda
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-             id: parseInt(idTurma),
-             fk_disciplina_codigo: EdicaoStateTurma.turmaOriginal.fk_disciplina_codigo,
-             nome: novoNome,
-             local_aula: novoLocal,
-             dia_semana: novoDia,
-             hora: novaHora
+            id: parseInt(idTurma),
+            fk_disciplina_codigo: EdicaoStateTurma.turmaOriginal.fk_disciplina_codigo,
+            nome: novoNome,
+            local_aula: novoLocal,
+            dia_semana: novoDia,
+            hora: novaHora
         })
     })
         .then(res => res.json())

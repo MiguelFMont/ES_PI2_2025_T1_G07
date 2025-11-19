@@ -148,6 +148,11 @@
     gap: 8px;
 }
 
+.campoEdicao #editCodigoDisciplina {
+    background-color: var(--lightwhite);
+}
+
+
 .campoEdicao label {
     font-weight: 600;
     font-size: 0.95rem;
@@ -533,10 +538,14 @@ Style das Infos de Disciplina no Modal de Edição
     box-sizing: border-box;
 }
 
-.boxInfoDisciplinas input:focus,
-.boxInfoDisciplinas select:focus {
+.boxInfoDisciplinas input:focus {
     outline: none;
     border-color: var(--color5);
+}
+
+.boxInfoDisciplinas .editCodigoDisciplina:focus{
+    border-color: var(--lightgrey);
+    outline: none;
 }
 
 @keyframes shake {

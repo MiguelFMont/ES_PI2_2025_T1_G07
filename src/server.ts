@@ -46,7 +46,9 @@ import {
     updateDisciplina,
     verificarCadastroDisciplina,
     getDisciplinaByCodigo,
-    getAllDisciplina
+    getAllDisciplina,
+    verificarComponenteExistenteEmDisciplina,
+    verificarTurmaExistenteEmDisciplina
 } from "./db/disciplina"
 
 import {
@@ -485,9 +487,9 @@ app.get('/curso/all/:id_instituicao', async (req: Request, res: Response) => {
         const cursos = await getAllCurso(id_instituicao);
 
         if (cursos && cursos.length > 0) {
-            
+
             console.log(`✅ ${cursos.length} curso(s) encontrados (sem disciplinas aninhadas)`);
-            
+
             res.json({
                 sucesso: true,
                 cursos: cursos
@@ -621,6 +623,78 @@ app.post('/disciplina/atualizar', async (req: Request, res: Response) => {
 });
 
 
+// verifica se a disciplina possui algum componente de nota associado
+app.post('/disciplina/componente/verificar', async (req: Request, res: Response) => {
+    try {
+        const { codigo } = req.body;
+        if (!codigo) {
+            console.log("❌ O campo código é obrigatório!");
+            return res.status(400).json({
+                error: "O campo código é obrigatório!"
+            });
+        }
+        const componentes = await verificarComponenteExistenteEmDisciplina(codigo);
+
+        if (componentes) {
+            console.log("❌ Disciplina possui componentes de nota associados:", codigo);
+            res.json({
+                sucesso: true,
+                message: "A Disciplina possui componentes de nota associados.",
+                componentes: componentes
+            });
+        } else {
+            console.log("✅ Disciplina não possui componentes de nota associados:", codigo);
+            res.status(200).json({
+                sucesso: false,
+                message: "A Disciplina não possui componentes de nota associados."
+            });
+        }
+    } catch (error) {
+        console.error("❌ Erro ao verificar componentes de nota da disciplina:", error);
+        res.status(500).json({
+            sucesso: false,
+            message: "Erro no servidor ao verificar componentes de nota da disciplina"
+        });
+    }
+});
+
+app.post('/disciplina/turma/verificar', async (req: Request, res: Response) => {
+    try {
+        const { codigo } = req.body;
+        
+        if (!codigo) {
+            console.log("❌ O campo código é obrigatório!");
+            return res.status(400).json({
+                error: "O campo código é obrigatório!"
+            });
+        }
+        const possuiTurmas = await verificarTurmaExistenteEmDisciplina(codigo);
+        
+        if (possuiTurmas) {
+            console.log("❌ Disciplina possui turmas associadas:", codigo);
+            res.json({
+                sucesso: true,
+                message: "A Disciplina possui turmas associadas."
+            });
+        } else {
+            console.log("✅ Disciplina não possui turmas associadas:", codigo);
+            res.json({
+                sucesso: false,
+                message: "A Disciplina não possui turmas associadas."
+            });
+        }
+    } catch (error) {
+        console.error("❌ Erro ao verificar turmas da disciplina:", error);
+        res.status(500).json({
+            sucesso: false,
+            message: "Erro no servidor ao verificar turmas da disciplina"
+        });
+    }
+});
+
+
+
+
 // Deletar disciplina
 app.post('/disciplina/deletar', async (req: Request, res: Response) => {
     try {
@@ -634,10 +708,10 @@ app.post('/disciplina/deletar', async (req: Request, res: Response) => {
         }
 
         // Verificar se a disciplina existe
-        const disciplinaExistente = await getDisciplinaByCodigo(codigo);
-        if (!disciplinaExistente) {
+        const turmaExistente = await verificarTurmaExistenteEmDisciplina(codigo);
+        if (turmaExistente) {
             return res.status(404).json({
-                error: "Disciplina não encontrada"
+                error: "Disciplina possui turmas associadas e não pode ser deletada."
             });
         }
 
@@ -1121,53 +1195,53 @@ app.get('/componente-nota/id/:id_componente', async (req: Request, res: Response
 
 // Obter todos os componentes de nota
 app.get('/componente-nota/all', async (req: Request, res: Response) => {
-    try {
-        const componentes = await getAllComponentesNota();
-        if (componentes && componentes.length > 0) {
-            res.json(componentes);
-        } else {
-            res.status(404).json({
-                message: "Não há componentes de nota cadastrados."
-            });
-        }
-    } catch (error) {
-        console.error("❌ Erro ao buscar todos os componentes de nota:", error);
-        res.status(500).json({
-            error: "Erro ao buscar os componentes de nota."
-        });
-    }
+    try {
+        const componentes = await getAllComponentesNota();
+        if (componentes && componentes.length > 0) {
+            res.json(componentes);
+        } else {
+            res.status(404).json({
+                message: "Não há componentes de nota cadastrados."
+            });
+        }
+    } catch (error) {
+        console.error("❌ Erro ao buscar todos os componentes de nota:", error);
+        res.status(500).json({
+            error: "Erro ao buscar os componentes de nota."
+        });
+    }
 });
 
 // ✅ NOVA ROTA: Obter componentes pelo ID do Docente
 app.get('/componente-nota/docente/:id_docente', async (req: Request, res: Response) => {
-    try {
-        const id_docente = Number(req.params.id_docente);
-        if (isNaN(id_docente)) {
-            return res.status(400).json({
-                sucesso: false,
-                error: 'ID do docente inválido'
-            });
-        }
+    try {
+        const id_docente = Number(req.params.id_docente);
+        if (isNaN(id_docente)) {
+            return res.status(400).json({
+                sucesso: false,
+                error: 'ID do docente inválido'
+            });
+        }
 
-        console.log(`🔍 Buscando componentes para docente ID: ${id_docente}`);
-        const componentes = await getComponentesNotaByDocente(id_docente);
+        console.log(`🔍 Buscando componentes para docente ID: ${id_docente}`);
+        const componentes = await getComponentesNotaByDocente(id_docente);
 
-        if (componentes && componentes.length > 0) {
-            console.log(`✅ ${componentes.length} componentes encontrados.`);
-            res.json(componentes);
-        } else {
-            console.log(`⚠️ Nenhum componente encontrado para o docente ${id_docente}.`);
-            res.status(404).json({
-                message: "Não há componentes de nota cadastrados para este docente."
-            });
-        }
-    } catch (error) {
-        console.error("❌ Erro ao buscar componentes por docente:", error);
-        res.status(500).json({
-            sucesso: false,
-            error: "Erro ao buscar os componentes de nota."
-        });
-    }
+        if (componentes && componentes.length > 0) {
+            console.log(`✅ ${componentes.length} componentes encontrados.`);
+            res.json(componentes);
+        } else {
+            console.log(`⚠️ Nenhum componente encontrado para o docente ${id_docente}.`);
+            res.status(404).json({
+                message: "Não há componentes de nota cadastrados para este docente."
+            });
+        }
+    } catch (error) {
+        console.error("❌ Erro ao buscar componentes por docente:", error);
+        res.status(500).json({
+            sucesso: false,
+            error: "Erro ao buscar os componentes de nota."
+        });
+    }
 });
 
 /*==================*/
@@ -1287,14 +1361,14 @@ app.post('/matricula/cadastro', async (req: Request, res: Response) => {
                 error: "Os campos fk_id_turma e fk_id_estudante são obrigatórios"
             });
         }
-        
-        
+
+
         const existente = await verificarMatriculaExistente(fk_id_turma, fk_id_estudante);
         if (existente) {
             console.log("❌ Matrícula já existente para estudante na turma", existente.id_matricula);
             return res.status(409).json({ sucesso: false, message: "Matrícula já existe", id: existente.id_matricula });
         }
-        
+
 
         const id = await addMatricula(fk_id_turma, fk_id_estudante);
         console.log("✅ Matrícula registrada com sucesso! ID:", id);

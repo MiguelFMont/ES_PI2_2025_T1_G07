@@ -1,4 +1,4 @@
-import {open, close} from "../config/db";
+import { open, close } from "../config/db";
 import OracleDB from "oracledb";
 
 export interface Disciplina {
@@ -29,7 +29,7 @@ export async function addDisciplina(
         );
 
         return codigo; // RETORNA O CÓDIGO INSERIDO
-        
+
     } finally {
         await close(conn);
     }
@@ -76,7 +76,7 @@ export async function updateDisciplina(
 
 // Verificar se disciplina já está cadastrada no mesmo curso
 export async function verificarCadastroDisciplina(
-    nome: string, 
+    nome: string,
     id_curso: number
 ): Promise<Disciplina | null> {
     const conn = await open();
@@ -87,7 +87,7 @@ export async function verificarCadastroDisciplina(
              WHERE NOME = :nome AND FK_ID_CURSO = :id_curso`,
             { nome, id_curso }
         );
-        
+
         if (result.rows && result.rows.length > 0) {
             const row = result.rows[0] as any;
             return {
@@ -111,7 +111,7 @@ export async function getAllDisciplina(): Promise<Disciplina[]> {
         const result = await conn.execute(
             `SELECT CODIGO as "codigo", FK_ID_CURSO as "id_curso", NOME as "nome", PERIODO as "periodo", SIGLA as "sigla" FROM DISCIPLINA`
         );
-        
+
         return result.rows as Disciplina[];
     } finally {
         await close(conn);
@@ -128,7 +128,7 @@ export async function getDisciplinaByCodigo(codigo: number): Promise<Disciplina 
              WHERE CODIGO = :codigo`,
             { codigo }
         );
-        
+
         if (result.rows && result.rows.length > 0) {
             const row = result.rows[0] as any;
             return {
@@ -140,6 +140,39 @@ export async function getDisciplinaByCodigo(codigo: number): Promise<Disciplina 
             };
         }
         return null;
+    } finally {
+        await close(conn);
+    }
+}
+
+export async function verificarComponenteExistenteEmDisciplina(codigo: number): Promise<boolean> {
+    const conn = await open();
+    try {
+        const result = await conn.execute(
+            `SELECT COUNT(*) as "count" 
+             FROM COMPONENTE_NOTA
+                WHERE FK_DISCIPLINA_CODIGO = :codigo`,
+            { codigo }
+        );
+        const row = result.rows?.[0] as any;
+        return row.count > 0;
+    } finally {
+        await close(conn);
+    }
+}
+
+export async function verificarTurmaExistenteEmDisciplina(codigo: number): Promise<boolean> {
+    const conn = await open();
+    try{
+        const result = await conn.execute(
+            `
+            SELECT COUNT(*) as "count"
+            FROM TURMA WHERE FK_DISCIPLINA_CODIGO = :codigo
+            `,
+            { codigo }
+        );
+        const row = result.rows?.[0] as any;
+        return row.count > 0;
     } finally {
         await close(conn);
     }
