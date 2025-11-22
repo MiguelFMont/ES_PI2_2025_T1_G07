@@ -150,11 +150,11 @@ body {
 .optionsSelect {
     display: none;
     position: absolute;
-    bottom: 0;
+    bottom: -2px;
     right: 0;
     gap: 5px;
     background: var(--color1);
-    padding: 5px;
+    padding: 8px;
     flex-direction: column;
     border-radius: 4px;
     box-shadow: 0px 5px 6px var(--shadow);
@@ -167,12 +167,25 @@ body {
     background: var(--white);
     width: 100%;
     white-space: nowrap;
+    font-size: 0.9rem;
+    font-weight: 500;
     transition: all 0.1s ease;
 }
 
 .optionsSelect button:hover {
     background: var(--lightgrey);
     cursor: pointer;
+    box-shadow: 0px 4px 5px var(--shadow2);
+}
+
+#cancelSelection {
+    background: var(--color4);
+    color: var(--white);
+    border: none;
+}
+
+#cancelSelection:hover {
+    box-shadow: 0px 4px 5px var(--red);
 }
 
 .selectAlunos  i {

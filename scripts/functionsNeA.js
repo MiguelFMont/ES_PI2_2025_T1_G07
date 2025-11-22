@@ -1132,56 +1132,122 @@ async function importarUnico(ra, nome, idTurma) {
 /------------- SELECIONAR ALUNOS -------------/
 /////////////////////////////////////////////*/
 
-const openClosedSelectAlunos = document.querySelector('.selectAlunos i');
+const openClosedSelectAlunos = document.getElementById('btnOptionsSelectA');
 const optionsSelect = document.querySelector('.optionsSelect');
 const bodySelect = document.querySelector('.selectAlunos');
-var countSelect = 0;
+const btnCancelSelection = document.getElementById('cancelSelection'); 
+let countSelect = 0;
 
-openClosedSelectAlunos.addEventListener('click', () => {
-    optionsSelect.style.display = 'flex';
-    bodySelect.style.height = '110px';
-    countSelect++;
+// ============================================================
+// FUNÇÕES AUXILIARES
+// ============================================================
 
-    if(countSelect == 2) {
+// Verifica se existe pelo menos UMA bolinha marcada com a cor roxa
+function isAlgumSelecionado() {
+    const allSelectBtns = document.querySelectorAll('#selectAlunoBtn');
+    // Retorna true se encontrar pelo menos um com a cor roxa
+    return Array.from(allSelectBtns).some(btn => btn.style.background.includes('var(--color9)'));
+}
+
+// Esconde todas as bolinhas e reseta o estilo visual
+function sairDoModoSelecao() {
+    const allSelectBtns = document.querySelectorAll('#selectAlunoBtn');
+    allSelectBtns.forEach(btn => {
+        btn.style.display = 'none';       
+        btn.style.background = '';        
+        btn.style.border = '1px solid var(--black)'; 
+    });
+}
+
+// Fecha o menu e reseta o contador de cliques
+function fecharMenuSelecao() {
+    if (optionsSelect && bodySelect) {
         optionsSelect.style.display = 'none';
         bodySelect.style.height = 'min-content';
         countSelect = 0;
-    };
-});
-
-// ============================================================
-// LÓGICA DO BOTÃO "SELECIONAR" (ATIVAR MODO DE SELEÇÃO)
-// ============================================================
-document.addEventListener('DOMContentLoaded', () => {
-    const btnSelecionarOne = document.getElementById('selecionarOne');
-
-    if (btnSelecionarOne) {
-        btnSelecionarOne.addEventListener('click', () => {
-            // 1. Pega todas as bolinhas de seleção
-            const checkButtons = document.querySelectorAll('#selectAlunoBtn');
-
-            // 2. Percorre e alterna visibilidade
-            checkButtons.forEach(btn => {
-                if (btn.style.display === 'none' || btn.style.display === '') {
-                    btn.style.display = 'block'; // Mostra
-                } else {
-                    btn.style.display = 'none';  // Esconde
-                    btn.style.background = '';   // Limpa seleção ao sair
-                }
-            });
-
-            // 3. Fecha o menu de opções visualmente para limpar a tela
-            const optionsSelect = document.querySelector('.optionsSelect');
-            const bodySelect = document.querySelector('.selectAlunos');
-            
-            if (optionsSelect) {
-                optionsSelect.style.display = 'none';
-                if (bodySelect) bodySelect.style.height = 'min-content';
-                // Zera o contador do menu (conforme sua lógica original)
-                if (typeof countSelect !== 'undefined') {
-                    countSelect = 0; 
-                }
-            }
-        });
     }
-});
+}
+
+// ============================================================
+// 1. LÓGICA DO MENU (ABRIR / FECHAR)
+// ============================================================
+
+if (openClosedSelectAlunos) {
+    openClosedSelectAlunos.addEventListener('click', () => {
+        
+        // --- ABRINDO O MENU ---
+        if (countSelect === 0) {
+            
+            // REGRA DO USUÁRIO: Se clicar nos três pontinhos e NÃO tiver ninguém selecionado (roxo),
+            // remove as bolinhas imediatamente.
+            if (!isAlgumSelecionado()) {
+                sairDoModoSelecao();
+            }
+
+            // Verifica novamente se tem alguém selecionado para decidir se mostra o botão "Cancelar"
+            const temSelecao = isAlgumSelecionado();
+
+            if (temSelecao) {
+                // Tem gente marcada: Mostra "Cancelar" e aumenta o menu
+                if(btnCancelSelection) btnCancelSelection.style.display = 'block';
+                bodySelect.style.height = '150px'; 
+            } else {
+                // Ninguém marcado: Esconde "Cancelar" e deixa menu pequeno
+                if(btnCancelSelection) btnCancelSelection.style.display = 'none';
+                bodySelect.style.height = '110px'; 
+            }
+
+            // Exibe o menu
+            optionsSelect.style.display = 'flex';
+            countSelect++;
+        } 
+        
+        // --- FECHANDO O MENU ---
+        else {
+            fecharMenuSelecao();
+        }
+    });
+}
+
+// ============================================================
+// 2. BOTÃO "SELECIONAR" 
+// ============================================================
+const btnSelecionarOne = document.getElementById('selecionarOne');
+if (btnSelecionarOne) {
+    btnSelecionarOne.addEventListener('click', (e) => {
+        e.preventDefault();
+        const allSelectBtns = document.querySelectorAll('#selectAlunoBtn');
+        allSelectBtns.forEach(btn => {
+            btn.style.display = 'block'; // Mostra bolinhas vazias
+        });
+        fecharMenuSelecao();
+    });
+}
+
+// ============================================================
+// 3. BOTÃO "SELECIONAR TODOS"
+// ============================================================
+const btnSelecionarAll = document.getElementById('selecionarAll');
+if (btnSelecionarAll) {
+    btnSelecionarAll.addEventListener('click', (e) => {
+        e.preventDefault();
+        const allSelectBtns = document.querySelectorAll('#selectAlunoBtn');
+        allSelectBtns.forEach(btn => {
+            btn.style.display = 'block';
+            btn.style.background = 'var(--color9)'; // Marca roxo
+            btn.style.border = '1px solid var(--color9)';
+        });
+        fecharMenuSelecao();
+    });
+}
+
+// ============================================================
+// 4. BOTÃO "CANCELAR"
+// ============================================================
+if (btnCancelSelection) {
+    btnCancelSelection.addEventListener('click', (e) => {
+        e.preventDefault();
+        sairDoModoSelecao(); // Limpa tudo
+        fecharMenuSelecao();
+    });
+}
