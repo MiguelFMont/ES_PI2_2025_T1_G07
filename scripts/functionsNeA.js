@@ -749,32 +749,33 @@ async function matricularAluno(ra) {
 // EXCLUSÃO (DELETE)
 // ============================================================
 async function deletarAluno(ra) {
-    mostrarConfirm(`Tem certeza que deseja excluir o aluno com RA ${ra}?`, (confirmado) => {
-        if (!confirmado) return;
-    });
+    mostrarConfirm(`Tem certeza que deseja excluir o aluno com RA ${ra}?`, async (confirmado) => {
+        if (confirmado) {
+            const load = document.querySelector('.load');
+            if (load) load.style.display = 'flex';
 
-    const load = document.querySelector('.load');
-    if (load) load.style.display = 'flex';
+            try {
+                //
+                const response = await fetch('/estudante/deletar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ra: ra })
+                });
 
-    try {
-        //
-        const response = await fetch('/estudante/deletar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ra: ra })
-        });
-
-        if (response.ok) {
-            mostrarAlerta('Aluno excluído com sucesso.');
-            listarAlunos();
-        } else {
-            mostrarAlerta('Erro ao excluir aluno.');
+                if (response.ok) {
+                    if (load) load.style.display = 'none';
+                    mostrarAlerta('Aluno excluído com sucesso.');
+                    listarAlunos();
+                } else {
+                    mostrarAlerta('Erro ao excluir aluno.');
+                }
+            } catch (error) {
+                console.error(error);
+            } finally {
+                if (load) load.style.display = 'none';
+            }
         }
-    } catch (error) {
-        console.error(error);
-    } finally {
-        if (load) load.style.display = 'none';
-    }
+    });
 }
 
 // ===============================
@@ -814,30 +815,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 mostrarAlerta('Selecione um componente para deletar.');
                 return;
             }
-            mostrarConfirm('Tem certeza que deseja deletar este componente? Todas as notas associadas serão removidas!', (confirmado) => {
-                if (!confirmado) return;
-            });
-            const load = document.querySelector('.load');
-            if (load) load.style.display = 'flex';
-            try {
-                const resp = await fetch('/componente-nota/deletar', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id_componente: idComp })
-                });
-                if (resp.ok) {
-                    mostrarAlerta('Componente deletado com sucesso!');
-                    deleteCompBody.style.display = 'none';
-                    await listarComponentes();
-                    await carregarTabelaNotas();
-                } else {
-                    mostrarAlerta('Erro ao deletar componente.');
+
+            mostrarConfirm('Tem certeza que deseja deletar este componente? Todas as notas associadas serão removidas!', async (confirmado) => {
+                if (confirmado) {
+                    const load = document.querySelector('.load');
+                    if (load) load.style.display = 'flex';
+
+                    try {
+                        const resp = await fetch('/componente-nota/deletar', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id_componente: idComp })
+                        });
+
+                        if (resp.ok) {
+                            if (load) load.style.display = 'none';
+                            mostrarAlerta('Componente deletado com sucesso!');
+                            deleteCompBody.style.display = 'none';
+                            await listarComponentes();
+                            await carregarTabelaNotas();
+                        } else {
+                            mostrarAlerta('Erro ao deletar componente.');
+                        }
+                    } catch (error) {
+                        mostrarAlerta('Erro na requisição.');
+                    } finally {
+                        if (load) load.style.display = 'none';
+                    }
                 }
-            } catch (error) {
-                mostrarAlerta('Erro na requisição.');
-            } finally {
-                if (load) load.style.display = 'none';
-            }
+            });
         });
     }
 
@@ -867,7 +873,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const resp = await fetch('/componente-nota/all');
             if (resp.ok) {
                 const lista = await resp.json();
-                
+
                 // Filtra componentes pela disciplina
                 let componentesFiltrados = lista;
                 if (fk_disciplina) {
@@ -1135,7 +1141,7 @@ async function importarUnico(ra, nome, idTurma) {
 const openClosedSelectAlunos = document.getElementById('btnOptionsSelectA');
 const optionsSelect = document.querySelector('.optionsSelect');
 const bodySelect = document.querySelector('.selectAlunos');
-const btnCancelSelection = document.getElementById('cancelSelection'); 
+const btnCancelSelection = document.getElementById('cancelSelection');
 let countSelect = 0;
 
 // ============================================================
@@ -1153,9 +1159,9 @@ function isAlgumSelecionado() {
 function sairDoModoSelecao() {
     const allSelectBtns = document.querySelectorAll('#selectAlunoBtn');
     allSelectBtns.forEach(btn => {
-        btn.style.display = 'none';       
-        btn.style.background = '';        
-        btn.style.border = '1px solid var(--black)'; 
+        btn.style.display = 'none';
+        btn.style.background = '';
+        btn.style.border = '1px solid var(--black)';
     });
 }
 
@@ -1174,10 +1180,10 @@ function fecharMenuSelecao() {
 
 if (openClosedSelectAlunos) {
     openClosedSelectAlunos.addEventListener('click', () => {
-        
+
         // --- ABRINDO O MENU ---
         if (countSelect === 0) {
-            
+
             // REGRA DO USUÁRIO: Se clicar nos três pontinhos e NÃO tiver ninguém selecionado (roxo),
             // remove as bolinhas imediatamente.
             if (!isAlgumSelecionado()) {
@@ -1189,19 +1195,19 @@ if (openClosedSelectAlunos) {
 
             if (temSelecao) {
                 // Tem gente marcada: Mostra "Cancelar" e aumenta o menu
-                if(btnCancelSelection) btnCancelSelection.style.display = 'block';
-                bodySelect.style.height = '150px'; 
+                if (btnCancelSelection) btnCancelSelection.style.display = 'block';
+                bodySelect.style.height = '150px';
             } else {
                 // Ninguém marcado: Esconde "Cancelar" e deixa menu pequeno
-                if(btnCancelSelection) btnCancelSelection.style.display = 'none';
-                bodySelect.style.height = '110px'; 
+                if (btnCancelSelection) btnCancelSelection.style.display = 'none';
+                bodySelect.style.height = '110px';
             }
 
             // Exibe o menu
             optionsSelect.style.display = 'flex';
             countSelect++;
-        } 
-        
+        }
+
         // --- FECHANDO O MENU ---
         else {
             fecharMenuSelecao();
