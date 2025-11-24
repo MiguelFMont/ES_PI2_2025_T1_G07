@@ -254,7 +254,7 @@ async function carregarNotasExistentes() {
     }
 }
 // ============================================================
-// FUNÇÃO PRINCIPAL: LISTAR ALUNOS (ATUALIZADA)
+// FUNÇÃO PRINCIPAL: LISTAR ALUNOS
 // ============================================================
 async function listarAlunos() {
     try {
@@ -314,7 +314,7 @@ async function listarAlunos() {
                                 <button onclick="deletarAluno(${aluno.ra})" class="deletAluno">
                                     <i class="ph ph-trash"></i> Excluir
                                 </button>
-                                <button class="exportarAluno">
+                                <button onclick="exportarAlunoIndividual('${aluno.ra}', '${aluno.nome}')" class="exportarAluno">
                                     <i class="ph ph-export"></i> Exportar
                                 </button>
                             </div>
@@ -335,12 +335,12 @@ async function listarAlunos() {
 
                     if (isSelectionMode) {
                         // MODO SELEÇÃO: Apenas marca/desmarca a cor
-                        if (selectBtn.style.background.includes('var(--color9)')) {
+                        if (selectBtn.style.background.includes('var(--color5)')) {
                             selectBtn.style.background = ''; // Remove a seleção
                             selectBtn.style.border = '1px solid var(--black)'; // Remove a seleção
                         } else {
-                            selectBtn.style.background = 'var(--color9)'; // Seleciona
-                            selectBtn.style.border = '1px solid var(--color9)'; // Seleciona
+                            selectBtn.style.background = 'var(--color5)'; // Seleciona
+                            selectBtn.style.border = '1px solid var(--color5)'; // Seleciona
                         }
                     } else {
                         // MODO NORMAL: Abre os detalhes (InfoAluno)
@@ -469,7 +469,7 @@ async function listarComponentes() {
         const view = document.querySelector('.viewDatailsComp');
         const countEl = document.getElementById('countComponents');
 
-        // 1. Obter o ID do docente logado (MUDANÇA AQUI)
+        // 1. Obter o ID do docente logado
         const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
         if (!usuarioLogado || !usuarioLogado.id) {
             console.error("❌ Usuário não autenticado");
@@ -477,9 +477,7 @@ async function listarComponentes() {
         }
         const id_docente = usuarioLogado.id;
 
-        // 2. Buscar na NOVA rota, usando o ID do docente (MUDANÇA AQUI)
-        // ANTES: /componente-nota/all ou /componente-nota/all/${id}
-        // AGORA:
+        // 2. Buscar na NOVA rota, usando o ID do docente
         const resp = await fetch(`/componente-nota/docente/${id_docente}`);
 
         if (!resp.ok) {
@@ -495,7 +493,7 @@ async function listarComponentes() {
         const componentes = await resp.json();
         const lista = Array.isArray(componentes) ? componentes : (componentes.componentes || []);
 
-        // 3. Obter a disciplina da turma atual (lógica que você já tinha)
+        // 3. Obter a disciplina da turma atual
         const turmaEl = document.querySelector('.tumaLogin') || document.querySelector('.turmaLogin');
         // ✅ CORREÇÃO: Usar a função global que criamos
         const turmaAtual = obterTurmaAtual();
@@ -1152,7 +1150,7 @@ let countSelect = 0;
 function isAlgumSelecionado() {
     const allSelectBtns = document.querySelectorAll('#selectAlunoBtn');
     // Retorna true se encontrar pelo menos um com a cor roxa
-    return Array.from(allSelectBtns).some(btn => btn.style.background.includes('var(--color9)'));
+    return Array.from(allSelectBtns).some(btn => btn.style.background.includes('var(--color5)'));
 }
 
 // Esconde todas as bolinhas e reseta o estilo visual
@@ -1240,8 +1238,8 @@ if (btnSelecionarAll) {
         const allSelectBtns = document.querySelectorAll('#selectAlunoBtn');
         allSelectBtns.forEach(btn => {
             btn.style.display = 'block';
-            btn.style.background = 'var(--color9)'; // Marca roxo
-            btn.style.border = '1px solid var(--color9)';
+            btn.style.background = 'var(--color5)';
+            btn.style.border = '1px solid var(--color5)';
         });
         fecharMenuSelecao();
     });
@@ -1256,4 +1254,113 @@ if (btnCancelSelection) {
         sairDoModoSelecao(); // Limpa tudo
         fecharMenuSelecao();
     });
+}
+
+// ============================================================
+// EXPORTAR ALUNO INDIVIDUAL (CSV COMPLETO)
+// ============================================================
+async function exportarAlunoIndividual(ra, nome) {
+    // 1. Mostrar loading pois vamos buscar dados no banco
+    const load = document.querySelector('.load');
+    if (load) load.style.display = 'flex';
+
+    try {
+        // 2. Obter informações da Turma e Disciplina
+        const turmaAtual = obterTurmaAtual();
+        if (!turmaAtual) {
+            mostrarAlerta("Informações da turma não encontradas.", "erro");
+            if (load) load.style.display = 'none';
+            return;
+        }
+        
+        const fk_disciplina = turmaAtual.disciplina.codigo;
+
+        // 3. Buscar componentes (Provas, trabalhos) da disciplina dessa turma
+        const respComp = await fetch('/componente-nota/all');
+        if (!respComp.ok) throw new Error("Erro ao buscar componentes");
+        
+        const allComps = await respComp.json();
+        // Filtra apenas os componentes desta disciplina
+        const componentesDaTurma = allComps.filter(c => String(c.fk_disciplina_codigo) === String(fk_disciplina));
+
+        // 4. Buscar todas as notas
+        // (Seria ideal ter um endpoint /nota/aluno/:ra, mas vamos usar o /all existente e filtrar)
+        const respNotas = await fetch('/nota/all');
+        if (!respNotas.ok) throw new Error("Erro ao buscar notas");
+        const todasAsNotas = await respNotas.json();
+
+        // 5. Preparar os dados para o CSV
+        let headerCSV = "RA;Nome";
+        let linhaDados = `${ra};${nome}`;
+        let somaNotas = 0;
+        let qtdNotasComputadas = 0;
+        let temNotaFaltante = false;
+
+        // Itera sobre cada componente que a turma deve ter
+        for (const comp of componentesDaTurma) {
+            // Adiciona o nome do componente no cabeçalho (ex: ;P1)
+            headerCSV += `;${comp.sigla || comp.nome}`;
+
+            // Procura a nota desse aluno para esse componente
+            const notaEncontrada = todasAsNotas.find(n => 
+                String(n.fk_id_estudante) === String(ra) && 
+                String(n.fk_id_componente) === String(comp.id_componente)
+            );
+
+            if (notaEncontrada) {
+                // Formata a nota (troca ponto por vírgula para Excel PT-BR)
+                const valorFormatado = String(notaEncontrada.valor_nota).replace('.', ',');
+                linhaDados += `;${valorFormatado}`;
+                
+                somaNotas += Number(notaEncontrada.valor_nota);
+                qtdNotasComputadas++;
+            } else {
+                // Se não achou a nota, marca a flag e para o loop
+                temNotaFaltante = true;
+                break; 
+            }
+        }
+
+        // 6. Verificação de Integridade
+        if (temNotaFaltante) {
+            if (load) load.style.display = 'none';
+            mostrarAlerta("Aluno sem nota(s) lançada(s). Exportação cancelada.", "aviso");
+            return;
+        }
+
+        // Se não houver componentes na turma, a média é 0 ou vazia. 
+        // Caso contrário, calcula média aritmética.
+        let mediaFinal = 0;
+        if (qtdNotasComputadas > 0) {
+            mediaFinal = (somaNotas / qtdNotasComputadas).toFixed(1);
+        }
+
+        // Adiciona a média ao CSV
+        headerCSV += ";Média";
+        linhaDados += `;${String(mediaFinal).replace('.', ',')}`;
+
+        // 7. Montar o arquivo final
+        const csvContent = `${headerCSV}\n${linhaDados}`;
+        
+        // Cria o Blob com BOM para acentuação correta
+        const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+
+        // Nome do arquivo
+        const nomeArquivo = nome.replace(/\s+/g, '_'); 
+        link.setAttribute("download", `Relatorio_${nomeArquivo}_${ra}.csv`);
+
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+    } catch (error) {
+        console.error("Erro na exportação:", error);
+        mostrarAlerta("Erro ao exportar dados do aluno.", "erro");
+    } finally {
+        if (load) load.style.display = 'none';
+    }
 }
