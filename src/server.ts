@@ -703,6 +703,7 @@ app.post('/disciplina/deletar', async (req: Request, res: Response) => {
         if (!codigo) {
             console.log("❌ O campo código é obrigatório!");
             return res.status(400).json({
+                turma: false,
                 error: "O campo código é obrigatório!"
             });
         }
@@ -711,6 +712,7 @@ app.post('/disciplina/deletar', async (req: Request, res: Response) => {
         const turmaExistente = await verificarTurmaExistenteEmDisciplina(codigo);
         if (turmaExistente) {
             return res.status(404).json({
+                turma: true,
                 error: "Disciplina possui turmas associadas e não pode ser deletada."
             });
         }

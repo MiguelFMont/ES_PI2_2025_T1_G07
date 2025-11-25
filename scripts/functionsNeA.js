@@ -21,11 +21,17 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("✅ Turma carregada:", turma);
 
             // Atualiza todos os elementos .turmaLogin na página
-            const elementosTurma = document.querySelectorAll('.turmaLogin, .tumaLogin');
+            const elementosTurma = document.querySelectorAll('.turmaLogin');
             elementosTurma.forEach(el => {
                 el.textContent = turma.nome_turma;
                 el.setAttribute('data-turma-id', turma.id);
-                el.setAttribute('data-disciplina-codigo', turma.disciplina.codigo);
+            });
+
+
+            const elementosDisciplina = document.querySelectorAll('.disciplinaTurma');
+            elementosDisciplina.forEach(el => {
+                el.textContent = turma.disciplina ? turma.disciplina.nome : 'Disciplina Desconhecida';
+                el.setAttribute('data-disciplina-id', turma.disciplina ? turma.disciplina.codigo : '');
             });
 
             // Adiciona informações adicionais em data-attributes para uso posterior
@@ -391,7 +397,7 @@ async function cadastrarComponente() {
 
     try {
         // Identifica a turma atual para descobrir a disciplina
-        const turmaEl = document.querySelector('.tumaLogin') || document.querySelector('.turmaLogin');
+        const turmaEl = document.querySelector('.turmaLogin');
         if (!turmaEl) {
             mostrarAlerta('Não foi possível identificar a turma atual.', 'error');
             return;

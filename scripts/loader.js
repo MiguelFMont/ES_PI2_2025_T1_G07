@@ -1,4 +1,4 @@
-function mostrarLoader(tipo = 'mostrar') {
+export function mostrarLoader(tipo = 'mostrar') {
     let loader = document.querySelector(".load");
     if (!loader) {
         loader = document.createElement('div');

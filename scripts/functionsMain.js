@@ -2513,6 +2513,9 @@ function deletarDisciplinaDB(codigo) {
                 mostrarAlerta("Disciplina deletada com sucesso!", "sucesso");
                 // ✅ MODIFICADO: Chama o orquestrador central
                 carregarTodaAplicacao();
+            } else if (dados.turma) {
+                mostrarLoader('esconder');
+                mostrarAlerta("Não foi possível deletar a disciplina pois ela possui turmas vinculadas!", "erro");
             } else {
                 throw new Error(dados.error || "Erro ao deletar");
             }
@@ -2529,32 +2532,46 @@ function deletarDisciplinaDB(codigo) {
  */
 function deletarTurmaDB(id) {
     console.log(`🗑️ Deletando turma ID: ${id}`);
+    const codigoDisciplina = get.getTurmaPorId(id)?.fk_disciplina_codigo;
     mostrarLoader('mostrar');
-
-    fetch("/turma/deletar", {
+    fetch("/disciplina/componente/verificar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: parseInt(id) })
+        body: JSON.stringify({ codigo: codigoDisciplina })
     })
         .then(res => res.json())
-        .then(dados => {
-            console.log("✅ Resposta do servidor:", dados);
-            if (dados.sucesso || dados.message) {
-                mostrarAlerta("Turma deletada com sucesso!", "sucesso");
-                fecharModalEdicaoExpansivel(document.querySelector("#turmasBody .modalEdicaoExpansivel"));
-                // ✅ MODIFICADO: Chama o orquestrador central
-                carregarTodaAplicacao();
+        .then(verificacao => {
+            if (verificacao.sucesso) {
+                mostrarLoader('esconder');
+                mostrarAlerta(`Não foi possível deletar a turma ID ${id} pois sua disciplina possui componentes de notas vinculados!`, "erro");
+                console.warn(`⚠️ Turma ID ${id} não foi deletada pois sua disciplina possui componentes vinculados.`);
+                throw new Error("Turma vinculada a componentes de notas");
             } else {
-                throw new Error(dados.error || "Erro ao deletar");
+                return fetch("/turma/deletar", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: parseInt(id) })
+            })
+                .then(res => res.json())
+                .then(dados => {
+                    console.log("✅ Resposta do servidor:", dados);
+                    if (dados.sucesso || dados.message) {
+                        mostrarAlerta("Turma deletada com sucesso!", "sucesso");
+                        fecharModalEdicaoExpansivel(document.querySelector("#turmasBody .modalEdicaoExpansivel"));
+                        // ✅ MODIFICADO: Chama o orquestrador central
+                        carregarTodaAplicacao();
+                    } else {
+                        throw new Error(dados.error || "Erro ao deletar");
+                    }
+                })
+                .catch(err => {
+                    console.error("❌ Erro ao deletar turma:", err);
+                    mostrarAlerta("Erro ao deletar turma do banco de dados.", "erro");
+                    mostrarLoader('esconder');
+                });
             }
-        })
-        .catch(err => {
-            console.error("❌ Erro ao deletar turma:", err);
-            mostrarAlerta("Erro ao deletar turma do banco de dados.", "erro");
-            mostrarLoader('esconder');
         });
 }
-
 // ============================================
 // 7. GERENCIAMENTO DE MODAIS E UI AUXILIAR
 // (Funções que controlam a abertura/fechamento de modais e preenchimento de selects)
