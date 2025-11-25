@@ -125,7 +125,6 @@ function obterTurmaAtual() {
     return null;
 }
 
-
 async function carregarTabelaNotas() {
     const tabela = document.querySelector('.itensNotas table');
     if (!tabela) return;
@@ -259,6 +258,7 @@ async function carregarNotasExistentes() {
         console.error('Erro ao carregar notas existentes:', error);
     }
 }
+
 // ============================================================
 // FUNÇÃO PRINCIPAL: LISTAR ALUNOS
 // ============================================================
@@ -623,7 +623,6 @@ async function cadastrarAluno(ra, nome) {
 // ============================================================
 // EDIÇÃO (UPDATE)
 // ============================================================
-
 function prepararEdicao(ra, nome) {
     const formBody = document.querySelector('.cadastrarAlunoBody');
 
@@ -1151,7 +1150,6 @@ let countSelect = 0;
 // ============================================================
 // FUNÇÕES AUXILIARES
 // ============================================================
-
 // Verifica se existe pelo menos UMA bolinha marcada com a cor roxa
 function isAlgumSelecionado() {
     const allSelectBtns = document.querySelectorAll('#selectAlunoBtn');
@@ -1181,7 +1179,6 @@ function fecharMenuSelecao() {
 // ============================================================
 // 1. LÓGICA DO MENU (ABRIR / FECHAR)
 // ============================================================
-
 if (openClosedSelectAlunos) {
     openClosedSelectAlunos.addEventListener('click', () => {
 

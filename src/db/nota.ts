@@ -1,3 +1,5 @@
+// AUTOR: Davi José Bertuolo Vitoreti - RA: 25004168
+
 import { open, close } from "../config/db";
 import OracleDB from "oracledb";
 
@@ -40,31 +42,6 @@ export async function addNota(
         }
 
         return outBinds.id_nota[0];
-    } finally {
-        await close(conn);
-    }
-}
-
-export async function verificarNotaExistente(
-    id_nota: number,
-    fk_id_componente: number,
-    fk_id_estudante: number,
-    fk_id_turma: number
-): Promise<Nota | null> {
-    const conn = await open();
-    try {
-        const result = await conn.execute(
-            `SELECT ID_NOTA as "id_nota",
-                    FK_ID ESTUDANTE as "id_estudante"
-             FROM webapp.NOTA  
-             WHERE FK_ID_ESTUDANTE = :fk_id_estudante
-               AND ID_NOTA = :id_nota
-             FETCH FIRST 1 ROWS ONLY`,
-            { id_nota, fk_id_estudante },
-            { outFormat: OracleDB.OUT_FORMAT_OBJECT }
-        );
-
-        return (result.rows?.[0] as Nota) || null;
     } finally {
         await close(conn);
     }
