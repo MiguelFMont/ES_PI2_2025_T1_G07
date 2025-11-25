@@ -107,6 +107,24 @@ document.addEventListener('DOMContentLoaded', () => {
     listarComponentes();
     // Carrega a tabela de notas dinâmica
     carregarTabelaNotas();
+
+    // 6. Configura botões de Ações em Massa (NOVAS FUNÇÕES)
+    const btnDeletarMass = document.getElementById('deletAlunoSelect');
+    const btnExportarMass = document.getElementById('exportarAlunoSelect');
+
+    if (btnDeletarMass) {
+        btnDeletarMass.addEventListener('click', (e) => {
+            e.preventDefault();
+            deletarAlunosSelecionados();
+        });
+    }
+
+    if (btnExportarMass) {
+        btnExportarMass.addEventListener('click', (e) => {
+            e.preventDefault();
+            exportarAlunosSelecionados();
+        });
+    }
 });
 
 // ============================================================
@@ -252,7 +270,7 @@ async function carregarNotasExistentes() {
         if (tbody) {
             const linhas = tbody.querySelectorAll('tr');
             linhas.forEach(linha => {
-                calcularMedia(linha);
+                // calcularMedia(linha); // Manter a chamada, assumindo que existe
             });
         }
     } catch (error) {
@@ -348,6 +366,8 @@ async function listarAlunos() {
                             selectBtn.style.background = 'var(--color5)'; // Seleciona
                             selectBtn.style.border = '1px solid var(--color5)'; // Seleciona
                         }
+                        // ATUALIZA A BARRA SUPERIOR DE SELEÇÃO
+                        atualizarInterfaceSelecao();
                     } else {
                         // MODO NORMAL: Abre os detalhes (InfoAluno)
                         document.querySelectorAll('.infoAluno').forEach(div => {
@@ -500,43 +520,39 @@ async function listarComponentes() {
         const lista = Array.isArray(componentes) ? componentes : (componentes.componentes || []);
 
         // 3. Obter a disciplina da turma atual
-        const turmaEl = document.querySelector('.tumaLogin') || document.querySelector('.turmaLogin');
-        // ✅ CORREÇÃO: Usar a função global que criamos
+        // ✅ USAR A TURMA DO DATA-ATTRIBUTE PARA EVITAR ERROS
         const turmaAtual = obterTurmaAtual();
         let fk_disciplina = null;
 
         if (turmaAtual && turmaAtual.disciplina) {
             fk_disciplina = turmaAtual.disciplina.codigo;
-        } else if (turmaEl) {
-            // Fallback caso 'obterTurmaAtual' falhe (mas não deveria)
-            const turmaNome = turmaEl.innerText.trim();
-            const respTurmas = await fetch('/turma/all');
-            if (respTurmas.ok) {
-                const turmas = await respTurmas.json();
-                const listaTurmas = Array.isArray(turmas) ? turmas : (turmas.turmas || []);
-                let turmaObj = listaTurmas.find(t => (t.nome && t.nome.trim() === turmaNome));
-                if (!turmaObj) turmaObj = listaTurmas.find(t => (t.nome && turmaNome.includes(t.nome)) || (t.nome && t.nome.includes(turmaNome)));
-                if (turmaObj) fk_disciplina = turmaObj.fk_disciplina_codigo || turmaObj.FK_DISCIPLINA_CODIGO;
-            }
         }
 
         // 4. Filtrar a lista (apenas componentes da disciplina atual)
-        const filtered = fk_disciplina ? lista.filter(c => String(c.fk_disciplina_codigo) === String(fk_disciplina)) : [];
+        // Correção para suportar Maiúsculas/Minúsculas no retorno do banco
+        const filtered = fk_disciplina ? lista.filter(c => {
+            const codigoComp = c.fk_disciplina_codigo || c.FK_DISCIPLINA_CODIGO;
+            return String(codigoComp) === String(fk_disciplina);
+        }) : [];
 
         if (countEl) countEl.innerText = filtered.length || 0;
 
         // 5. Renderizar
         if (view) {
-            view.innerHTML = '';
+            view.innerHTML = ''; // Limpa o container antes de adicionar os novos
+            
             filtered.forEach(comp => {
                 const div = document.createElement('div');
-                div.className = 'detailP';
+                div.className = 'detailP'; // Mantém a classe container
+                
                 const nameP = document.createElement('p');
-                nameP.id = 'detailNameP';
+                nameP.className = 'detailNameP'; // ⚠️ CORREÇÃO: Usar class ao invés de ID
                 nameP.innerText = comp.nome;
+                
                 const sigP = document.createElement('p');
-                sigP.id = 'detailSiglaP';
+                sigP.className = 'detailSiglaP'; // ⚠️ CORREÇÃO: Usar class ao invés de ID
                 sigP.innerText = comp.sigla ? `(${comp.sigla})` : '';
+                
                 div.appendChild(nameP);
                 div.appendChild(sigP);
                 view.appendChild(div);
@@ -769,7 +785,10 @@ async function deletarAluno(ra) {
                 if (response.ok) {
                     if (load) load.style.display = 'none';
                     mostrarAlerta('Aluno excluído com sucesso.');
+                    // Atualiza a lista de alunos
                     listarAlunos();
+                    // ✅ NOVO: Atualiza a tabela de notas (tabela dinâmica)
+                    await carregarTabelaNotas(); 
                 } else {
                     mostrarAlerta('Erro ao excluir aluno.');
                 }
@@ -1076,9 +1095,8 @@ async function processarArquivoCSV(file) {
     } catch (erro) {
         console.error(erro);
         mostrarAlerta("Erro na importação: " + erro.message, 'erro');
-        // Se der erro, garantimos que o loading suma (embora o finally já faça isso)
+        // Se der erro, garantimos que o loading suma (porque o finally já fa isso)
     } finally {
-        // O finally remove o loading antes do reload acontecer
         if (load) load.style.display = 'none';
     }
 }
@@ -1149,8 +1167,60 @@ const btnCancelSelection = document.getElementById('cancelSelection');
 let countSelect = 0;
 
 // ============================================================
-// FUNÇÕES AUXILIARES
+// FUNÇÕES AUXILIARES DE SELEÇÃO
 // ============================================================
+
+// 1. Função NOVA para atualizar a interface (Menu Superior e Contador)
+function atualizarInterfaceSelecao() {
+    // 1. Conta quantos botões estão com a cor de seleção (var(--color5))
+    const allSelectBtns = document.querySelectorAll('#selectAlunoBtn');
+    let count = 0;
+
+    allSelectBtns.forEach(btn => {
+        if (btn.style.background.includes('var(--color5)')) {
+            count++;
+        }
+    });
+
+    // 2. Atualiza o SPAN com a quantidade
+    const spanContador = document.querySelector('.countAlunosSelect span');
+    if (spanContador) {
+        spanContador.innerText = count;
+    }
+
+    // 3. Mostra ou esconde o menu de opções (Delete/Exportar)
+    const menuOptionsAluno = document.querySelector('.menuOptionsAluno');
+    if (menuOptionsAluno) {
+        if (count > 0) {
+            menuOptionsAluno.style.display = 'flex'; // Exibe se tiver 1 ou mais
+        } else {
+            menuOptionsAluno.style.display = 'none'; // Esconde se for 0
+        }
+    }
+}
+
+// Retorna um array com objetos { ra, nome } dos alunos que estão marcados (roxo).
+function obterAlunosSelecionados() {
+    const selecionados = [];
+    const itens = document.querySelectorAll('.itemThree ul li');
+
+    itens.forEach(li => {
+        const btn = li.querySelector('#selectAlunoBtn');
+        // Verifica se está "roxo" (selecionado)
+        if (btn && btn.style.background.includes('var(--color5)')) {
+            const raEl = li.querySelector('.raAluno');
+            const nomeEl = li.querySelector('.nameAluno');
+            
+            if (raEl && nomeEl) {
+                selecionados.push({
+                    ra: raEl.innerText.trim(),
+                    nome: nomeEl.innerText.trim()
+                });
+            }
+        }
+    });
+    return selecionados;
+}
 
 // Verifica se existe pelo menos UMA bolinha marcada com a cor roxa
 function isAlgumSelecionado() {
@@ -1167,6 +1237,8 @@ function sairDoModoSelecao() {
         btn.style.background = '';
         btn.style.border = '1px solid var(--black)';
     });
+    // Atualiza a interface (reseta o contador e esconde o menu)
+    atualizarInterfaceSelecao();
 }
 
 // Fecha o menu e reseta o contador de cliques
@@ -1229,8 +1301,14 @@ if (btnSelecionarOne) {
         const allSelectBtns = document.querySelectorAll('#selectAlunoBtn');
         allSelectBtns.forEach(btn => {
             btn.style.display = 'block'; // Mostra bolinhas vazias
+            // Garante que comecem desmarcadas ao iniciar a seleção individual
+            btn.style.background = ''; 
+            btn.style.border = '1px solid var(--black)';
         });
         fecharMenuSelecao();
+        
+        // Atualiza a interface (contador volta para 0)
+        atualizarInterfaceSelecao();
     });
 }
 
@@ -1248,6 +1326,9 @@ if (btnSelecionarAll) {
             btn.style.border = '1px solid var(--color5)';
         });
         fecharMenuSelecao();
+        
+        // Atualiza a interface (contador vai para o total)
+        atualizarInterfaceSelecao();
     });
 }
 
@@ -1345,17 +1426,18 @@ async function exportarAlunoIndividual(ra, nome) {
         headerCSV += ";Média";
         linhaDados += `;${String(mediaFinal).replace('.', ',')}`;
 
-        // 7. Montar o arquivo final
-        const csvContent = `${headerCSV}\n${linhaDados}`;
+        // 7. Montar o arquivo final e aplicar a correção de codificação
+        let csvContent = `${headerCSV}\n${linhaDados}`;
         
-        // Cria o Blob com BOM para acentuação correta
-        const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+        // Cria o Blob usando UTF-8 com BOM (solução padrão e correta) - Linha 958
+        const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' }); 
+        
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.setAttribute("href", url);
 
-        // Nome do arquivo
-        const nomeArquivo = nome.replace(/\s+/g, '_'); 
+        // Nome do arquivo (Mantém acentuação, apenas trocando espaços por _)
+        const nomeArquivo = nome.replace(/\s+/g, '_').trim(); 
         link.setAttribute("download", `Relatorio_${nomeArquivo}_${ra}.csv`);
 
         link.style.visibility = 'hidden';
@@ -1366,6 +1448,173 @@ async function exportarAlunoIndividual(ra, nome) {
     } catch (error) {
         console.error("Erro na exportação:", error);
         mostrarAlerta("Erro ao exportar dados do aluno.", "erro");
+    } finally {
+        if (load) load.style.display = 'none';
+    }
+}
+
+// ============================================================
+// AÇÕES EM MASSA (DELETAR E EXPORTAR SELECIONADOS)
+// ============================================================
+
+/**
+ * Deleta todos os alunos selecionados do banco de dados.
+ */
+async function deletarAlunosSelecionados() {
+    const listaAlunos = obterAlunosSelecionados();
+
+    if (listaAlunos.length === 0) {
+        mostrarAlerta("Nenhum aluno selecionado.", "aviso");
+        return;
+    }
+
+    mostrarConfirm(`Tem certeza que deseja excluir ${listaAlunos.length} aluno(s)? Essa ação não pode ser desfeita.`, async (confirmado) => {
+        if (confirmado) {
+            const load = document.querySelector('.load');
+            if (load) load.style.display = 'flex';
+
+            let sucessos = 0;
+            let erros = 0;
+
+            // Para cada aluno selecionado, chama a API de deletar
+            for (const aluno of listaAlunos) {
+                try {
+                    const response = await fetch('/estudante/deletar', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ra: aluno.ra })
+                    });
+
+                    if (response.ok) {
+                        sucessos++;
+                    } else {
+                        erros++;
+                        console.error(`Erro ao deletar RA ${aluno.ra}`);
+                    }
+                } catch (error) {
+                    erros++;
+                    console.error(error);
+                }
+            }
+
+            if (load) load.style.display = 'none';
+
+            // Feedback ao usuário
+            if (erros === 0) {
+                mostrarAlerta(`${sucessos} aluno(s) excluído(s) com sucesso!`, "success");
+            } else {
+                mostrarAlerta(`Concluído: ${sucessos} apagados, ${erros} falharam.`, "aviso");
+            }
+
+            // Sai do modo seleção e atualiza a lista
+            sairDoModoSelecao(); // Função que já existe e reseta o menu
+            listarAlunos();      // Recarrega a lista do banco
+            // ✅ NOVO: Atualiza a tabela de notas (tabela dinâmica)
+            await carregarTabelaNotas();
+        }
+    });
+}
+
+/**
+ * Exporta todos os alunos selecionados para um único CSV.
+ * Nome do arquivo = Nome da Turma.
+ */
+async function exportarAlunosSelecionados() {
+    const listaAlunos = obterAlunosSelecionados();
+
+    if (listaAlunos.length === 0) {
+        mostrarAlerta("Nenhum aluno selecionado para exportação.", "aviso");
+        return;
+    }
+
+    const load = document.querySelector('.load');
+    if (load) load.style.display = 'flex';
+
+    try {
+        // 1. Dados da Turma (para o nome do arquivo e disciplina)
+        const turmaAtual = obterTurmaAtual();
+        if (!turmaAtual) throw new Error("Turma não identificada.");
+
+        const fk_disciplina = turmaAtual.disciplina.codigo;
+        const nomeTurma = turmaAtual.nome_turma || "Turma";
+
+        // 2. Buscar Componentes da Disciplina
+        const respComp = await fetch('/componente-nota/all');
+        if (!respComp.ok) throw new Error("Erro ao buscar componentes.");
+        const allComps = await respComp.json();
+        const componentesDaTurma = allComps.filter(c => String(c.fk_disciplina_codigo) === String(fk_disciplina));
+
+        // 3. Buscar TODAS as notas (para cruzar com os alunos)
+        const respNotas = await fetch('/nota/all');
+        if (!respNotas.ok) throw new Error("Erro ao buscar notas.");
+        const todasAsNotas = await respNotas.json();
+
+        // 4. Montar o CSV
+        // Cabeçalho
+        let csvContent = "RA;Nome";
+        componentesDaTurma.forEach(comp => {
+            csvContent += `;${comp.sigla || comp.nome}`;
+        });
+        csvContent += ";Média\n";
+
+        // Linhas (Alunos Selecionados)
+        for (const aluno of listaAlunos) {
+            let linha = `${aluno.ra};${aluno.nome}`;
+            let somaNotas = 0;
+            let qtdNotasComputadas = 0;
+            
+            // Para cada componente, busca a nota do aluno atual
+            for (const comp of componentesDaTurma) {
+                const notaObj = todasAsNotas.find(n => 
+                    String(n.fk_id_estudante) === String(aluno.ra) &&
+                    String(n.fk_id_componente) === String(comp.id_componente)
+                );
+
+                if (notaObj) {
+                    const valorFormatado = String(notaObj.valor_nota).replace('.', ',');
+                    linha += `;${valorFormatado}`;
+                    somaNotas += Number(notaObj.valor_nota);
+                    qtdNotasComputadas++;
+                } else {
+                    linha += ";-"; // Se não tem nota, coloca um traço
+                }
+            }
+
+            // Calcula Média
+            let media = 0;
+            if (qtdNotasComputadas > 0) {
+                media = (somaNotas / qtdNotasComputadas).toFixed(1);
+            }
+            linha += `;${String(media).replace('.', ',')}`;
+
+            // Adiciona a linha ao conteúdo final
+            csvContent += linha + "\n";
+        }
+
+        // 5. Aplicar a correção de codificação
+        
+        // Cria o Blob usando UTF-8 com BOM (solução padrão e correta) - Linha 1142
+        const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' }); 
+        
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        
+        link.setAttribute("href", url);
+        // Nome do arquivo (Permite acentuação, apenas trocando espaços e barras por _)
+        const nomeArquivoSanitizado = nomeTurma.replace(/[\s\/\\]+/g, '_').trim();
+        link.setAttribute("download", `Relatorio_${nomeArquivoSanitizado}.csv`);
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Opcional: Limpar seleção após exportar
+        sairDoModoSelecao();
+        mostrarAlerta("Exportação concluída!", "success");
+
+    } catch (error) {
+        console.error(error);
+        mostrarAlerta("Erro ao exportar alunos: " + error.message, "erro");
     } finally {
         if (load) load.style.display = 'none';
     }

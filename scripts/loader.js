@@ -1,6 +1,5 @@
 // AUTOR: Miguel Fernandes Monteiro - RA: 25014808
-
-export function mostrarLoader(tipo = 'mostrar') {
+function mostrarLoader(tipo = 'mostrar') {
     let loader = document.querySelector(".load");
     if (!loader) {
         loader = document.createElement('div');

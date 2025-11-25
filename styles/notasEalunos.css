@@ -143,6 +143,48 @@ body {
     width: 100%;
 }
 
+.menuOptionsAluno {
+    background: var(--color1);
+    padding: 5px 10px;
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    border-radius: 4px;
+    box-shadow: 0px 5px 6px var(--shadow2);
+}
+
+.menuOptionsAluno button {
+    padding: 5px;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    color: var(--white);
+    transition: all 0.1s ease;
+}
+
+.menuOptionsAluno #deletAlunoSelect {
+    background: var(--color4);
+}
+
+.menuOptionsAluno #deletAlunoSelect:hover {
+    color: var(--red);
+    box-shadow: 0px 3px 5px var(--red);
+}
+
+.menuOptionsAluno #exportarAlunoSelect {
+    background: var(--color8);
+}
+
+.menuOptionsAluno #exportarAlunoSelect:hover {
+    color: var(--green);
+    box-shadow: 0px 3px 5px var(--green);
+}
+
 .selectAlunos {
     position: relative;
 }
