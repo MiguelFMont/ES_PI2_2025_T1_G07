@@ -1,3 +1,5 @@
+// AUTOR: Davi José Bertuolo Vitoreti - RA: 25004168
+
 import {open, close} from "../config/db";
 import OracleDB from "oracledb";
 
@@ -6,7 +8,7 @@ export interface Instituicao {
     nome: string
 };
 
-// ✅ VERIFICA SE O DOCENTE JÁ TEM UMA INSTITUIÇÃO COM ESTE NOME
+// VERIFICA SE O DOCENTE JÁ TEM UMA INSTITUIÇÃO COM ESTE NOME
 export async function verificarCadastroInstituicao(nome: string, id_docente: number): Promise<Instituicao | null> {
     const conn = await open();
     try {
@@ -34,7 +36,7 @@ export async function verificarCadastroInstituicao(nome: string, id_docente: num
     }
 }
 
-// ✅ ADICIONAR INSTITUIÇÃO (sempre cria e vincula)
+// ADICIONAR INSTITUIÇÃO (sempre cria e vincula)
 export async function addInstituicao(nome_curso: string, nome_instituicao: string, id_docente: number): Promise<{id: number; nome: string, nomeCurso: string}> {
     const conn = await open();
     try {
@@ -112,7 +114,7 @@ export async function addInstituicao(nome_curso: string, nome_instituicao: strin
     }
 }
 
-// ✅ DELETAR INSTITUIÇÃO (remove da INSTITUICAO e DOCENTE_INSTITUICAO)
+// DELETAR INSTITUIÇÃO (remove da INSTITUICAO e DOCENTE_INSTITUICAO)
 export async function deleteInstituicao(id: number): Promise<boolean> {
     const conn = await open();
     try {
@@ -145,7 +147,7 @@ export async function deleteInstituicao(id: number): Promise<boolean> {
     }
 }
 
-// ✅ ATUALIZAR INSTITUIÇÃO
+// ATUALIZAR INSTITUIÇÃO
 export async function updateInstituicao(id: number, novo_nome: string): Promise<boolean> {
     const conn = await open();
     try {
@@ -167,7 +169,7 @@ export async function updateInstituicao(id: number, novo_nome: string): Promise<
     }
 }
 
-// ✅ Obter a instituição pelo ID
+// Obter a instituição pelo ID
 export async function getInstituicaoById(id: number): Promise<Instituicao | null> {
     const conn = await open();
     try {
@@ -191,7 +193,7 @@ export async function getInstituicaoById(id: number): Promise<Instituicao | null
     }
 }
 
-// ✅ Buscar todas as instituições do docente
+// Buscar todas as instituições do docente
 export async function getAllInstituicao(id_docente: number): Promise<Instituicao[]> {
     const conn = await open();
     try {

@@ -1,3 +1,5 @@
+// AUTOR: Davi José Bertuolo Vitoreti - RA: 25004168
+
 import {open, close} from "../config/db";
 import OracleDB from "oracledb";
 
@@ -100,4 +102,3 @@ export async function getAllMatriculas(): Promise<Matricula[]> {
 		await close(conn);
 	}
 }
-

@@ -1,3 +1,5 @@
+// AUTOR: Davi José Bertuolo Vitoreti - RA: 25004168
+
 import express, { Request, Response } from "express";
 import bodyParser from "body-parser";
 import { request } from "http";
@@ -8,11 +10,6 @@ import dotenv from "dotenv";
 dotenv.config();
 
 console.log("API KEY:", process.env.RESEND_API_KEY);
-// import {
-//     getAllEstudantes,
-//     getEstudanteById,
-//     addEstudante,
-// } from "./db/estudantes";
 
 import {
     addInstituicao,
@@ -81,7 +78,6 @@ import {
 
 import {
     addNota,
-    verificarNotaExistente,
     getNotaById,
     getAllNotas
 } from "./db/nota";

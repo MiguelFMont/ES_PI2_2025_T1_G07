@@ -1,3 +1,5 @@
+// AUTOR: Davi José Bertuolo Vitoreti - RA: 25004168
+
 import { open, close } from "../config/db";
 import OracleDB from "oracledb";
 
@@ -145,6 +147,7 @@ export async function getDisciplinaByCodigo(codigo: number): Promise<Disciplina 
     }
 }
 
+// Vefificarar se existe componente de nota vinculado a disciplina
 export async function verificarComponenteExistenteEmDisciplina(codigo: number): Promise<boolean> {
     const conn = await open();
     try {
@@ -161,6 +164,7 @@ export async function verificarComponenteExistenteEmDisciplina(codigo: number): 
     }
 }
 
+// Vefificarar se existe turma vinculado a disciplina
 export async function verificarTurmaExistenteEmDisciplina(codigo: number): Promise<boolean> {
     const conn = await open();
     try{

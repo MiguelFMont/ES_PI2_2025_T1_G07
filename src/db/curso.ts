@@ -1,3 +1,5 @@
+// AUTOR: Davi José Bertuolo Vitoreti - RA: 25004168
+
 import { open, close } from "../config/db";
 import OracleDB from "oracledb";
 
@@ -46,7 +48,6 @@ export async function addCurso(
         await close(conn);
     }
 }
-
 
 // Deletar um curso
 export async function deleteCurso(id: number, id_instituicao: number): Promise<boolean> {
@@ -116,8 +117,6 @@ export async function verificarCadastroCurso(nome: string, id_instituicao: numbe
         await close(conn);
     }
 }
-
-
 
 // Obter curso pelo ID
 export async function getCursoById(id: number): Promise<Curso | null> {
