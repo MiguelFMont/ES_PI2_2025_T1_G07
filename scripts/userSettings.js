@@ -1,4 +1,5 @@
-// userSettings.js - COMPLETO E CORRIGIDO
+// AUTOR: Miguel Fernandes Monteiro - RA: 25014808
+
 document.addEventListener("DOMContentLoaded", () => {
     // --- VERIFICAÇÃO DE LOGIN ---
     const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));

@@ -1,3 +1,5 @@
+// AUTOR: Miguel Fernandes Monteiro - RA: 25014808
+
 // ============================================
 // 1. ESTADO DA APLICAÇÃO (CACHE EM MEMÓRIA)
 // ============================================

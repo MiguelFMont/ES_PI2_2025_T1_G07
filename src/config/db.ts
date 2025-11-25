@@ -1,3 +1,5 @@
+// AUTOR: Miguel Fernandes Monteiro - RA: 25014808
+
 import OracleDB, { oracleClientVersion } from "oracledb";
 import dotenv from 'dotenv';
 dotenv.config();

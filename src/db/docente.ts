@@ -1,3 +1,5 @@
+// AUTOR: Miguel Fernandes Monteiro - RA: 25014808
+
 import { open, close } from "../config/db";
 import OracleDB from "oracledb";
 
@@ -39,8 +41,6 @@ export async function addDocente(
         await close(conn);
     }
 }
-
-// SUBSTITUA A FUNÇÃO modifyDocente EXISTENTE POR ESTA:
 
 export async function modifyDocente(
     id: number,

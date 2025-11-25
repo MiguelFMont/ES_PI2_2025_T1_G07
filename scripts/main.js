@@ -1,3 +1,5 @@
+// AUTOR: Miguel Fernandes Monteiro - RA: 25014808
+
 document.addEventListener('DOMContentLoaded', () => {
 
     const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));

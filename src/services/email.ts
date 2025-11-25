@@ -1,3 +1,5 @@
+// AUTOR: Miguel Fernandes Monteiro - RA: 25014808
+
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);

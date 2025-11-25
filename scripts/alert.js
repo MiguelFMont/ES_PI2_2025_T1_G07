@@ -1,3 +1,5 @@
+// AUTOR: Miguel Fernandes Monteiro - RA: 25014808
+
 function mostrarAlerta(mensagem, tipo = 'sucesso') {
 
     document.body.classList.add('alert-active');

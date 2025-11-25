@@ -1,6 +1,4 @@
 // auth.js — Login e Cadastro unificados com localStorage
-// --- Chave localStorage --
-// -
 
 const STORAGE_KEY = "usuariosNotaDez";
 
@@ -121,6 +119,10 @@ function validarCamposVazios(campos) {
 function salvarUsuarios() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(usuarios));
 }
+
+
+
+/// AUTOR: Miguel Fernandes Monteiro - RA: 25014808
 
 
 // Olhos de mostrar/ocultar senha do pageRecovery.html
