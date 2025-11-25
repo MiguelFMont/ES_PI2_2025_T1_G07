@@ -1245,6 +1245,7 @@ app.get('/componente-nota/docente/:id_docente', async (req: Request, res: Respon
 /*==================*/
 /* NOTA */
 /*==================*/
+// AUTOR: Rafael ALmeida Moreira - RA: 25000537
 
 app.post('/nota/cadastro', async (req: Request, res: Response) => {
     try {
@@ -1314,7 +1315,7 @@ app.get('/nota/all', async (req: Request, res: Response) => {
 /*===========*/
 /* MATRICULA */
 /*===========*/
-
+// AUTOR: Rafael ALmeida Moreira - RA: 25000537
 
 // Verificar se matrícula já existe (turma + estudante)
 app.post('/matricula/verificar', async (req: Request, res: Response) => {

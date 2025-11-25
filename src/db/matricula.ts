@@ -1,4 +1,4 @@
-// AUTOR: Davi José Bertuolo Vitoreti - RA: 25004168
+// AUTOR: Rafael ALmeida Moreira - RA: 25000537
 
 import {open, close} from "../config/db";
 import OracleDB from "oracledb";
