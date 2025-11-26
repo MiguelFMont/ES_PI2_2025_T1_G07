@@ -705,7 +705,8 @@ if (botaoModificar) {
                 if (typeof mostrarLoader === "function") mostrarLoader('esconder');
 
                 if (data.sucesso) {
-                    if (solicitacao.byUserSettings) {
+                    const solicitacao = JSON.parse(localStorage.getItem("solicitacao"));
+                    if (solicitacao && solicitacao.byUserSettings) {
                         const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
                         if (usuarioLogado && usuarioLogado.email === emailRecuperacao) {
                             usuarioLogado.senha = novaSenha;
