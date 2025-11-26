@@ -16,7 +16,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const senhaLabel = document.querySelector(".password");
     const updateBtn = document.querySelector("#upInformacoes");
     const solicitarLinkBtn = document.querySelector(".solicitar-btn-interno");
-    const botaoModificar = document.querySelector(".modify-btn-user");
     const botaoVoltar = document.querySelector(".voltar");
 
     const nomeContainer = document.querySelector(".name");
@@ -286,88 +285,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         mostrarAlerta("Erro ao enviar link.", "erro");
                     }
                 });
-        });
-    }
-
-    if (botaoModificar) {
-        botaoModificar.addEventListener("click", (e) => {
-            if (e) e.preventDefault();
-
-            console.log("🔍 Botão modificar senha clicado");
-
-            const inputNewPassword = document.getElementById("newPassword");
-            const inputConfirmPassword = document.getElementById("confirmPassword");
-
-            if (!inputNewPassword || !inputConfirmPassword) {
-                console.error("❌ Inputs de senha não encontrados");
-                return;
-            }
-
-            let algumErro = false;
-
-            // Limpa erros anteriores
-            const limparErroCampo = (input) => {
-                if (!input || !input.parentElement) return;
-                const parent = input.parentElement;
-                parent.classList.remove("error");
-                const label = parent.querySelector("label");
-                if (label) {
-                    label.style.color = "";
-                }
-            };
-
-            const marcarErroCampo = (input, msg) => {
-                if (!input || !input.parentElement) return;
-                const parent = input.parentElement;
-                const label = parent.querySelector("label");
-                parent.classList.add("error");
-                if (label) {
-                    label.textContent = msg;
-                    label.style.color = "var(--color4)";
-                }
-            };
-
-            [inputNewPassword, inputConfirmPassword].forEach(limparErroCampo);
-
-            if (!inputNewPassword.value.trim() || !inputConfirmPassword.value.trim()) {
-                if (!inputNewPassword.value.trim()) marcarErroCampo(inputNewPassword, "Campo obrigatório");
-                if (!inputConfirmPassword.value.trim()) marcarErroCampo(inputConfirmPassword, "Campo obrigatório");
-                return;
-            }
-
-            const novaSenha = inputNewPassword.value.trim();
-            const confirmarSenha = inputConfirmPassword.value.trim();
-            const emailRecuperacao = localStorage.getItem("emailParaRecuperacao");
-
-            console.log("📧 Email de recuperação:", emailRecuperacao);
-
-            if (!emailRecuperacao) {
-                if (typeof mostrarAlerta === 'function') {
-                    mostrarAlerta("Email de recuperação não encontrado.", "aviso");
-                }
-                console.error("❌ emailParaRecuperacao não existe no localStorage");
-                return;
-            }
-
-            // Validações
-            if (novaSenha.length < 8) {
-                marcarErroCampo(inputNewPassword, "Senha deve ter 8+ caracteres");
-                algumErro = true;
-            }
-
-            if (novaSenha !== confirmarSenha) {
-                marcarErroCampo(inputConfirmPassword, "Senhas não coincidem");
-                algumErro = true;
-            }
-
-            if (algumErro) return;
-
-            if (typeof mostrarLoader === 'function') {
-                mostrarLoader('mostrar');
-            }
-
-            console.log("📤 Enviando nova senha para o servidor");
-
         });
     }
 

@@ -709,7 +709,7 @@ if (botaoModificar) {
                     if (solicitacao && solicitacao.byUserSettings) {
                         const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
                         if (usuarioLogado && usuarioLogado.email === emailRecuperacao) {
-                            usuarioLogado.senha = novaSenha;
+                            usuarioLogado.senha = novaSenha.slice(0, 4);
                             localStorage.setItem("usuarioLogado", JSON.stringify(usuarioLogado));
                             console.log("🔑 Senha atualizada no localStorage");
                         }
