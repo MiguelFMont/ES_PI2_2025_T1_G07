@@ -1,3 +1,5 @@
+// AUTOR: Cezar Augusto Fernandez Rull - RA: 25007452
+
 let mouseX = 0;
 let mouseY = 0;
 let ticking = false;

@@ -4,7 +4,6 @@
   "description": "Pacote dedicado ao Projeto Integrador II, grupo 7, turma 1 da PUC-Campinas.",
   "main": "server.js",
   "scripts": {
-    "verify": "ts-node src/verify.ts",
     "dev": "nodemon --exerc ts-node src/server.js",
     "build": "tsc",
     "start": "npm run build && node dist/server.js"

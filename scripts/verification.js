@@ -1,3 +1,5 @@
+// AUTOR: Cezar Augusto Fernandez Rull - RA: 25007452
+
 document.addEventListener("DOMContentLoaded", () => {
   const codeInputs = Array.from(document.querySelectorAll(".code-input"));
 

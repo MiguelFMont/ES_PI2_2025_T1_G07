@@ -51,7 +51,7 @@ body {
 
 .container {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    background: var(--color1);
+    background: var(--white);
     border-radius: 18px;
     display: flex;
     flex-direction: column;
@@ -90,10 +90,18 @@ body {
     font-weight: 1000;
     cursor: pointer;
     display: inline-flex;
+    gap: 5px;
+    justify-content: center;
+    align-items: center;
     transition: all 0.4s ease;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     box-shadow: 0 2px 7px rgba(0, 0, 0, 0.4);
+}
+
+.voltar i {
+    font-size: 1rem;
+    font-weight: 500;
 }
 
 

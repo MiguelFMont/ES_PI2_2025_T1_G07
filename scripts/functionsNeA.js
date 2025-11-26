@@ -1,8 +1,6 @@
-/**
- * ARQUIVO MESCLADO: functionsNeA.js + notasEalunos.js
- * Contém toda a lógica de gerenciamento de alunos, componentes,
- * cálculo de notas, edição e salvamento.
- */
+// AUTOR: Cezar Augusto Fernandez Rull - RA: 25007452
+// Com o auxílio de: Davi José Bertuolo Vitoreti - RA: 25004168
+
 
 // Variável de controle para saber se estamos criando ou editando aluno
 let isEditing = false;
@@ -784,51 +782,59 @@ async function listarComponentes() {
         const view = document.querySelector('.viewDatailsComp');
         const countEl = document.getElementById('countComponents');
 
-        const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
-        if (!usuarioLogado || !usuarioLogado.id) return;
+        // 1. Obtém a turma atual para saber qual é a disciplina
+        const turmaAtual = obterTurmaAtual();
         
-        const id_docente = usuarioLogado.id;
-        const resp = await fetch(`/componente-nota/docente/${id_docente}`);
-
-        if (!resp.ok) {
-            if (resp.status === 404) {
-                if (countEl) countEl.innerText = 0;
-                if (view) view.innerHTML = '';
-            }
+        // Se não houver turma ou disciplina definida, limpa a view e retorna
+        if (!turmaAtual || !turmaAtual.disciplina) {
+            console.warn("Nenhuma disciplina vinculada à turma atual.");
+            if (countEl) countEl.innerText = 0;
+            if (view) view.innerHTML = '';
             return;
         }
 
-        const componentes = await resp.json();
-        const lista = Array.isArray(componentes) ? componentes : (componentes.componentes || []);
+        const fk_disciplina = turmaAtual.disciplina.codigo;
 
-        const turmaAtual = obterTurmaAtual();
-        let fk_disciplina = turmaAtual ? turmaAtual.disciplina.codigo : null;
+        // 2. Busca TODOS os componentes (conforme rota definida no server.ts)
+        const resp = await fetch('/componente-nota/all');
 
-        const filtered = fk_disciplina ? lista.filter(c => {
-            const codigoComp = c.fk_disciplina_codigo || c.FK_DISCIPLINA_CODIGO;
-            return String(codigoComp) === String(fk_disciplina);
-        }) : [];
+        if (!resp.ok) {
+            console.error("Erro ao buscar componentes:", resp.statusText);
+            return;
+        }
 
+        const lista = await resp.json();
+
+        // 3. Filtra apenas os componentes que pertencem a esta disciplina
+        // A propriedade vem do JSON como 'fk_disciplina_codigo' (minúsculo, definido no componente_nota.ts)
+        const filtered = lista.filter(c => String(c.fk_disciplina_codigo) === String(fk_disciplina));
+
+        // 4. Atualiza a Interface (Contador e Lista Visual)
         if (countEl) countEl.innerText = filtered.length || 0;
 
         if (view) {
             view.innerHTML = '';
-            filtered.forEach(comp => {
-                const div = document.createElement('div');
-                div.className = 'detailP';
-                
-                const nameP = document.createElement('p');
-                nameP.className = 'detailNameP'; 
-                nameP.innerText = comp.nome;
-                
-                const sigP = document.createElement('p');
-                sigP.className = 'detailSiglaP'; 
-                sigP.innerText = comp.sigla ? `(${comp.sigla})` : '';
-                
-                div.appendChild(nameP);
-                div.appendChild(sigP);
-                view.appendChild(div);
-            });
+            if (filtered.length === 0) {
+                view.innerHTML = '<p style="padding: 10px; color: #666;">Nenhum componente cadastrado.</p>';
+            } else {
+                filtered.forEach(comp => {
+                    const div = document.createElement('div');
+                    div.className = 'detailP';
+                    
+                    const nameP = document.createElement('p');
+                    nameP.className = 'detailNameP'; 
+                    nameP.innerText = comp.nome;
+                    
+                    const sigP = document.createElement('p');
+                    sigP.className = 'detailSiglaP'; 
+                    // Exibe a sigla se existir
+                    sigP.innerText = comp.sigla ? `(${comp.sigla})` : '';
+                    
+                    div.appendChild(nameP);
+                    div.appendChild(sigP);
+                    view.appendChild(div);
+                });
+            }
         }
     } catch (error) {
         console.error('Erro ao listar componentes:', error);

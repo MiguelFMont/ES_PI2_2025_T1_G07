@@ -1,5 +1,7 @@
-// auth.js — Login e Cadastro unificados com localStorage
+// AUTOR: Cezar Augusto Fernandez Rull - RA: 25007452
+// Com o auxílio de: Miguel Fernandes Monteiro - RA: 25014808
 
+// auth.js — Login e Cadastro unificados com localStorage
 const STORAGE_KEY = "usuariosNotaDez";
 
 // --- Carrega usuários do localStorage ou inicializa com padrão ---

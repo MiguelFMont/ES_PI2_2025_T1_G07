@@ -1,4 +1,5 @@
 // AUTOR: Davi José Bertuolo Vitoreti - RA: 25004168
+// Com o auxílio de: Rafael ALmeida Moreira - RA: 25000537
 
 import express, { Request, Response } from "express";
 import bodyParser from "body-parser";
@@ -1212,8 +1213,6 @@ app.get('/componente-nota/all', async (req: Request, res: Response) => {
 /*==================*/
 /* NOTA */
 /*==================*/
-// AUTOR: Rafael ALmeida Moreira - RA: 25000537
-
 app.post('/nota/cadastro', async (req: Request, res: Response) => {
     try {
         const { id_nota, fk_id_componente, fk_id_estudante, fk_id_turma, valor_nota } = req.body;
@@ -1282,8 +1281,6 @@ app.get('/nota/all', async (req: Request, res: Response) => {
 /*===========*/
 /* MATRICULA */
 /*===========*/
-// AUTOR: Rafael ALmeida Moreira - RA: 25000537
-
 // Verificar se matrícula já existe (turma + estudante)
 app.post('/matricula/verificar', async (req: Request, res: Response) => {
     try {
