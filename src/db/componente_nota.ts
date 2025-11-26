@@ -11,30 +11,6 @@ export interface ComponenteNota {
     descricao?: string;
 }
 
-export async function getComponentesNotaByDocente(id_docente: number): Promise<ComponenteNota[]> {
-    const conn = await open();
-    try {
-        const result = await conn.execute(
-            `SELECT comp.ID_COMPONENTE as "id_componente",
-                   comp.FK_DISCIPLINA_CODIGO as "fk_disciplina_codigo",
-                   comp.NOME as "nome",
-                   comp.SIGLA as "sigla",
-                   comp.DESCRICAO as "descricao"
-            FROM webapp.COMPONENTE_NOTA comp
-            JOIN webapp.DISCIPLINA disc ON comp.FK_DISCIPLINA_CODIGO = disc.CODIGO
-            JOIN webapp.CURSO curso ON disc.ID_CURSO = curso.ID
-            JOIN webapp.INSTITUICAO inst ON curso.FK_ID_INSTITUICAO = inst.ID
-            WHERE inst.FK_ID_DOCENTE = :id_docente`,
-            { id_docente },
-            { outFormat: OracleDB.OUT_FORMAT_OBJECT }
-        );
-
-        return result.rows as ComponenteNota[];
-    } finally {
-        await close(conn);
-    }
-}
-
 // Adicionar um componente de nota
 export async function addComponenteNota(
     fk_disciplina_codigo: number,

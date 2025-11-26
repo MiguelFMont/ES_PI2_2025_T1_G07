@@ -72,8 +72,7 @@ import {
     updateComponenteNota,
     verificarComponenteNotaExistente,
     getComponenteNotaById,
-    getAllComponentesNota,
-    getComponentesNotaByDocente
+    getAllComponentesNota
 } from "./db/componente_nota"
 
 import {
@@ -1205,38 +1204,6 @@ app.get('/componente-nota/all', async (req: Request, res: Response) => {
     } catch (error) {
         console.error("❌ Erro ao buscar todos os componentes de nota:", error);
         res.status(500).json({
-            error: "Erro ao buscar os componentes de nota."
-        });
-    }
-});
-
-// ✅ NOVA ROTA: Obter componentes pelo ID do Docente
-app.get('/componente-nota/docente/:id_docente', async (req: Request, res: Response) => {
-    try {
-        const id_docente = Number(req.params.id_docente);
-        if (isNaN(id_docente)) {
-            return res.status(400).json({
-                sucesso: false,
-                error: 'ID do docente inválido'
-            });
-        }
-
-        console.log(`🔍 Buscando componentes para docente ID: ${id_docente}`);
-        const componentes = await getComponentesNotaByDocente(id_docente);
-
-        if (componentes && componentes.length > 0) {
-            console.log(`✅ ${componentes.length} componentes encontrados.`);
-            res.json(componentes);
-        } else {
-            console.log(`⚠️ Nenhum componente encontrado para o docente ${id_docente}.`);
-            res.status(404).json({
-                message: "Não há componentes de nota cadastrados para este docente."
-            });
-        }
-    } catch (error) {
-        console.error("❌ Erro ao buscar componentes por docente:", error);
-        res.status(500).json({
-            sucesso: false,
             error: "Erro ao buscar os componentes de nota."
         });
     }

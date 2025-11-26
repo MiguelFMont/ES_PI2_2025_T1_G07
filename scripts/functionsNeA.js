@@ -1,10 +1,20 @@
-// Variável de controle para saber se estamos criando ou editando
+/**
+ * ARQUIVO MESCLADO: functionsNeA.js + notasEalunos.js
+ * Contém toda a lógica de gerenciamento de alunos, componentes,
+ * cálculo de notas, edição e salvamento.
+ */
+
+// Variável de controle para saber se estamos criando ou editando aluno
 let isEditing = false;
+// Variável de controle para o modo de edição de notas (Cadeado)
+let modoEdicaoNotas = false;
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    // ============================================================
+    // 1. INICIALIZAÇÃO E CARREGAMENTO DA TURMA
+    // ============================================================
     function carregarInformacoesTurma() {
-        // Tenta recuperar do localStorage
         const turmaJSON = localStorage.getItem("turmaSelecionada");
 
         if (!turmaJSON) {
@@ -20,13 +30,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const turma = JSON.parse(turmaJSON);
             console.log("✅ Turma carregada:", turma);
 
-            // Atualiza todos os elementos .turmaLogin na página
             const elementosTurma = document.querySelectorAll('.turmaLogin');
             elementosTurma.forEach(el => {
                 el.textContent = turma.nome_turma;
                 el.setAttribute('data-turma-id', turma.id);
             });
-
 
             const elementosDisciplina = document.querySelectorAll('.disciplinaTurma');
             elementosDisciplina.forEach(el => {
@@ -34,9 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 el.setAttribute('data-disciplina-id', turma.disciplina ? turma.disciplina.codigo : '');
             });
 
-            // Adiciona informações adicionais em data-attributes para uso posterior
             document.body.setAttribute('data-turma-atual', JSON.stringify(turma));
-
             return turma;
 
         } catch (error) {
@@ -45,57 +51,105 @@ document.addEventListener('DOMContentLoaded', () => {
             return null;
         }
     }
+
     const turmaAtual = carregarInformacoesTurma();
+    if (!turmaAtual) return;
 
-    if (!turmaAtual) {
-        console.error("❌ Não foi possível carregar a turma. Interrompendo inicialização.");
-        return;
-    }
-
-    console.log("🎓 Turma atual carregada:", turmaAtual);
-    // 1. Carrega a lista inicial
+    // Carrega dados iniciais
     listarAlunos();
+    listarComponentes();
+    carregarTabelaNotas();
 
-    // 2. Configura o botão de salvar (Cadastrar ou Atualizar)
-    const btnSalvar = document.getElementById('btnSaveCA');
-    if (btnSalvar) {
-        btnSalvar.addEventListener('click', handleSaveButton);
+    // ============================================================
+    // 2. CONFIGURAÇÃO DE MODAIS E BOTÕES (UI)
+    // ============================================================
+
+    // --- Modal Importar Arquivo (.fileBody) ---
+    const openFileBody = document.querySelector('.bntFileBody');
+    const closedBnt = document.querySelector('.btnCancelFile');
+    const closedBntX = document.getElementById('closedFileBody');
+
+    if(openFileBody) openFileBody.addEventListener('click', () => {
+        document.querySelector('.fileBody').style.display = 'flex';
+    });
+    if(closedBnt) closedBnt.addEventListener('click', () => {
+        document.querySelector('.fileBody').style.display = 'none';
+    });
+    if(closedBntX) closedBntX.addEventListener('click', () => {
+        document.querySelector('.fileBody').style.display = 'none';
+    });
+
+    // --- Modal Cadastrar Aluno (.cadastrarAlunoBody) ---
+    const openCABody = document.querySelector('.bntCadastrarAluno');
+    const closedCABody = document.getElementById('closedCA');
+    const cancelCABody = document.getElementById('btnCancelCA');
+    const btnSalvarAluno = document.getElementById('btnSaveCA');
+
+    if(openCABody) openCABody.addEventListener('click', () => {
+        document.querySelector('.cadastrarAlunoBody').style.display = 'block';
+        limparFormulario(); // Garante que abre limpo
+    });
+    if(closedCABody) closedCABody.addEventListener('click', () => {
+        document.querySelector('.cadastrarAlunoBody').style.display = 'none';
+    });
+    if(cancelCABody) cancelCABody.addEventListener('click', () => {
+        document.querySelector('.cadastrarAlunoBody').style.display = 'none';
+        limparFormulario();
+    });
+    if (btnSalvarAluno) {
+        btnSalvarAluno.addEventListener('click', handleSaveButton);
     }
 
-    // 3. Configura o botão de cancelar
-    const btnCancel = document.getElementById('btnCancelCA');
-    if (btnCancel) {
-        btnCancel.addEventListener('click', limparFormulario);
-    }
-
-    // 4. Configura a barra de pesquisa
+    // --- Pesquisa de Aluno (Animação UI) ---
     const searchInput = document.getElementById('searchInput');
+    const alunoSearch = document.getElementById('alunoSearch');
+    const moreInfoAluno = document.querySelector('.infoAluno');
+    let coutClickAlunoSearch = 0;
+
     if (searchInput) {
         searchInput.addEventListener('keyup', filtrarAlunos);
     }
 
-    // 5. Configura botões de Componentes de Nota (Adicionar / Cancelar / Salvar)
+    if (alunoSearch && moreInfoAluno) {
+        alunoSearch.addEventListener('click', () => {
+            // Lógica de animação trazida do notasEalunos.js
+            moreInfoAluno.style.display = 'block';
+            alunoSearch.style.borderRadius = '1px';
+            alunoSearch.style.boxShadow = 'none';
+            alunoSearch.style.transform = 'none';
+            coutClickAlunoSearch++;
+
+            if(coutClickAlunoSearch == 2) {
+                moreInfoAluno.style.display = 'none';
+                alunoSearch.style.borderRadius = '50px';
+                alunoSearch.style.boxShadow = '0px 6px 5px var(--shadow2)';
+                alunoSearch.style.transform = 'scale(1.01)';
+                coutClickAlunoSearch = 0;
+            }
+        });
+    }
+
+    // --- Modal Componentes (Adicionar/Listar) ---
     const btnAddComp = document.querySelector('.btnAddComp');
-    const addComponents = document.querySelector('.addComponents');
+    const addComponentsPanel = document.querySelector('.addComponents');
     const btnCancelComp = document.getElementById('cancelComp');
     const btnSaveComp = document.getElementById('saveComp');
 
-    if (btnAddComp && addComponents) {
+    if (btnAddComp && addComponentsPanel) {
         btnAddComp.addEventListener('click', (e) => {
-            e.preventDefault();
-            addComponents.style.display = 'flex';
+            // Mescla da lógica: abre o painel
+            addComponentsPanel.style.display = 'flex';
+            addComponentsPanel.style.flexDirection = 'column';
+            addComponentsPanel.style.gap = '20px';
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     }
-
-    if (btnCancelComp && addComponents) {
+    if (btnCancelComp && addComponentsPanel) {
         btnCancelComp.addEventListener('click', (e) => {
-            e.preventDefault();
-            addComponents.style.display = 'none';
+            addComponentsPanel.style.display = 'none';
             limparFormularioComponente();
         });
     }
-
     if (btnSaveComp) {
         btnSaveComp.addEventListener('click', async (e) => {
             e.preventDefault();
@@ -103,12 +157,82 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Carrega a lista de componentes ao iniciar a página
-    listarComponentes();
-    // Carrega a tabela de notas dinâmica
-    carregarTabelaNotas();
+    // ============================================================
+    // 3. LÓGICA DE EDIÇÃO DE NOTAS (OneEditComp / AllEditComp)
+    // ============================================================
+    const oneEditComp = document.getElementById('oneEditComp'); // Botão Cadeado
+    const allEditComp = document.getElementById('allEditComp'); // Botão Salvar Notas
 
-    // 6. Configura botões de Ações em Massa (NOVAS FUNÇÕES)
+    if (oneEditComp) {
+        oneEditComp.addEventListener('click', () => {
+            if (!modoEdicaoNotas) {
+                // ATIVAR MODO EDIÇÃO
+                modoEdicaoNotas = true;
+                oneEditComp.style.background = 'var(--black)';
+                oneEditComp.style.color = 'var(--white)';
+                oneEditComp.style.border = 'none';
+                
+                const inputs = document.querySelectorAll('.input-nota');
+                inputs.forEach(input => {
+                    input.disabled = false;
+                    input.style.backgroundColor = 'var(--white)';
+                    input.style.cursor = 'text';
+                });
+            } else {
+                // DESATIVAR MODO EDIÇÃO
+                modoEdicaoNotas = false;
+                oneEditComp.style.background = 'var(--white)';
+                oneEditComp.style.color = 'var(--black)';
+                oneEditComp.style.border = '1px solid var(--lightgrey)';
+                
+                const inputs = document.querySelectorAll('.input-nota');
+                inputs.forEach(input => {
+                    input.disabled = true;
+                    input.style.backgroundColor = 'var(--lightgrey)';
+                    input.style.cursor = 'not-allowed';
+                });
+            }
+        });
+    }
+
+    if (allEditComp) {
+        allEditComp.addEventListener('click', async () => {
+            if (!modoEdicaoNotas) {
+                mostrarAlerta('Ative o modo edição primeiro clicando em "Editar notas".', 'info');
+                return;
+            }
+            await salvarNotas(); // Chama a função vinda do notasEalunos.js
+        });
+    }
+
+    // ============================================================
+    // 4. EVENTOS DA TABELA DE NOTAS (Enter e Blur)
+    // ============================================================
+    const tabelaBody = document.querySelector('.itensNotas tbody');
+    // Usamos delegação de eventos pois a tabela é gerada dinamicamente
+    const containerTabela = document.querySelector('.itensNotas');
+
+    if (containerTabela) {
+        containerTabela.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && event.target.classList.contains('input-nota')) {
+                event.preventDefault(); 
+                processarNota(event.target);
+                event.target.blur(); // Remove foco
+            }
+        });
+
+        containerTabela.addEventListener('blur', (event) => {
+            if (event.target.classList.contains('input-nota')) {
+                processarNota(event.target);
+            }
+        }, true);
+    } else {
+        console.warn("AVISO: Tabela '.itensNotas' não encontrada.");
+    }
+
+    // ============================================================
+    // 5. AÇÕES EM MASSA (Deletar/Exportar Selecionados)
+    // ============================================================
     const btnDeletarMass = document.getElementById('deletAlunoSelect');
     const btnExportarMass = document.getElementById('exportarAlunoSelect');
 
@@ -118,14 +242,217 @@ document.addEventListener('DOMContentLoaded', () => {
             deletarAlunosSelecionados();
         });
     }
-
     if (btnExportarMass) {
         btnExportarMass.addEventListener('click', (e) => {
             e.preventDefault();
             exportarAlunosSelecionados();
         });
     }
+
+    // Inicializa botões de importação CSV
+    configurarBotoesImportacao();
 });
+
+
+// ============================================================
+// FUNÇÕES DE CÁLCULO E PROCESSAMENTO DE NOTAS (Do notasEalunos.js)
+// ============================================================
+
+function calcularMedia(row) {
+    const inputs = row.querySelectorAll('.input-nota');
+    const mediaCell = row.querySelector('.mediaNotaTable');
+
+    if (!mediaCell) {
+        // Pode acontecer se a tabela ainda estiver carregando
+        return;
+    }
+
+    let total = 0;
+    let count = 0;
+    
+    inputs.forEach(input => {
+        const notaString = input.value;
+        const notaFormatada = notaString.replace(',', '.');
+        const notaValor = parseFloat(notaFormatada);
+
+        if (!isNaN(notaValor)) {
+            total += notaValor;
+            count++; // Conta apenas notas lançadas se quiser média parcial, ou usa inputs.length para média total
+        }
+    });
+
+    if (inputs.length > 0) {
+        // Média aritmética simples baseada no número de inputs (componentes)
+        const media = total / inputs.length; 
+
+        mediaCell.textContent = media.toFixed(2).replace('.', ',');
+
+        if (media < 5.0) {
+            mediaCell.classList.add('baixa');
+            mediaCell.classList.remove('alta');
+        } else {
+            mediaCell.classList.add('alta');
+            mediaCell.classList.remove('baixa');
+        }
+    } else {
+        mediaCell.textContent = "-";
+        mediaCell.classList.remove('baixa');
+        mediaCell.classList.remove('alta');
+    }
+}
+
+function processarNota(inputElement) {
+    const notaString = inputElement.value;
+
+    if (notaString.trim() === "") {
+        inputElement.classList.remove('baixa');
+        // Se vazio, apenas recalcula média
+    }
+
+    const notaFormatada = notaString.replace(',', '.');
+    const notaValor = parseFloat(notaFormatada);
+
+    if (isNaN(notaValor)) {
+        inputElement.classList.remove('baixa');
+    } else {
+        if (notaValor < 5.0) {
+            inputElement.classList.add('baixa');
+        } else {
+            inputElement.classList.remove('baixa');
+        }
+    }
+    
+    // Recalcula a média da linha inteira
+    const row = inputElement.closest('tr');
+    if (row) {
+        calcularMedia(row);
+    }
+}
+
+// ============================================================
+// SALVAR NOTAS NO BANCO DE DADOS (Do notasEalunos.js)
+// ============================================================
+async function salvarNotas() {
+    const load = document.querySelector('.load');
+    if (load) load.style.display = 'flex';
+
+    try {
+        const turmaAtual = obterTurmaAtual();
+        if (!turmaAtual) {
+            mostrarAlerta('Erro ao identificar a turma.', 'error');
+            if (load) load.style.display = 'none';
+            return;
+        }
+
+        const id_turma = turmaAtual.id;
+        const fk_disciplina = turmaAtual.disciplina.codigo;
+
+        // 1. Coleta componentes da disciplina atual
+        let componentes = [];
+        const respComp = await fetch('/componente-nota/all');
+        if (respComp.ok) {
+            const lista = await respComp.json();
+            componentes = fk_disciplina ? lista.filter(c => String(c.fk_disciplina_codigo) === String(fk_disciplina)) : lista;
+        }
+
+        // 2. Percorre tabela e coleta notas para salvar
+        const tbody = document.querySelector('.itensNotas tbody');
+        if (!tbody) {
+            mostrarAlerta('Erro ao acessar a tabela de notas.', 'error');
+            if (load) load.style.display = 'none';
+            return;
+        }
+
+        const linhas = tbody.querySelectorAll('tr');
+        let notasParaSalvar = [];
+
+        linhas.forEach((linha) => {
+            const raCell = linha.querySelector('.raTable');
+            const inputs = linha.querySelectorAll('.input-nota');
+
+            if (raCell && inputs.length > 0) {
+                const ra = parseInt(raCell.innerText.trim());
+
+                inputs.forEach((input, indexComp) => {
+                    const valor = input.value.trim();
+                    // Só salva se houver valor e for numérico
+                    if (valor) {
+                        const valorFloat = parseFloat(valor.replace(',', '.'));
+                        if(!isNaN(valorFloat)) {
+                            // Pega o ID do componente via atributo data (mais seguro) ou index
+                            const idCompAttr = input.getAttribute('data-id-componente');
+                            const fk_id_componente = idCompAttr ? parseInt(idCompAttr) : componentes[indexComp]?.id_componente;
+
+                            if (fk_id_componente) {
+                                notasParaSalvar.push({
+                                    fk_id_componente,
+                                    fk_id_estudante: ra,
+                                    fk_id_turma: id_turma,
+                                    valor_nota: valorFloat
+                                });
+                            }
+                        }
+                    }
+                });
+            }
+        });
+
+        // 3. Envia notas
+        if (notasParaSalvar.length === 0) {
+            mostrarAlerta('Nenhuma nota preenchida para salvar.', 'info');
+            if (load) load.style.display = 'none';
+            return;
+        }
+
+        let sucessos = 0;
+        let erros = 0;
+
+        for (const nota of notasParaSalvar) {
+            try {
+                const resp = await fetch('/nota/cadastro', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(nota)
+                });
+
+                if (resp.ok) {
+                    sucessos++;
+                } else {
+                    erros++;
+                    console.warn(`Erro ao salvar nota RA ${nota.fk_id_estudante}`);
+                }
+            } catch (e) {
+                erros++;
+                console.error('Erro na requisição:', e);
+            }
+        }
+
+        // 4. Desativa modo edição após salvar
+        const oneEditComp = document.getElementById('oneEditComp');
+        const inputs = document.querySelectorAll('.input-nota');
+        inputs.forEach(input => {
+            input.disabled = true;
+            input.style.backgroundColor = 'var(--lightgrey)';
+            input.style.cursor = 'not-allowed';
+        });
+        
+        if (oneEditComp) {
+            oneEditComp.style.background = 'var(--white)';
+            oneEditComp.style.color = 'var(--black)';
+            oneEditComp.style.border = '1px solid var(--lightgrey)';
+        }
+        modoEdicaoNotas = false;
+
+        mostrarAlerta(`Operação concluída!\n✅ Salvas: ${sucessos}\n❌ Falhas: ${erros}`, 'success');
+
+    } catch (error) {
+        console.error('Erro ao salvar notas:', error);
+        mostrarAlerta('Erro crítico ao salvar notas. Veja o console.', 'error');
+    } finally {
+        if (load) load.style.display = 'none';
+    }
+}
+
 
 // ============================================================
 // TABELA DE NOTAS DINÂMICA
@@ -143,12 +470,10 @@ function obterTurmaAtual() {
     return null;
 }
 
-
 async function carregarTabelaNotas() {
     const tabela = document.querySelector('.itensNotas table');
     if (!tabela) return;
 
-    // ✅ USAR A TURMA DO DATA-ATTRIBUTE
     const turmaAtual = obterTurmaAtual();
     if (!turmaAtual) {
         console.error("❌ Turma não encontrada no body");
@@ -156,7 +481,6 @@ async function carregarTabelaNotas() {
     }
 
     const fk_disciplina = turmaAtual.disciplina.codigo;
-    console.log("📚 Carregando notas para disciplina:", fk_disciplina);
 
     // Busca componentes
     let componentes = [];
@@ -168,10 +492,9 @@ async function carregarTabelaNotas() {
             : lista;
     }
 
-    // Busca alunos MATRICULADOS na turma atual
+    // Busca alunos MATRICULADOS
     let alunos = [];
     try {
-        // Busca matrículas da turma
         const respMatriculas = await fetch('/matricula/all');
         if (respMatriculas.ok) {
             const todasMatriculas = await respMatriculas.json();
@@ -179,16 +502,13 @@ async function carregarTabelaNotas() {
                 String(m.fk_id_turma) === String(turmaAtual.id)
             );
 
-            // Busca dados completos dos alunos
             const respAlunos = await fetch('/estudante/all');
             if (respAlunos.ok) {
                 const todosAlunos = await respAlunos.json();
-                // Filtra apenas alunos matriculados nesta turma
                 alunos = todosAlunos.filter(aluno =>
                     matriculasDaTurma.some(m => String(m.fk_id_estudante) === String(aluno.ra))
                 );
             }
-
         }
     } catch (error) {
         console.error("Erro ao buscar alunos matriculados:", error);
@@ -201,7 +521,7 @@ async function carregarTabelaNotas() {
         ths += '<th>RA</th>';
         ths += '<th>Nome</th>';
         componentes.forEach(comp => {
-            ths += `<th class="siglaProvaTable">${comp.sigla || comp.nome}</th>`;
+            ths += `<th class="siglaProvaTable" title="${comp.nome}">${comp.sigla || comp.nome}</th>`;
         });
         ths += '<th class="siglaProvaTable">Média</th>';
         ths += '</tr>';
@@ -217,9 +537,14 @@ async function carregarTabelaNotas() {
             trs += `<td class="raTable">${aluno.ra}</td>`;
             trs += `<td class="nameTable">${aluno.nome}</td>`;
             componentes.forEach(comp => {
-                trs += `<td class="notaSiglaTable"><input type="text" class="input-nota" data-id-componente="${comp.id_componente}" data-id-estudante="${aluno.ra}" placeholder="-" step="0.1" min="0" max="10" disabled></td>`;
+                trs += `<td class="notaSiglaTable">
+                            <input type="text" class="input-nota" 
+                                data-id-componente="${comp.id_componente}" 
+                                data-id-estudante="${aluno.ra}" 
+                                placeholder="-" step="0.1" min="0" max="10" disabled>
+                        </td>`;
             });
-            trs += '<td class="notaSiglaTable mediaNotaTable"></td>';
+            trs += '<td class="notaSiglaTable mediaNotaTable">-</td>';
             trs += '</tr>';
         });
         tbody.innerHTML = trs;
@@ -247,10 +572,7 @@ async function carregarNotasExistentes() {
         }
 
         const notas = await respNotas.json();
-        if (!Array.isArray(notas)) {
-            console.warn('Resposta de notas não é um array');
-            return;
-        }
+        if (!Array.isArray(notas)) return;
 
         // Percorre as notas e preenche os inputs correspondentes
         notas.forEach(nota => {
@@ -259,52 +581,47 @@ async function carregarNotasExistentes() {
             );
 
             if (input) {
-                // Converte o valor para formato brasileiro (com vírgula)
                 const valorFormatado = String(nota.valor_nota).replace('.', ',');
                 input.value = valorFormatado;
+                
+                // Aplica formatação visual (vermelho/azul)
+                processarNota(input);
             }
         });
 
-        // Recalcula as médias depois de carregar as notas
+        // Recalcula as médias de todas as linhas agora que os dados foram preenchidos
         const tbody = document.querySelector('.itensNotas tbody');
         if (tbody) {
             const linhas = tbody.querySelectorAll('tr');
             linhas.forEach(linha => {
-                // calcularMedia(linha); // Manter a chamada, assumindo que existe
+                calcularMedia(linha); 
             });
         }
     } catch (error) {
         console.error('Erro ao carregar notas existentes:', error);
     }
 }
+
 // ============================================================
-// FUNÇÃO PRINCIPAL: LISTAR ALUNOS
+// FUNÇÃO PRINCIPAL: LISTAR ALUNOS (NA LISTA LATERAL)
 // ============================================================
 async function listarAlunos() {
     try {
         const turmaAtual = obterTurmaAtual();
-        if (!turmaAtual) {
-            console.error("❌ Turma não encontrada");
-            return;
-        }
+        if (!turmaAtual) return;
 
         // Busca matrículas da turma atual
         const respMatriculas = await fetch('/matricula/all');
-        if (!respMatriculas.ok) {
-            console.error("Erro ao buscar matrículas");
-            return;
-        }
+        if (!respMatriculas.ok) return;
 
         const todasMatriculas = await respMatriculas.json();
         const matriculasDaTurma = todasMatriculas.filter(m =>
             String(m.fk_id_turma) === String(turmaAtual.id)
         );
 
-        // Busca todos os alunos
         const response = await fetch('/estudante/all');
         const todosAlunos = await response.json();
 
-        // Filtra apenas alunos desta turma
         const alunos = todosAlunos.filter(aluno =>
             matriculasDaTurma.some(m => String(m.fk_id_estudante) === String(aluno.ra))
         );
@@ -312,7 +629,7 @@ async function listarAlunos() {
         const listaAlunos = document.querySelector('.itemThree ul');
         const contadorAlunos = document.getElementById('alunosCount');
 
-        listaAlunos.innerHTML = '';
+        if (listaAlunos) listaAlunos.innerHTML = '';
 
         if (Array.isArray(alunos)) {
             if (contadorAlunos) contadorAlunos.innerText = alunos.length;
@@ -350,26 +667,23 @@ async function listarAlunos() {
                 const infoDiv = li.querySelector('.infoAluno');
                 const selectBtn = li.querySelector('#selectAlunoBtn');
 
-                // --- NOVA LÓGICA DE CLIQUE AQUI ---
                 linkClick.addEventListener('click', (e) => {
                     e.preventDefault();
-
                     // Verifica se a bolinha está visível (Modo Seleção Ativo)
                     const isSelectionMode = selectBtn.style.display === 'block';
 
                     if (isSelectionMode) {
-                        // MODO SELEÇÃO: Apenas marca/desmarca a cor
+                        // MODO SELEÇÃO
                         if (selectBtn.style.background.includes('var(--color5)')) {
-                            selectBtn.style.background = ''; // Remove a seleção
-                            selectBtn.style.border = '1px solid var(--black)'; // Remove a seleção
+                            selectBtn.style.background = ''; 
+                            selectBtn.style.border = '1px solid var(--black)'; 
                         } else {
-                            selectBtn.style.background = 'var(--color5)'; // Seleciona
-                            selectBtn.style.border = '1px solid var(--color5)'; // Seleciona
+                            selectBtn.style.background = 'var(--color5)'; 
+                            selectBtn.style.border = '1px solid var(--color5)'; 
                         }
-                        // ATUALIZA A BARRA SUPERIOR DE SELEÇÃO
                         atualizarInterfaceSelecao();
                     } else {
-                        // MODO NORMAL: Abre os detalhes (InfoAluno)
+                        // MODO NORMAL: Abre info
                         document.querySelectorAll('.infoAluno').forEach(div => {
                             if (div !== infoDiv) div.style.display = 'none';
                         });
@@ -377,7 +691,7 @@ async function listarAlunos() {
                     }
                 });
 
-                listaAlunos.appendChild(li);
+                if (listaAlunos) listaAlunos.appendChild(li);
             });
         }
     } catch (error) {
@@ -416,36 +730,15 @@ async function cadastrarComponente() {
     if (load) load.style.display = 'flex';
 
     try {
-        // Identifica a turma atual para descobrir a disciplina
-        const turmaEl = document.querySelector('.turmaLogin');
-        if (!turmaEl) {
-            mostrarAlerta('Não foi possível identificar a turma atual.', 'error');
-            return;
-        }
-        const turmaNome = turmaEl.innerText.trim();
-
-        const respTurmas = await fetch('/turma/all');
-        if (!respTurmas.ok) {
-            mostrarAlerta('Erro ao buscar turmas no servidor.', 'error');
+        const turmaAtual = obterTurmaAtual();
+        if (!turmaAtual) {
+            mostrarAlerta('Turma não identificada.', 'erro');
             return;
         }
 
-        const turmas = await respTurmas.json();
-        const listaTurmas = Array.isArray(turmas) ? turmas : (turmas.turmas || []);
+        const fk_disciplina_codigo = turmaAtual.disciplina.codigo;
 
-        let turmaObj = listaTurmas.find(t => (t.nome && t.nome.trim() === turmaNome));
-        if (!turmaObj) {
-            turmaObj = listaTurmas.find(t => (t.nome && turmaNome.includes(t.nome)) || (t.nome && t.nome.includes(turmaNome)));
-        }
-
-        if (!turmaObj) {
-            mostrarAlerta(`Turma "${turmaNome}" não encontrada no servidor.`, 'erro');
-            return;
-        }
-
-        const fk_disciplina_codigo = turmaObj.fk_disciplina_codigo || turmaObj.FK_DISCIPLINA_CODIGO || turmaObj.fk_disciplina_codigo;
-
-        // Verifica duplicidade via API
+        // Verifica duplicidade
         const checkResp = await fetch('/componente-nota/verificar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -455,12 +748,12 @@ async function cadastrarComponente() {
         if (checkResp.ok) {
             const checkData = await checkResp.json();
             if (checkData.sucesso === false) {
-                mostrarAlerta('Componente já cadastrado: ' + (checkData.componente?.nome || ''), 'aviso');
+                mostrarAlerta('Componente já cadastrado.', 'aviso');
                 return;
             }
         }
 
-        // Faz o cadastro
+        // Cadastro
         const resp = await fetch('/componente-nota/cadastro', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -468,23 +761,19 @@ async function cadastrarComponente() {
         });
 
         if (resp.ok) {
-            const data = await resp.json();
-            mostrarAlerta('Componente cadastrado com sucesso! ID: ' + (data.id_componente || data.id), 'success');
-            // Fecha formulário e atualiza lista
+            mostrarAlerta('Componente cadastrado com sucesso!', 'success');
             const addComponents = document.querySelector('.addComponents');
             if (addComponents) addComponents.style.display = 'none';
             limparFormularioComponente();
             await listarComponentes();
-            // Recarrega a tabela de notas com a nova coluna
             await carregarTabelaNotas();
         } else {
-            const err = await resp.json().catch(() => ({}));
-            mostrarAlerta('Erro ao cadastrar componente: ' + (err.error || resp.status), 'erro');
+            mostrarAlerta('Erro ao cadastrar componente.', 'erro');
         }
 
     } catch (error) {
         console.error('Erro ao cadastrar componente:', error);
-        mostrarAlerta('Erro ao cadastrar componente. Veja console.', 'erro');
+        mostrarAlerta('Erro de conexão.', 'erro');
     } finally {
         if (load) load.style.display = 'none';
     }
@@ -495,41 +784,26 @@ async function listarComponentes() {
         const view = document.querySelector('.viewDatailsComp');
         const countEl = document.getElementById('countComponents');
 
-        // 1. Obter o ID do docente logado
         const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
-        if (!usuarioLogado || !usuarioLogado.id) {
-            console.error("❌ Usuário não autenticado");
-            return;
-        }
+        if (!usuarioLogado || !usuarioLogado.id) return;
+        
         const id_docente = usuarioLogado.id;
-
-        // 2. Buscar na NOVA rota, usando o ID do docente
         const resp = await fetch(`/componente-nota/docente/${id_docente}`);
 
         if (!resp.ok) {
-            // Se não encontrar (404), limpa a lista e o contador
             if (resp.status === 404) {
                 if (countEl) countEl.innerText = 0;
                 if (view) view.innerHTML = '';
             }
-            console.error("Erro ao buscar componentes do docente:", resp.status);
             return;
         }
 
         const componentes = await resp.json();
         const lista = Array.isArray(componentes) ? componentes : (componentes.componentes || []);
 
-        // 3. Obter a disciplina da turma atual
-        // ✅ USAR A TURMA DO DATA-ATTRIBUTE PARA EVITAR ERROS
         const turmaAtual = obterTurmaAtual();
-        let fk_disciplina = null;
+        let fk_disciplina = turmaAtual ? turmaAtual.disciplina.codigo : null;
 
-        if (turmaAtual && turmaAtual.disciplina) {
-            fk_disciplina = turmaAtual.disciplina.codigo;
-        }
-
-        // 4. Filtrar a lista (apenas componentes da disciplina atual)
-        // Correção para suportar Maiúsculas/Minúsculas no retorno do banco
         const filtered = fk_disciplina ? lista.filter(c => {
             const codigoComp = c.fk_disciplina_codigo || c.FK_DISCIPLINA_CODIGO;
             return String(codigoComp) === String(fk_disciplina);
@@ -537,20 +811,18 @@ async function listarComponentes() {
 
         if (countEl) countEl.innerText = filtered.length || 0;
 
-        // 5. Renderizar
         if (view) {
-            view.innerHTML = ''; // Limpa o container antes de adicionar os novos
-            
+            view.innerHTML = '';
             filtered.forEach(comp => {
                 const div = document.createElement('div');
-                div.className = 'detailP'; // Mantém a classe container
+                div.className = 'detailP';
                 
                 const nameP = document.createElement('p');
-                nameP.className = 'detailNameP'; // ⚠️ CORREÇÃO: Usar class ao invés de ID
+                nameP.className = 'detailNameP'; 
                 nameP.innerText = comp.nome;
                 
                 const sigP = document.createElement('p');
-                sigP.className = 'detailSiglaP'; // ⚠️ CORREÇÃO: Usar class ao invés de ID
+                sigP.className = 'detailSiglaP'; 
                 sigP.innerText = comp.sigla ? `(${comp.sigla})` : '';
                 
                 div.appendChild(nameP);
@@ -564,7 +836,7 @@ async function listarComponentes() {
 }
 
 // ============================================================
-// FUNÇÃO GERENCIADORA DO BOTÃO SALVAR
+// CRUD ALUNOS (Salvar, Editar, Excluir)
 // ============================================================
 async function handleSaveButton() {
     const raInput = document.getElementById('raAluno');
@@ -585,15 +857,11 @@ async function handleSaveButton() {
     }
 }
 
-// ============================================================
-// CADASTRO (CREATE)
-// ============================================================
 async function cadastrarAluno(ra, nome) {
     const load = document.querySelector('.load');
-    if (load) load.style.display = 'flex'; // Mostra loading
+    if (load) load.style.display = 'flex';
 
     try {
-        // 1. Verifica Duplicidade
         const checkResponse = await fetch('/estudante/verificar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -601,16 +869,13 @@ async function cadastrarAluno(ra, nome) {
         });
         const checkResult = await checkResponse.json();
 
-        if (checkResult.sucesso === false) { // Aluno já existe
-            // Aluno já existe localmente — não recria, mas segue para matricular na turma atual
-            console.log(`ℹ️ Estudante com RA ${ra} já existe:`, checkResult.estudante);
+        if (checkResult.sucesso === false) { 
+            // Já existe, apenas matricula
             if (load) load.style.display = 'none';
-            // Prossegue para matricular o aluno existente
             await matricularAluno(ra);
             return;
         }
 
-        // 2. Realiza o Cadastro
         const response = await fetch('/estudante/cadastro', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -620,8 +885,7 @@ async function cadastrarAluno(ra, nome) {
         if (response.ok) {
             mostrarAlerta('Aluno cadastrado com sucesso!', 'success');
             limparFormulario();
-            listarAlunos(); // Atualiza a tabela
-            // Depois de criar o estudante, matricula-o na turma atual
+            listarAlunos(); 
             await matricularAluno(ra);
         } else {
             const errorData = await response.json();
@@ -636,41 +900,34 @@ async function cadastrarAluno(ra, nome) {
     }
 }
 
-// ============================================================
-// EDIÇÃO (UPDATE)
-// ============================================================
-
 function prepararEdicao(ra, nome) {
     const formBody = document.querySelector('.cadastrarAlunoBody');
+    if (formBody) formBody.style.display = 'block';
 
-    // 2. Se ele existir, torna visível (block ou flex, dependendo do seu CSS)
-    if (formBody) {
-        formBody.style.display = 'block';
-    }
-    // Preenche o formulário com os dados do aluno selecionado
     const raInput = document.getElementById('raAluno');
     const nomeInput = document.getElementById('nameAluno');
     const campInputRA = document.querySelector('.campCA');
     const textCampRa = document.querySelector('label[for="raAluno"]');
     const btnSalvar = document.getElementById('btnSaveCA');
-    const titulo = document.querySelector('.headerCA h2'); // Título "Cadastre Alunos"
+    const titulo = document.querySelector('.headerCA h2');
 
     raInput.value = ra;
     nomeInput.value = nome;
-
-    // Bloqueia o RA pois é a chave primária (não editável facilmente)
     raInput.disabled = true;
-    campInputRA.style.border = '1px solid var(--lightgrey)';
-    campInputRA.style.background = "var(--lightgrey)";
-    textCampRa.innerText = "Campo indisponível para edição";
-    textCampRa.style.color = 'var(--grey)';
+    
+    if(campInputRA) {
+        campInputRA.style.border = '1px solid var(--lightgrey)';
+        campInputRA.style.background = "var(--lightgrey)";
+    }
+    if(textCampRa) {
+        textCampRa.innerText = "Campo indisponível para edição";
+        textCampRa.style.color = 'var(--grey)';
+    }
 
-    // Muda estado visual
     isEditing = true;
     if (titulo) titulo.innerText = "Editar Aluno";
     if (btnSalvar) btnSalvar.innerText = "Atualizar";
-
-    // Rola a página para o topo (formulário)
+    
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -679,9 +936,8 @@ async function atualizarAluno(ra, nome) {
     if (load) load.style.display = 'flex';
 
     try {
-        //
         const response = await fetch('/estudante/atualizar', {
-            method: 'POST', // O seu backend espera POST para atualizar
+            method: 'POST', 
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ra: ra, nome: nome })
         });
@@ -690,7 +946,6 @@ async function atualizarAluno(ra, nome) {
             mostrarAlerta('Aluno atualizado com sucesso!', 'success');
             limparFormulario();
             listarAlunos();
-            // Após atualizar, tenta matricular o aluno na turma atual
             await matricularAluno(ra);
         } else {
             mostrarAlerta('Erro ao atualizar.', 'erro');
@@ -703,42 +958,29 @@ async function atualizarAluno(ra, nome) {
     }
 }
 
-// ============================================================
-// MATRÍCULA
-// ============================================================
 async function matricularAluno(ra) {
     const load = document.querySelector('.load');
     if (load) load.style.display = 'flex';
 
     try {
         const turmaAtual = obterTurmaAtual();
-        if (!turmaAtual) {
-            mostrarAlerta('Não foi possível identificar a turma atual.', 'erro');
-            return;
-        }
+        if (!turmaAtual) return;
 
         const fk_id_turma = Number(turmaAtual.id);
         const fk_id_estudante = Number(ra);
 
-        // Verifica se matrícula já existe
         const verifyResp = await fetch('/matricula/verificar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ fk_id_turma, fk_id_estudante })
         });
-
-        if (!verifyResp.ok) {
-            mostrarAlerta('Erro ao verificar matrícula.', 'erro');
-            return;
-        }
-
         const verifyData = await verifyResp.json();
+        
         if (verifyData.sucesso === false) {
             mostrarAlerta('Aluno já matriculado nesta turma.', 'aviso');
             return;
         }
 
-        // Cadastra a matrícula
         const cadastroResp = await fetch('/matricula/cadastro', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -746,9 +988,7 @@ async function matricularAluno(ra) {
         });
 
         if (cadastroResp.ok) {
-            const data = await cadastroResp.json();
-            mostrarAlerta('Matrícula realizada com sucesso! ID: ' + (data.id_matricula || data.id || '---'), 'success');
-            // Recarrega listas
+            mostrarAlerta('Matrícula realizada com sucesso!', 'success');
             await listarAlunos();
             await carregarTabelaNotas();
         } else if (cadastroResp.status === 409) {
@@ -759,15 +999,11 @@ async function matricularAluno(ra) {
 
     } catch (error) {
         console.error('Erro na matrícula:', error);
-        mostrarAlerta('Erro ao realizar matrícula.', 'erro');
     } finally {
         if (load) load.style.display = 'none';
     }
 }
 
-// ============================================================
-// EXCLUSÃO (DELETE)
-// ============================================================
 async function deletarAluno(ra) {
     mostrarConfirm(`Tem certeza que deseja excluir o aluno com RA ${ra}?`, async (confirmado) => {
         if (confirmado) {
@@ -775,7 +1011,6 @@ async function deletarAluno(ra) {
             if (load) load.style.display = 'flex';
 
             try {
-                //
                 const response = await fetch('/estudante/deletar', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -783,11 +1018,8 @@ async function deletarAluno(ra) {
                 });
 
                 if (response.ok) {
-                    if (load) load.style.display = 'none';
                     mostrarAlerta('Aluno excluído com sucesso.');
-                    // Atualiza a lista de alunos
                     listarAlunos();
-                    // ✅ NOVO: Atualiza a tabela de notas (tabela dinâmica)
                     await carregarTabelaNotas(); 
                 } else {
                     mostrarAlerta('Erro ao excluir aluno.');
@@ -812,14 +1044,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmDeleteComp = document.getElementById('confirmDeleteComp');
     const selectCompToDelete = document.getElementById('selectCompToDelete');
 
-    // Abrir modal ao clicar no botão
     if (btnDeleteComp && deleteCompBody) {
         btnDeleteComp.addEventListener('click', async () => {
             deleteCompBody.style.display = 'flex';
             await carregarComponentesNoSelect();
         });
     }
-    // Fechar modal
     if (closedDeleteComp) {
         closedDeleteComp.addEventListener('click', () => {
             deleteCompBody.style.display = 'none';
@@ -830,7 +1060,6 @@ document.addEventListener('DOMContentLoaded', () => {
             deleteCompBody.style.display = 'none';
         });
     }
-    // Deletar componente
     if (confirmDeleteComp) {
         confirmDeleteComp.addEventListener('click', async () => {
             const idComp = selectCompToDelete.value;
@@ -838,21 +1067,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 mostrarAlerta('Selecione um componente para deletar.');
                 return;
             }
-
             mostrarConfirm('Tem certeza que deseja deletar este componente? Todas as notas associadas serão removidas!', async (confirmado) => {
                 if (confirmado) {
                     const load = document.querySelector('.load');
                     if (load) load.style.display = 'flex';
-
                     try {
                         const resp = await fetch('/componente-nota/deletar', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ id_componente: idComp })
                         });
-
                         if (resp.ok) {
-                            if (load) load.style.display = 'none';
                             mostrarAlerta('Componente deletado com sucesso!');
                             deleteCompBody.style.display = 'none';
                             await listarComponentes();
@@ -870,34 +1095,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Carregar componentes no select, filtrados pela disciplina
     async function carregarComponentesNoSelect() {
+        if(!selectCompToDelete) return;
         selectCompToDelete.innerHTML = '<option value="">Carregando...</option>';
         try {
-            // Busca a turma atual
-            const turmaEl = document.querySelector('.tumaLogin') || document.querySelector('.turmaLogin');
-            const turmaNome = turmaEl ? turmaEl.innerText.trim() : null;
+            const turmaAtual = obterTurmaAtual();
+            let fk_disciplina = turmaAtual ? turmaAtual.disciplina.codigo : null;
 
-            // Busca a disciplina da turma
-            let fk_disciplina = null;
-            if (turmaNome) {
-                const respTurmas = await fetch('/turma/all');
-                if (respTurmas.ok) {
-                    const turmas = await respTurmas.json();
-                    const listaTurmas = Array.isArray(turmas) ? turmas : (turmas.turmas || []);
-                    const turmaObj = listaTurmas.find(t => (t.nome && t.nome.trim() === turmaNome));
-                    if (turmaObj) {
-                        fk_disciplina = turmaObj.fk_disciplina_codigo || turmaObj.FK_DISCIPLINA_CODIGO;
-                    }
-                }
-            }
-
-            // Busca todos os componentes
             const resp = await fetch('/componente-nota/all');
             if (resp.ok) {
                 const lista = await resp.json();
-
-                // Filtra componentes pela disciplina
                 let componentesFiltrados = lista;
                 if (fk_disciplina) {
                     componentesFiltrados = lista.filter(c => String(c.fk_disciplina_codigo) === String(fk_disciplina));
@@ -915,13 +1122,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error('Erro ao carregar componentes:', error);
-            selectCompToDelete.innerHTML = '<option value="">Erro ao carregar</option>';
         }
     }
 });
 
 // ============================================================
-// UTILITÁRIOS
+// UTILITÁRIOS (Limpar form, Filtrar)
 // ============================================================
 function limparFormulario() {
     const raInput = document.getElementById('raAluno');
@@ -929,35 +1135,27 @@ function limparFormulario() {
     const btnSalvar = document.getElementById('btnSaveCA');
     const titulo = document.querySelector('.headerCA h2');
 
-    // Adicionado: Seleciona o corpo do formulário
-    const formBody = document.querySelector('.cadastrarAlunoBody');
+    if(raInput) {
+        raInput.value = '';
+        raInput.disabled = false;
+        raInput.style.backgroundColor = "";
+    }
+    if(nomeInput) nomeInput.value = '';
 
-    raInput.value = '';
-    nomeInput.value = '';
-
-    // Restaura estado original (Modo Cadastro)
-    raInput.disabled = false;
-    raInput.style.backgroundColor = "";
-
-    // Restaura visual do campo RA (bordas e texto originais)
     const campInputRA = document.querySelector('.campCA');
     const textCampRa = document.querySelector('label[for="raAluno"]');
     if (campInputRA) {
-        campInputRA.style.border = '';     // Remove estilo inline
-        campInputRA.style.background = ''; // Remove estilo inline
+        campInputRA.style.border = '';     
+        campInputRA.style.background = ''; 
     }
     if (textCampRa) {
-        textCampRa.innerText = "RA do Aluno"; // Ou o texto original do label
+        textCampRa.innerText = "RA do Aluno";
         textCampRa.style.color = '';
     }
 
     isEditing = false;
-
     if (titulo) titulo.innerText = "Cadastre Alunos";
     if (btnSalvar) btnSalvar.innerText = "Salvar";
-
-    // SE você quiser que o formulário feche ao cancelar, descomente a linha abaixo:
-    // if (formBody) formBody.style.display = 'none';
 }
 
 function filtrarAlunos() {
@@ -976,21 +1174,15 @@ function filtrarAlunos() {
     });
 }
 
-/*////////////////////////////////////////
-//       importação aluno csv           //
-////////////////////////////////////////*/
-
-document.addEventListener('DOMContentLoaded', () => {
-    configurarBotoesImportacao();
-});
-
+// ============================================================
+// IMPORTAÇÃO CSV
+// ============================================================
 function configurarBotoesImportacao() {
     const btnImportar = document.querySelector('.btnImportFile');
     const inputFile = document.getElementById('inputFileAlunos');
     const fileNameDisplay = document.getElementById('fileNameDisplay');
     const btnCancel = document.querySelector('.btnCancelFile');
 
-    // 1. Feedback visual ao selecionar arquivo
     if (inputFile) {
         inputFile.addEventListener('change', function () {
             if (this.files && this.files.length > 0) {
@@ -1004,27 +1196,22 @@ function configurarBotoesImportacao() {
         });
     }
 
-    // 2. Ação do Botão IMPORTAR
     if (btnImportar) {
         btnImportar.addEventListener('click', async (e) => {
             e.preventDefault();
-
             if (!inputFile || !inputFile.files || inputFile.files.length === 0) {
                 mostrarAlerta("Por favor, selecione um arquivo CSV.", 'warning');
                 return;
             }
-
             await processarArquivoCSV(inputFile.files[0]);
         });
     }
 
-    // 3. Botão Cancelar
     if (btnCancel) {
         btnCancel.addEventListener('click', (e) => {
             e.preventDefault();
             if (inputFile) inputFile.value = '';
             if (fileNameDisplay) fileNameDisplay.innerText = "Nenhum arquivo selecionado";
-
             const modal = document.querySelector('.fileBody');
             if (modal) modal.style.display = 'none';
         });
@@ -1036,24 +1223,10 @@ async function processarArquivoCSV(file) {
     if (load) load.style.display = 'flex';
 
     try {
-        // --- PASSO 1: Identificar a Turma ---
-        const turmaEl = document.querySelector('.tumaLogin') || document.querySelector('.turmaLogin');
-        if (!turmaEl) throw new Error("Não foi possível identificar a turma na tela.");
+        const turmaAtual = obterTurmaAtual();
+        if (!turmaAtual) throw new Error("Não foi possível identificar a turma.");
+        const idTurma = turmaAtual.id;
 
-        const nomeTurmaAtual = turmaEl.innerText.trim();
-
-        const respTurmas = await fetch('/turma/all');
-        if (!respTurmas.ok) throw new Error("Erro ao buscar turmas.");
-
-        const dadosTurmas = await respTurmas.json();
-        const listaTurmas = Array.isArray(dadosTurmas) ? dadosTurmas : (dadosTurmas.turmas || []);
-
-        const turmaObj = listaTurmas.find(t => t.nome && (t.nome.trim() === nomeTurmaAtual || t.nome.includes(nomeTurmaAtual)));
-
-        if (!turmaObj) throw new Error(`Turma "${nomeTurmaAtual}" não encontrada no sistema.`);
-        const idTurma = turmaObj.id;
-
-        // --- PASSO 2: Ler e Processar ---
         const texto = await lerArquivo(file);
         const linhas = texto.split('\n');
 
@@ -1066,7 +1239,6 @@ async function processarArquivoCSV(file) {
             if (!linha) continue;
 
             const colunas = linha.includes(';') ? linha.split(';') : linha.split(',');
-
             const ra = colunas[0] ? colunas[0].replace(/["']/g, "").trim() : null;
             const nome = colunas[1] ? colunas[1].replace(/["']/g, "").trim() : null;
 
@@ -1082,9 +1254,7 @@ async function processarArquivoCSV(file) {
             }
         }
 
-        // --- PASSO 3: Finalização ---
         mostrarAlerta('Importação concluída! A página será recarregada...', 'success');
-
         const modal = document.querySelector('.fileBody');
         if (modal) modal.style.display = 'none';
 
@@ -1095,11 +1265,11 @@ async function processarArquivoCSV(file) {
     } catch (erro) {
         console.error(erro);
         mostrarAlerta("Erro na importação: " + erro.message, 'erro');
-        // Se der erro, garantimos que o loading suma (porque o finally já fa isso)
     } finally {
         if (load) load.style.display = 'none';
     }
 }
+
 function lerArquivo(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -1112,8 +1282,6 @@ function lerArquivo(file) {
 async function importarUnico(ra, nome, idTurma) {
     try {
         let novoUsuario = false;
-
-        // 1. Verificar/Criar Estudante
         const check = await fetch('/estudante/verificar', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ra: ra })
@@ -1129,7 +1297,6 @@ async function importarUnico(ra, nome, idTurma) {
             novoUsuario = true;
         }
 
-        // 2. Matricular
         const verMat = await fetch('/matricula/verificar', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ fk_id_turma: idTurma, fk_id_estudante: ra })
@@ -1150,29 +1317,21 @@ async function importarUnico(ra, nome, idTurma) {
         } else {
             return { sucesso: false, msg: "Erro ao matricular" };
         }
-
     } catch (e) {
         return { sucesso: false, msg: e.message };
     }
 }
 
-/*/////////////////////////////////////////////
-/------------- SELECIONAR ALUNOS -------------/
-/////////////////////////////////////////////*/
-
+// ============================================================
+// LÓGICA DE SELEÇÃO E EXPORTAÇÃO
+// ============================================================
 const openClosedSelectAlunos = document.getElementById('btnOptionsSelectA');
 const optionsSelect = document.querySelector('.optionsSelect');
 const bodySelect = document.querySelector('.selectAlunos');
 const btnCancelSelection = document.getElementById('cancelSelection');
 let countSelect = 0;
 
-// ============================================================
-// FUNÇÕES AUXILIARES DE SELEÇÃO
-// ============================================================
-
-// 1. Função NOVA para atualizar a interface (Menu Superior e Contador)
 function atualizarInterfaceSelecao() {
-    // 1. Conta quantos botões estão com a cor de seleção (var(--color5))
     const allSelectBtns = document.querySelectorAll('#selectAlunoBtn');
     let count = 0;
 
@@ -1182,35 +1341,24 @@ function atualizarInterfaceSelecao() {
         }
     });
 
-    // 2. Atualiza o SPAN com a quantidade
     const spanContador = document.querySelector('.countAlunosSelect span');
-    if (spanContador) {
-        spanContador.innerText = count;
-    }
+    if (spanContador) spanContador.innerText = count;
 
-    // 3. Mostra ou esconde o menu de opções (Delete/Exportar)
     const menuOptionsAluno = document.querySelector('.menuOptionsAluno');
     if (menuOptionsAluno) {
-        if (count > 0) {
-            menuOptionsAluno.style.display = 'flex'; // Exibe se tiver 1 ou mais
-        } else {
-            menuOptionsAluno.style.display = 'none'; // Esconde se for 0
-        }
+        menuOptionsAluno.style.display = (count > 0) ? 'flex' : 'none';
     }
 }
 
-// Retorna um array com objetos { ra, nome } dos alunos que estão marcados (roxo).
 function obterAlunosSelecionados() {
     const selecionados = [];
     const itens = document.querySelectorAll('.itemThree ul li');
 
     itens.forEach(li => {
         const btn = li.querySelector('#selectAlunoBtn');
-        // Verifica se está "roxo" (selecionado)
         if (btn && btn.style.background.includes('var(--color5)')) {
             const raEl = li.querySelector('.raAluno');
             const nomeEl = li.querySelector('.nameAluno');
-            
             if (raEl && nomeEl) {
                 selecionados.push({
                     ra: raEl.innerText.trim(),
@@ -1222,14 +1370,11 @@ function obterAlunosSelecionados() {
     return selecionados;
 }
 
-// Verifica se existe pelo menos UMA bolinha marcada com a cor roxa
 function isAlgumSelecionado() {
     const allSelectBtns = document.querySelectorAll('#selectAlunoBtn');
-    // Retorna true se encontrar pelo menos um com a cor roxa
     return Array.from(allSelectBtns).some(btn => btn.style.background.includes('var(--color5)'));
 }
 
-// Esconde todas as bolinhas e reseta o estilo visual
 function sairDoModoSelecao() {
     const allSelectBtns = document.querySelectorAll('#selectAlunoBtn');
     allSelectBtns.forEach(btn => {
@@ -1237,11 +1382,9 @@ function sairDoModoSelecao() {
         btn.style.background = '';
         btn.style.border = '1px solid var(--black)';
     });
-    // Atualiza a interface (reseta o contador e esconde o menu)
     atualizarInterfaceSelecao();
 }
 
-// Fecha o menu e reseta o contador de cliques
 function fecharMenuSelecao() {
     if (optionsSelect && bodySelect) {
         optionsSelect.style.display = 'none';
@@ -1250,71 +1393,42 @@ function fecharMenuSelecao() {
     }
 }
 
-// ============================================================
-// 1. LÓGICA DO MENU (ABRIR / FECHAR)
-// ============================================================
-
 if (openClosedSelectAlunos) {
     openClosedSelectAlunos.addEventListener('click', () => {
-
-        // --- ABRINDO O MENU ---
         if (countSelect === 0) {
+            if (!isAlgumSelecionado()) sairDoModoSelecao();
 
-            // REGRA DO USUÁRIO: Se clicar nos três pontinhos e NÃO tiver ninguém selecionado (roxo),
-            // remove as bolinhas imediatamente.
-            if (!isAlgumSelecionado()) {
-                sairDoModoSelecao();
-            }
-
-            // Verifica novamente se tem alguém selecionado para decidir se mostra o botão "Cancelar"
             const temSelecao = isAlgumSelecionado();
-
             if (temSelecao) {
-                // Tem gente marcada: Mostra "Cancelar" e aumenta o menu
                 if (btnCancelSelection) btnCancelSelection.style.display = 'block';
                 bodySelect.style.height = '150px';
             } else {
-                // Ninguém marcado: Esconde "Cancelar" e deixa menu pequeno
                 if (btnCancelSelection) btnCancelSelection.style.display = 'none';
                 bodySelect.style.height = '110px';
             }
-
-            // Exibe o menu
             optionsSelect.style.display = 'flex';
             countSelect++;
-        }
-
-        // --- FECHANDO O MENU ---
-        else {
+        } else {
             fecharMenuSelecao();
         }
     });
 }
 
-// ============================================================
-// 2. BOTÃO "SELECIONAR" 
-// ============================================================
 const btnSelecionarOne = document.getElementById('selecionarOne');
 if (btnSelecionarOne) {
     btnSelecionarOne.addEventListener('click', (e) => {
         e.preventDefault();
         const allSelectBtns = document.querySelectorAll('#selectAlunoBtn');
         allSelectBtns.forEach(btn => {
-            btn.style.display = 'block'; // Mostra bolinhas vazias
-            // Garante que comecem desmarcadas ao iniciar a seleção individual
+            btn.style.display = 'block'; 
             btn.style.background = ''; 
             btn.style.border = '1px solid var(--black)';
         });
         fecharMenuSelecao();
-        
-        // Atualiza a interface (contador volta para 0)
         atualizarInterfaceSelecao();
     });
 }
 
-// ============================================================
-// 3. BOTÃO "SELECIONAR TODOS"
-// ============================================================
 const btnSelecionarAll = document.getElementById('selecionarAll');
 if (btnSelecionarAll) {
     btnSelecionarAll.addEventListener('click', (e) => {
@@ -1326,121 +1440,84 @@ if (btnSelecionarAll) {
             btn.style.border = '1px solid var(--color5)';
         });
         fecharMenuSelecao();
-        
-        // Atualiza a interface (contador vai para o total)
         atualizarInterfaceSelecao();
     });
 }
 
-// ============================================================
-// 4. BOTÃO "CANCELAR"
-// ============================================================
 if (btnCancelSelection) {
     btnCancelSelection.addEventListener('click', (e) => {
         e.preventDefault();
-        sairDoModoSelecao(); // Limpa tudo
+        sairDoModoSelecao();
         fecharMenuSelecao();
     });
 }
 
 // ============================================================
-// EXPORTAR ALUNO INDIVIDUAL (CSV COMPLETO)
+// EXPORTAÇÃO
 // ============================================================
 async function exportarAlunoIndividual(ra, nome) {
-    // 1. Mostrar loading pois vamos buscar dados no banco
     const load = document.querySelector('.load');
     if (load) load.style.display = 'flex';
 
     try {
-        // 2. Obter informações da Turma e Disciplina
         const turmaAtual = obterTurmaAtual();
-        if (!turmaAtual) {
-            mostrarAlerta("Informações da turma não encontradas.", "erro");
-            if (load) load.style.display = 'none';
-            return;
-        }
+        if (!turmaAtual) throw new Error("Info turma erro");
         
         const fk_disciplina = turmaAtual.disciplina.codigo;
 
-        // 3. Buscar componentes (Provas, trabalhos) da disciplina dessa turma
         const respComp = await fetch('/componente-nota/all');
-        if (!respComp.ok) throw new Error("Erro ao buscar componentes");
-        
         const allComps = await respComp.json();
-        // Filtra apenas os componentes desta disciplina
         const componentesDaTurma = allComps.filter(c => String(c.fk_disciplina_codigo) === String(fk_disciplina));
 
-        // 4. Buscar todas as notas
-        // (Seria ideal ter um endpoint /nota/aluno/:ra, mas vamos usar o /all existente e filtrar)
         const respNotas = await fetch('/nota/all');
-        if (!respNotas.ok) throw new Error("Erro ao buscar notas");
         const todasAsNotas = await respNotas.json();
 
-        // 5. Preparar os dados para o CSV
         let headerCSV = "RA;Nome";
         let linhaDados = `${ra};${nome}`;
         let somaNotas = 0;
         let qtdNotasComputadas = 0;
         let temNotaFaltante = false;
 
-        // Itera sobre cada componente que a turma deve ter
         for (const comp of componentesDaTurma) {
-            // Adiciona o nome do componente no cabeçalho (ex: ;P1)
             headerCSV += `;${comp.sigla || comp.nome}`;
-
-            // Procura a nota desse aluno para esse componente
             const notaEncontrada = todasAsNotas.find(n => 
                 String(n.fk_id_estudante) === String(ra) && 
                 String(n.fk_id_componente) === String(comp.id_componente)
             );
 
             if (notaEncontrada) {
-                // Formata a nota (troca ponto por vírgula para Excel PT-BR)
                 const valorFormatado = String(notaEncontrada.valor_nota).replace('.', ',');
                 linhaDados += `;${valorFormatado}`;
-                
                 somaNotas += Number(notaEncontrada.valor_nota);
                 qtdNotasComputadas++;
             } else {
-                // Se não achou a nota, marca a flag e para o loop
                 temNotaFaltante = true;
                 break; 
             }
         }
 
-        // 6. Verificação de Integridade
         if (temNotaFaltante) {
             if (load) load.style.display = 'none';
             mostrarAlerta("Aluno sem nota(s) lançada(s). Exportação cancelada.", "aviso");
             return;
         }
 
-        // Se não houver componentes na turma, a média é 0 ou vazia. 
-        // Caso contrário, calcula média aritmética.
         let mediaFinal = 0;
         if (qtdNotasComputadas > 0) {
             mediaFinal = (somaNotas / qtdNotasComputadas).toFixed(1);
         }
 
-        // Adiciona a média ao CSV
         headerCSV += ";Média";
         linhaDados += `;${String(mediaFinal).replace('.', ',')}`;
 
-        // 7. Montar o arquivo final e aplicar a correção de codificação
         let csvContent = `${headerCSV}\n${linhaDados}`;
-        
-        // Cria o Blob usando UTF-8 com BOM (solução padrão e correta) - Linha 958
         const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' }); 
-        
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
-        link.setAttribute("href", url);
-
-        // Nome do arquivo (Mantém acentuação, apenas trocando espaços por _)
         const nomeArquivo = nome.replace(/\s+/g, '_').trim(); 
+        
+        link.setAttribute("href", url);
         link.setAttribute("download", `Relatorio_${nomeArquivo}_${ra}.csv`);
-
-        link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -1453,22 +1530,14 @@ async function exportarAlunoIndividual(ra, nome) {
     }
 }
 
-// ============================================================
-// AÇÕES EM MASSA (DELETAR E EXPORTAR SELECIONADOS)
-// ============================================================
-
-/**
- * Deleta todos os alunos selecionados do banco de dados.
- */
 async function deletarAlunosSelecionados() {
     const listaAlunos = obterAlunosSelecionados();
-
     if (listaAlunos.length === 0) {
         mostrarAlerta("Nenhum aluno selecionado.", "aviso");
         return;
     }
 
-    mostrarConfirm(`Tem certeza que deseja excluir ${listaAlunos.length} aluno(s)? Essa ação não pode ser desfeita.`, async (confirmado) => {
+    mostrarConfirm(`Tem certeza que deseja excluir ${listaAlunos.length} aluno(s)?`, async (confirmado) => {
         if (confirmado) {
             const load = document.querySelector('.load');
             if (load) load.style.display = 'flex';
@@ -1476,7 +1545,6 @@ async function deletarAlunosSelecionados() {
             let sucessos = 0;
             let erros = 0;
 
-            // Para cada aluno selecionado, chama a API de deletar
             for (const aluno of listaAlunos) {
                 try {
                     const response = await fetch('/estudante/deletar', {
@@ -1484,46 +1552,26 @@ async function deletarAlunosSelecionados() {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ ra: aluno.ra })
                     });
-
-                    if (response.ok) {
-                        sucessos++;
-                    } else {
-                        erros++;
-                        console.error(`Erro ao deletar RA ${aluno.ra}`);
-                    }
+                    if (response.ok) sucessos++;
+                    else erros++;
                 } catch (error) {
                     erros++;
-                    console.error(error);
                 }
             }
 
             if (load) load.style.display = 'none';
-
-            // Feedback ao usuário
-            if (erros === 0) {
-                mostrarAlerta(`${sucessos} aluno(s) excluído(s) com sucesso!`, "success");
-            } else {
-                mostrarAlerta(`Concluído: ${sucessos} apagados, ${erros} falharam.`, "aviso");
-            }
-
-            // Sai do modo seleção e atualiza a lista
-            sairDoModoSelecao(); // Função que já existe e reseta o menu
-            listarAlunos();      // Recarrega a lista do banco
-            // ✅ NOVO: Atualiza a tabela de notas (tabela dinâmica)
+            mostrarAlerta(`Concluído: ${sucessos} apagados, ${erros} falharam.`, sucessos > 0 ? "success" : "erro");
+            sairDoModoSelecao();
+            listarAlunos();
             await carregarTabelaNotas();
         }
     });
 }
 
-/**
- * Exporta todos os alunos selecionados para um único CSV.
- * Nome do arquivo = Nome da Turma.
- */
 async function exportarAlunosSelecionados() {
     const listaAlunos = obterAlunosSelecionados();
-
     if (listaAlunos.length === 0) {
-        mostrarAlerta("Nenhum aluno selecionado para exportação.", "aviso");
+        mostrarAlerta("Nenhum aluno selecionado.", "aviso");
         return;
     }
 
@@ -1531,39 +1579,30 @@ async function exportarAlunosSelecionados() {
     if (load) load.style.display = 'flex';
 
     try {
-        // 1. Dados da Turma (para o nome do arquivo e disciplina)
         const turmaAtual = obterTurmaAtual();
         if (!turmaAtual) throw new Error("Turma não identificada.");
 
         const fk_disciplina = turmaAtual.disciplina.codigo;
         const nomeTurma = turmaAtual.nome_turma || "Turma";
 
-        // 2. Buscar Componentes da Disciplina
         const respComp = await fetch('/componente-nota/all');
-        if (!respComp.ok) throw new Error("Erro ao buscar componentes.");
         const allComps = await respComp.json();
         const componentesDaTurma = allComps.filter(c => String(c.fk_disciplina_codigo) === String(fk_disciplina));
 
-        // 3. Buscar TODAS as notas (para cruzar com os alunos)
         const respNotas = await fetch('/nota/all');
-        if (!respNotas.ok) throw new Error("Erro ao buscar notas.");
         const todasAsNotas = await respNotas.json();
 
-        // 4. Montar o CSV
-        // Cabeçalho
         let csvContent = "RA;Nome";
         componentesDaTurma.forEach(comp => {
             csvContent += `;${comp.sigla || comp.nome}`;
         });
         csvContent += ";Média\n";
 
-        // Linhas (Alunos Selecionados)
         for (const aluno of listaAlunos) {
             let linha = `${aluno.ra};${aluno.nome}`;
             let somaNotas = 0;
             let qtdNotasComputadas = 0;
             
-            // Para cada componente, busca a nota do aluno atual
             for (const comp of componentesDaTurma) {
                 const notaObj = todasAsNotas.find(n => 
                     String(n.fk_id_estudante) === String(aluno.ra) &&
@@ -1576,45 +1615,36 @@ async function exportarAlunosSelecionados() {
                     somaNotas += Number(notaObj.valor_nota);
                     qtdNotasComputadas++;
                 } else {
-                    linha += ";-"; // Se não tem nota, coloca um traço
+                    linha += ";-"; 
                 }
             }
 
-            // Calcula Média
             let media = 0;
             if (qtdNotasComputadas > 0) {
                 media = (somaNotas / qtdNotasComputadas).toFixed(1);
             }
             linha += `;${String(media).replace('.', ',')}`;
-
-            // Adiciona a linha ao conteúdo final
             csvContent += linha + "\n";
         }
 
-        // 5. Aplicar a correção de codificação
-        
-        // Cria o Blob usando UTF-8 com BOM (solução padrão e correta) - Linha 1142
         const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' }); 
-        
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
+        const nomeArquivoSanitizado = nomeTurma.replace(/[\s\/\\]+/g, '_').trim();
         
         link.setAttribute("href", url);
-        // Nome do arquivo (Permite acentuação, apenas trocando espaços e barras por _)
-        const nomeArquivoSanitizado = nomeTurma.replace(/[\s\/\\]+/g, '_').trim();
         link.setAttribute("download", `Relatorio_${nomeArquivoSanitizado}.csv`);
         
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
 
-        // Opcional: Limpar seleção após exportar
         sairDoModoSelecao();
         mostrarAlerta("Exportação concluída!", "success");
 
     } catch (error) {
         console.error(error);
-        mostrarAlerta("Erro ao exportar alunos: " + error.message, "erro");
+        mostrarAlerta("Erro ao exportar: " + error.message, "erro");
     } finally {
         if (load) load.style.display = 'none';
     }
