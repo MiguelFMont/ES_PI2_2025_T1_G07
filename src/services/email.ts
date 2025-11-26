@@ -37,7 +37,7 @@ export async function enviarLinkAlterarSenha(email: string): Promise<void> {
       subject: "Link para alteração de senha - NotaDez",
       html: `
   <p>Olá!</p>
-  <p>Clique <a href="https://notadez.cfd/redefinir-senha">aqui</a> para alterar sua senha!</p>
+  <p>Clique <a href="http://localhost:3000/redefinir-senha">aqui</a> para alterar sua senha!</p>
 `
     });
   } catch (error: any) {
